@@ -10,8 +10,8 @@
       content="Photographe amateur de 18 ans, passionné par la capture d’instants uniques. Entre concerts, portraits et scènes urbaines, je cherche à transmettre émotions et authenticité à travers mes images. Toujours en quête de nouvelles expériences visuelles."
     />
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="assets/Logo_MP.svg" />
-    <link rel="stylesheet" href="output.css" />
+    <link rel="icon" type="image/svg+xml" href="/dist/assets/Logo_MP.svg" />
+    <link rel="stylesheet" href="/dist/output.css" />
     <!-- Alpine.js -->
     <script
       defer
@@ -46,7 +46,7 @@
           class="container mx-auto flex flex-wrap items-center md:flex-no-wrap"
         >
           <div class="mr-4 md:mr-8">
-            <a href="../index.html" class="text-2xl font-signika font-bold"
+            <a href="/portfolio" class="text-2xl font-signika font-bold"
               >MATTIA PARRINELLO</a
             >
           </div>
@@ -88,7 +88,7 @@
               class="flex flex-col duration-300 ease-out md:space-x-5 sm:transition-none mt-5 md:flex-row md:items-center md:ml-auto md:mt-0 md:pt-0 md:border-0"
             >
               <li class="group transition duration-300">
-                <a href="../index.html" class="font-signika text-2xl"
+                <a href="/portfolio" class="font-signika text-2xl"
                   >PORTFOLIO
                   <span
                     class="hidden md:block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-black dark:bg-white"
@@ -97,7 +97,7 @@
                 </a>
               </li>
               <li class="group transition duration-300">
-                <a href="about_me.html" class="font-signika text-2xl"
+                <a href="/a-propos" class="font-signika text-2xl"
                   >À PROPOS
                   <span
                     class="hidden md:block h-0.5 bg-black dark:bg-white"
@@ -105,7 +105,7 @@
                 </a>
               </li>
               <li class="group transition duration-300">
-                <a href="contact.html" class="font-signika text-2xl"
+                <a href="/contact" class="font-signika text-2xl"
                   >CONTACT
                   <span
                     class="hidden md:block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-black dark:bg-white"
@@ -127,7 +127,7 @@
             class="bg-white dark:bg-neutral-900 p-5 pb-28 m-6 md:m-12 shadow-lg border border-gray-100 dark:border-neutral-800 hover:rotate-0 transition duration-500 -rotate-6 relative"
           >
             <img
-              src="./assets/Avatar.png"
+              src="/dist/assets/Avatar.png"
               alt=""
               class="smooth-edges flex flex-col w-full aspect-square object-cover h-auto"
             />
@@ -142,6 +142,7 @@
         </div>
         <section
           class="font-normal text-center text-base md:text-start mx-3 col-span-2 md:col-span-1 my-auto"
+          id="about-content"
         >
           <div class="block md:hidden">
             <p class="text-3xl font-serif font-bold mb-1">Salut,</p>
@@ -226,7 +227,9 @@
         </div>
       </div>
     </footer>
-    <script src="fade_in.js"></script>
-    <script src="menu.js"></script>
+    <script src="/dist/fade_in.js"></script>
+    <script src="/dist/fade_in.js"></script>
+    <script src="/dist/menu.js"></script>
+    <script src="/dist/text-loader.js"></script>
   </body>
 </html>
