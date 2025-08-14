@@ -6,6 +6,7 @@ const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = 3000;
+const statsFile = path.join(__dirname, 'stats.json');
 
 // Sert les fichiers statiques
 app.use(express.static(__dirname));
@@ -44,6 +45,34 @@ app.post('/send-mail', async (req, res) => {
         res.status(200).json({ success: true });
     } catch (err) {
         res.status(500).json({ error: 'Erreur lors de l\'envoi du mail' });
+    }
+});
+
+// Endpoint pour enregistrer une visite
+app.post('/track', (req, res) => {
+    const page = req.body.page || 'inconnue';
+    const now = new Date().toISOString();
+    let stats = { visits: 0, pages: {} };
+    try {
+        if (fs.existsSync(statsFile)) {
+            stats = JSON.parse(fs.readFileSync(statsFile, 'utf-8'));
+        }
+    } catch (e) { }
+    stats.visits++;
+    if (!stats.pages[page]) stats.pages[page] = { count: 0, last: null };
+    stats.pages[page].count++;
+    stats.pages[page].last = now;
+    fs.writeFileSync(statsFile, JSON.stringify(stats, null, 2));
+    res.json({ success: true });
+});
+
+// Endpoint pour consulter les stats
+app.get('/stats', (req, res) => {
+    try {
+        const stats = fs.existsSync(statsFile) ? JSON.parse(fs.readFileSync(statsFile, 'utf-8')) : { visits: 0, pages: {} };
+        res.json(stats);
+    } catch (e) {
+        res.status(500).json({ error: 'Erreur lecture stats' });
     }
 });
 
