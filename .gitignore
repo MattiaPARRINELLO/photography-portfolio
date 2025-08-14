@@ -1,0 +1,16 @@
+# Node.js
+node_modules/
+.env
+npm-debug.log*
+dist/output.css
+# Logs
+logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+/build
+/dist/*.map
