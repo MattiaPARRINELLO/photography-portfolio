@@ -44,6 +44,7 @@ app.post('/send-mail', async (req, res) => {
         });
         res.status(200).json({ success: true });
     } catch (err) {
+        console.error('Erreur lors de l\'envoi du mail:', err);
         res.status(500).json({ error: 'Erreur lors de l\'envoi du mail' });
     }
 });
@@ -57,7 +58,9 @@ app.post('/track', (req, res) => {
         if (fs.existsSync(statsFile)) {
             stats = JSON.parse(fs.readFileSync(statsFile, 'utf-8'));
         }
-    } catch (e) { }
+    } catch (e) {
+        console.error('Erreur lors de la lecture du fichier stats:', e);
+    }
     stats.visits++;
     if (!stats.pages[page]) stats.pages[page] = { count: 0, last: null };
     stats.pages[page].count++;
@@ -72,6 +75,7 @@ app.get('/stats', (req, res) => {
         const stats = fs.existsSync(statsFile) ? JSON.parse(fs.readFileSync(statsFile, 'utf-8')) : { visits: 0, pages: {} };
         res.json(stats);
     } catch (e) {
+        console.error('Erreur lors de la lecture des stats:', e);
         res.status(500).json({ error: 'Erreur lecture stats' });
     }
 });
