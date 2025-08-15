@@ -5,8 +5,20 @@ npm-debug.log*
 dist/output.css
 
 # Photos et contenu dynamique
-photos/
-photos/**
+photos/*.jpg
+photos/*.jpeg
+photos/*.png
+photos/*.webp
+photos/*.gif
+photos/thumbnails/*.jpg
+photos/thumbnails/*.jpeg
+photos/thumbnails/*.png
+photos/thumbnails/*.webp
+photos/thumbnails/*.gif
+
+# Mais garder la structure et les fichiers README
+!photos/README.md
+!photos/thumbnails/.gitkeep
 
 # Configuration et textes
 texts.json
