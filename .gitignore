@@ -3,6 +3,15 @@ node_modules/
 .env
 npm-debug.log*
 dist/output.css
+
+# Photos et contenu dynamique
+photos/
+photos/**
+
+# Configuration et textes
+texts.json
+config.json
+
 # Logs
 logs
 *.log

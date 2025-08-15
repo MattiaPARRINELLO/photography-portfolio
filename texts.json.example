@@ -1,0 +1,20 @@
+{
+  "main": {
+    "nom": "Votre nom complet"
+  },
+  "a propos": {
+    "bio": [
+      "Premier paragraphe de votre biographie...",
+      "Deuxième paragraphe de votre biographie...",
+      "Troisième paragraphe de votre biographie...",
+      "Quatrième paragraphe de votre biographie..."
+    ],
+    "presentation": "Votre phrase de présentation",
+    "avatar": "/dist/assets/votre_avatar.jpg"
+  },
+  "footer": {
+    "ligne1": "Votre adresse complète",
+    "ligne2": "Votre numéro de téléphone",
+    "instagram": "votre_nom_instagram"
+  }
+}
