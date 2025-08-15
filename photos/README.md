@@ -22,6 +22,7 @@ Ce dossier contient toutes vos photos de portfolio.
 ## TODO - Fonctionnalités à développer :
 
 ### 📝 Modification des métadonnées
+
 - [ ] Interface admin pour modifier les métadonnées des photos
 - [ ] Édition des titres et descriptions personnalisées
 - [ ] Modification des données EXIF affichées

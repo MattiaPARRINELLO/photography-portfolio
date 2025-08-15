@@ -3,6 +3,7 @@
 ## 📸 Gestion des Photos
 
 ### Métadonnées et Organisation
+
 - [ ] Interface admin pour modifier les métadonnées des photos
   - [ ] Édition des titres personnalisés
   - [ ] Ajout de descriptions détaillées
@@ -17,6 +18,7 @@
   - [ ] Organisation par albums/collections
 
 ### Données EXIF améliorées
+
 - [ ] Interface pour masquer/afficher certaines données EXIF
 - [ ] Personnalisation des informations affichées
 - [ ] Ajout de données personnalisées (lieu, contexte, etc.)
@@ -24,12 +26,14 @@
 ## 🎨 Interface Utilisateur
 
 ### Galerie
+
 - [ ] Vue en grille/liste personnalisable
 - [ ] Filtres par date, tags, catégories
 - [ ] Recherche textuelle dans les métadonnées
 - [ ] Mode plein écran amélioré
 
 ### Administration
+
 - [ ] Dashboard avec statistiques des photos
 - [ ] Gestion en lot (suppression multiple, tags multiples)
 - [ ] Prévisualisation avant publication
@@ -38,12 +42,14 @@
 ## 🔧 Fonctionnalités techniques
 
 ### Performance
+
 - [ ] Lazy loading avancé
 - [ ] Compression automatique selon la qualité
 - [ ] Cache des miniatures optimisé
 - [ ] Progressive Web App (PWA)
 
 ### Sécurité
+
 - [ ] Watermarking automatique (optionnel)
 - [ ] Protection contre le téléchargement
 - [ ] Gestion des droits d'accès par photo
@@ -64,4 +70,4 @@
 
 ---
 
-*Ce fichier sera mis à jour au fur et à mesure du développement des fonctionnalités*
+_Ce fichier sera mis à jour au fur et à mesure du développement des fonctionnalités_
