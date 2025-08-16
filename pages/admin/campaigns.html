@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestion des Campagnes - Admin</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Signika:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      * {
+        font-family: "Signika", sans-serif;
+      }
+
+      body {
+        background: linear-gradient(
+          135deg,
+          #000000 0%,
+          #1a1a2e 25%,
+          #16213e 50%,
+          #0f3460 75%,
+          #000000 100%
+        );
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        color: white;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
+          repeat;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .main-content {
+        position: relative;
+        z-index: 1;
+      }
+
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+
+      .campaign-item {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.2s ease;
+      }
+
+      .campaign-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(59, 130, 246, 0.3);
+      }
+
+      .copy-button {
+        transition: all 0.2s ease;
+      }
+
+      .copy-button:hover {
+        transform: scale(1.05);
+      }
+
+      .copy-success {
+        background: #10b981 !important;
+      }
+
+      .form-input {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+
+      .form-input:focus {
+        border-color: #3b82f6;
+        background: rgba(255, 255, 255, 0.15);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+      }
+
+      .form-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .stats-card {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-content">
+      <!-- Header -->
+      <header class="glass-effect">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center py-6">
+            <div>
+              <h1 class="text-3xl font-bold text-white">
+                🎯 Gestion des Campagnes
+              </h1>
+              <p class="text-white/60 mt-1">
+                Générez des liens de campagne discrets pour tracker vos sources
+              </p>
+            </div>
+            <a
+              href="/admin"
+              class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200"
+            >
+              ← Retour Admin
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Formulaire de création -->
+      <div class="mx-4 mt-6 mb-6">
+        <div class="glass-effect rounded-xl p-6">
+          <h2 class="text-xl font-bold text-white mb-4">
+            ✨ Créer une nouvelle campagne
+          </h2>
+          <form id="campaign-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  for="campaign-name"
+                  class="block text-sm font-medium text-white mb-2"
+                  >Nom de la campagne</label
+                >
+                <input
+                  type="text"
+                  id="campaign-name"
+                  class="form-input w-full rounded-lg px-3 py-2"
+                  placeholder="Instagram Story Décembre 2024"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  for="campaign-source"
+                  class="block text-sm font-medium text-white mb-2"
+                  >Source</label
+                >
+                <select
+                  id="campaign-source"
+                  class="form-input w-full rounded-lg px-3 py-2"
+                  required
+                >
+                  <option value="">Choisir une source...</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="twitter">Twitter</option>
+                  <option value="linkedin">LinkedIn</option>
+                  <option value="tiktok">TikTok</option>
+                  <option value="youtube">YouTube</option>
+                  <option value="email">Email</option>
+                  <option value="sms">SMS</option>
+                  <option value="qr-code">QR Code</option>
+                  <option value="business-card">Carte de visite</option>
+                  <option value="flyer">Flyer/Brochure</option>
+                  <option value="word-of-mouth">Bouche à oreille</option>
+                  <option value="other">Autre</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label
+                for="campaign-medium"
+                class="block text-sm font-medium text-white mb-2"
+                >Medium (optionnel)</label
+              >
+              <input
+                type="text"
+                id="campaign-medium"
+                class="form-input w-full rounded-lg px-3 py-2"
+                placeholder="story, post, ad, bio, etc."
+              />
+            </div>
+
+            <div>
+              <label
+                for="campaign-description"
+                class="block text-sm font-medium text-white mb-2"
+                >Description (optionnel)</label
+              >
+              <textarea
+                id="campaign-description"
+                class="form-input w-full rounded-lg px-3 py-2 h-20 resize-none"
+                placeholder="Campagne pour promouvoir le portfolio via les stories Instagram..."
+              ></textarea>
+            </div>
+
+            <button
+              type="submit"
+              class="w-full md:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200"
+            >
+              🚀 Générer le lien de campagne
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Statistiques globales -->
+      <div class="mx-4 mb-6">
+        <div class="glass-effect rounded-xl p-6">
+          <h2 class="text-xl font-bold text-white mb-4">
+            📊 Statistiques des campagnes
+          </h2>
+          <div
+            class="grid grid-cols-1 md:grid-cols-4 gap-4"
+            id="campaign-stats"
+          >
+            <div class="stats-card rounded-lg p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-white/70 text-sm font-medium"
+                  >Total Campagnes</span
+                >
+                <span class="text-xl">🎯</span>
+              </div>
+              <div class="text-xl font-bold text-white" id="total-campaigns">
+                0
+              </div>
+            </div>
+            <div class="stats-card rounded-lg p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-white/70 text-sm font-medium"
+                  >Total Visites</span
+                >
+                <span class="text-xl">👥</span>
+              </div>
+              <div class="text-xl font-bold text-white" id="total-visits">
+                0
+              </div>
+            </div>
+            <div class="stats-card rounded-lg p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-white/70 text-sm font-medium"
+                  >Aujourd'hui</span
+                >
+                <span class="text-xl">📅</span>
+              </div>
+              <div class="text-xl font-bold text-white" id="today-visits">
+                0
+              </div>
+            </div>
+            <div class="stats-card rounded-lg p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-white/70 text-sm font-medium"
+                  >Top Source</span
+                >
+                <span class="text-xl">🏆</span>
+              </div>
+              <div class="text-xl font-bold text-white" id="top-source">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Liste des campagnes -->
+      <div class="mx-4 mb-6">
+        <div class="glass-effect rounded-xl">
+          <div class="p-6 border-b border-white/10">
+            <h3 class="text-lg font-bold text-white">📋 Campagnes actives</h3>
+            <p class="text-white/60 text-sm">
+              Gérez vos liens de campagne et consultez leurs performances
+            </p>
+          </div>
+          <div id="campaigns-container" class="p-6">
+            <div class="text-center py-8">
+              <span class="text-4xl mb-4 block">🎯</span>
+              <h4 class="text-lg font-bold text-white mb-2">
+                Aucune campagne créée
+              </h4>
+              <p class="text-white/60">
+                Créez votre première campagne pour commencer à tracker vos
+                sources
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="loading" class="mx-4 hidden">
+        <div class="glass-effect rounded-xl p-8">
+          <div class="text-center">
+            <div
+              class="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"
+            ></div>
+            <p class="text-white/70">Chargement des campagnes...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // État global
+      let campaigns = [];
+
+      // Éléments DOM
+      const campaignForm = document.getElementById("campaign-form");
+      const campaignsContainer = document.getElementById("campaigns-container");
+      const loading = document.getElementById("loading");
+
+      // Stats elements
+      const totalCampaigns = document.getElementById("total-campaigns");
+      const totalVisits = document.getElementById("total-visits");
+      const todayVisits = document.getElementById("today-visits");
+      const topSource = document.getElementById("top-source");
+
+      // Vérification de l'authentification au chargement
+      async function checkAuth() {
+        try {
+          const response = await fetch("/admin/status");
+          if (!response.ok) {
+            window.location.href = "/admin";
+            return false;
+          }
+          return true;
+        } catch (error) {
+          console.error("Erreur auth:", error);
+          window.location.href = "/admin";
+          return false;
+        }
+      }
+
+      // Générer un ID de campagne discret
+      function generateCampaignId() {
+        const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        let result = "";
+        for (let i = 0; i < 8; i++) {
+          result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+      }
+
+      // Créer une campagne
+      async function createCampaign(campaignData) {
+        try {
+          const response = await fetch("/admin/api/campaigns", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(campaignData),
+          });
+
+          if (!response.ok) {
+            throw new Error("Erreur lors de la création de la campagne");
+          }
+
+          const result = await response.json();
+          return result;
+        } catch (error) {
+          console.error("Erreur:", error);
+          throw error;
+        }
+      }
+
+      // Charger les campagnes
+      async function loadCampaigns() {
+        try {
+          loading.classList.remove("hidden");
+
+          const response = await fetch("/admin/api/campaigns");
+          if (!response.ok) {
+            throw new Error("Erreur lors du chargement");
+          }
+
+          const data = await response.json();
+          campaigns = data.campaigns || [];
+          displayCampaigns();
+          updateStats(data.stats || {});
+        } catch (error) {
+          console.error("Erreur:", error);
+          campaignsContainer.innerHTML =
+            '<div class="text-center py-8 text-red-400">Erreur lors du chargement des campagnes</div>';
+        } finally {
+          loading.classList.add("hidden");
+        }
+      }
+
+      // Afficher les campagnes
+      function displayCampaigns() {
+        if (campaigns.length === 0) {
+          campaignsContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <span class="text-4xl mb-4 block">🎯</span>
+                        <h4 class="text-lg font-bold text-white mb-2">Aucune campagne créée</h4>
+                        <p class="text-white/60">Créez votre première campagne pour commencer à tracker vos sources</p>
+                    </div>
+                `;
+          return;
+        }
+
+        campaignsContainer.innerHTML = campaigns
+          .map(
+            (campaign) => `
+                <div class="campaign-item rounded-lg p-4 mb-4">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <h4 class="font-semibold text-white">${
+                                  campaign.name
+                                }</h4>
+                                <span class="text-xs px-2 py-1 bg-blue-600 text-white rounded-full">${
+                                  campaign.source
+                                }</span>
+                                ${
+                                  campaign.medium
+                                    ? `<span class="text-xs px-2 py-1 bg-gray-600 text-white rounded-full">${campaign.medium}</span>`
+                                    : ""
+                                }
+                            </div>
+                            
+                            <div class="text-sm text-white/70 mb-2">
+                                <strong>Lien:</strong> 
+                                <code class="bg-black/30 px-2 py-1 rounded text-blue-300">${
+                                  window.location.origin
+                                }/?ref=${campaign.id}</code>
+                            </div>
+                            
+                            ${
+                              campaign.description
+                                ? `<p class="text-sm text-white/60 mb-2">${campaign.description}</p>`
+                                : ""
+                            }
+                            
+                            <div class="flex items-center gap-4 text-xs text-white/50">
+                                <span>Créé le ${new Date(
+                                  campaign.createdAt
+                                ).toLocaleDateString("fr-FR")}</span>
+                                <span>${campaign.visits || 0} visite(s)</span>
+                                <span>Dernière visite: ${
+                                  campaign.lastVisit
+                                    ? new Date(
+                                        campaign.lastVisit
+                                      ).toLocaleDateString("fr-FR")
+                                    : "Jamais"
+                                }</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-2">
+                            <button onclick="copyLink('${
+                              campaign.id
+                            }')" class="copy-button px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">
+                                📋 Copier
+                            </button>
+                            <button onclick="deleteCampaign('${
+                              campaign.id
+                            }')" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      // Mettre à jour les statistiques
+      function updateStats(stats) {
+        totalCampaigns.textContent = stats.totalCampaigns || 0;
+        totalVisits.textContent = stats.totalVisits || 0;
+        todayVisits.textContent = stats.todayVisits || 0;
+        topSource.textContent = stats.topSource || "-";
+      }
+
+      // Copier le lien de campagne
+      function copyLink(campaignId) {
+        const link = `${window.location.origin}/?ref=${campaignId}`;
+        navigator.clipboard
+          .writeText(link)
+          .then(() => {
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = "✅ Copié!";
+            button.classList.add("copy-success");
+
+            setTimeout(() => {
+              button.innerHTML = originalText;
+              button.classList.remove("copy-success");
+            }, 2000);
+          })
+          .catch((err) => {
+            console.error("Erreur copie:", err);
+            alert("Erreur lors de la copie");
+          });
+      }
+
+      // Supprimer une campagne
+      async function deleteCampaign(campaignId) {
+        if (!confirm("Êtes-vous sûr de vouloir supprimer cette campagne ?")) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/admin/api/campaigns/${campaignId}`, {
+            method: "DELETE",
+          });
+
+          if (!response.ok) {
+            throw new Error("Erreur lors de la suppression");
+          }
+
+          await loadCampaigns(); // Recharger la liste
+        } catch (error) {
+          console.error("Erreur:", error);
+          alert("Erreur lors de la suppression de la campagne");
+        }
+      }
+
+      // Gestionnaire du formulaire
+      campaignForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const campaignData = {
+          id: generateCampaignId(),
+          name: document.getElementById("campaign-name").value.trim(),
+          source: document.getElementById("campaign-source").value,
+          medium:
+            document.getElementById("campaign-medium").value.trim() || null,
+          description:
+            document.getElementById("campaign-description").value.trim() ||
+            null,
+        };
+
+        try {
+          const submitButton = e.target.querySelector('button[type="submit"]');
+          const originalText = submitButton.innerHTML;
+          submitButton.innerHTML = "⏳ Création...";
+          submitButton.disabled = true;
+
+          await createCampaign(campaignData);
+
+          // Reset form
+          e.target.reset();
+
+          // Reload campaigns
+          await loadCampaigns();
+
+          // Show success
+          submitButton.innerHTML = "✅ Campagne créée!";
+          setTimeout(() => {
+            submitButton.innerHTML = originalText;
+            submitButton.disabled = false;
+          }, 2000);
+        } catch (error) {
+          console.error("Erreur:", error);
+          alert("Erreur lors de la création de la campagne");
+
+          const submitButton = e.target.querySelector('button[type="submit"]');
+          submitButton.innerHTML = "🚀 Générer le lien de campagne";
+          submitButton.disabled = false;
+        }
+      });
+
+      // Initialisation
+      document.addEventListener("DOMContentLoaded", async () => {
+        if (await checkAuth()) {
+          await loadCampaigns();
+        }
+      });
+    </script>
+  </body>
+</html>

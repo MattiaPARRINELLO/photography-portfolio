@@ -21,8 +21,11 @@ photos/thumbnails/*.gif
 !photos/thumbnails/.gitkeep
 
 # Configuration et textes
-texts.json
-config.json
+config/texts.json
+config/config.json
+
+# Uploads temporaires
+temp/
 
 # Logs
 logs

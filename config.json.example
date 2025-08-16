@@ -1,8 +1,0 @@
-{
-  "siteName": "Votre Site Photo",
-  "adminEmail": "votre-email@exemple.com",
-  "maxUploadSize": "10MB",
-  "allowedFormats": ["jpg", "jpeg", "png", "webp"],
-  "thumbnailSize": 500,
-  "compressionQuality": 85
-}

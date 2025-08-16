@@ -1,0 +1,2091 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="robots"
+      content="noindex, nofollow, noarchive, nosnippet, noimageindex"
+    />
+    <meta
+      name="googlebot"
+      content="noindex, nofollow, noarchive, nosnippet, noimageindex"
+    />
+    <title>Logs - Administration - Portfolio</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="../../dist/assets/Logo_MP.svg"
+    />
+    <link rel="stylesheet" href="../../dist/css/output.css" />
+
+    <!-- Alpine.js -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Signika:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      * {
+        font-family: "Signika", sans-serif;
+      }
+
+      body {
+        background: linear-gradient(
+          135deg,
+          #000000 0%,
+          #1a1a2e 25%,
+          #16213e 50%,
+          #0f3460 75%,
+          #000000 100%
+        );
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        color: white;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
+          repeat;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .main-content {
+        position: relative;
+        z-index: 1;
+      }
+
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+
+      .log-entry {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+      }
+
+      .log-entry:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-left-color: #60a5fa;
+      }
+
+      .log-entry.action-click {
+        border-left-color: #10b981;
+      }
+      .log-entry.action-photo_click {
+        border-left-color: #8b5cf6;
+      }
+      .log-entry.action-page_visit {
+        border-left-color: #f59e0b;
+      }
+      .log-entry.action-form_submit {
+        border-left-color: #ef4444;
+      }
+      .log-entry.action-campaign_visit {
+        border-left-color: #f97316;
+      }
+
+      .stats-card {
+        transition: transform 0.3s ease;
+      }
+
+      .stats-card:hover {
+        transform: translateY(-2px);
+      }
+
+      .activity-timeline {
+        position: relative;
+      }
+
+      .activity-timeline::before {
+        content: "";
+        position: absolute;
+        left: 20px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, #60a5fa, #8b5cf6);
+      }
+
+      .timeline-item {
+        position: relative;
+        padding-left: 50px;
+        margin-bottom: 20px;
+      }
+
+      /* Styles améliorés pour les logs */
+      .log-entry-enhanced {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        margin-bottom: 16px;
+        overflow: hidden;
+      }
+
+      .log-entry-enhanced:hover {
+        background: rgba(255, 255, 255, 0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      }
+
+      .log-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        padding: 16px 20px 12px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .log-action-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .badge-page_visit {
+        background: rgba(59, 130, 246, 0.2);
+        color: #60a5fa;
+      }
+      .badge-photo_view {
+        background: rgba(139, 92, 246, 0.2);
+        color: #a78bfa;
+      }
+      .badge-photo_click {
+        background: rgba(236, 72, 153, 0.2);
+        color: #f472b6;
+      }
+      .badge-click {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+      }
+      .badge-button_click {
+        background: rgba(245, 158, 11, 0.2);
+        color: #fbbf24;
+      }
+      .badge-scroll {
+        background: rgba(99, 102, 241, 0.2);
+        color: #818cf8;
+      }
+      .badge-form_submit {
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+      }
+      .badge-heartbeat {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ade80;
+      }
+
+      .log-content {
+        padding: 16px 20px;
+      }
+
+      .photo-preview {
+        width: 80px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        transition: transform 0.2s ease;
+        cursor: pointer;
+      }
+
+      .photo-preview:hover {
+        transform: scale(1.05);
+        border-color: rgba(139, 92, 246, 0.5);
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+      }
+
+      .detail-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        font-size: 11px;
+        margin: 2px;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+      }
+
+      .modal-content {
+        max-width: 90vw;
+        max-height: 90vh;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .modal-content img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .timeline-item::before {
+        content: "";
+        position: absolute;
+        left: 14px;
+        top: 10px;
+        width: 12px;
+        height: 12px;
+        background: #60a5fa;
+        border-radius: 50%;
+        border: 2px solid #1e293b;
+      }
+
+      .search-highlight {
+        background: rgba(251, 191, 36, 0.3);
+        padding: 2px 4px;
+        border-radius: 4px;
+      }
+
+      /* Forcer tous les éléments de formulaire en blanc */
+      select,
+      option,
+      input[type="text"] {
+        color: white !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
+      }
+
+      select option {
+        background-color: #1e293b !important;
+        color: white !important;
+      }
+
+      /* Couleurs des placeholders */
+      ::placeholder {
+        color: rgba(255, 255, 255, 0.5) !important;
+      }
+
+      /* Photo Statistics Styles */
+      .photo-stats-section {
+        border: 2px solid rgba(59, 130, 246, 0.3);
+        border-radius: 12px;
+        background: rgba(59, 130, 246, 0.05);
+      }
+
+      .photo-stats-section h2 {
+        color: #60a5fa;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .stat-card {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        backdrop-filter: blur(5px);
+      }
+
+      .stat-card h3 {
+        color: #e2e8f0;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .stat-card .stat-value {
+        color: #60a5fa;
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .photo-stats-controls {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
+
+      .photo-stats-list {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      .photo-stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: background-color 0.2s ease;
+      }
+
+      .photo-stat-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .photo-stat-item:last-child {
+        border-bottom: none;
+      }
+
+      .photo-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .photo-thumbnail-container {
+        flex-shrink: 0;
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid rgba(96, 165, 250, 0.3);
+      }
+
+      .photo-thumbnail {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.2s ease;
+        cursor: pointer;
+      }
+
+      .photo-thumbnail:hover {
+        transform: scale(1.05);
+      }
+
+      .photo-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-width: 0;
+        flex: 1;
+      }
+
+      .photo-rank {
+        color: #60a5fa;
+        font-weight: 600;
+        font-size: 0.875rem;
+        width: 2rem;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      .photo-name {
+        color: #e2e8f0;
+        font-family: monospace;
+        font-size: 0.875rem;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .photo-path {
+        color: #9ca3af;
+        font-family: monospace;
+        font-size: 0.75rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .photo-stats {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      .click-count {
+        color: #10b981;
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
+
+      .first-click,
+      .last-click {
+        color: #9ca3af;
+        font-size: 0.75rem;
+      }
+
+      .no-data,
+      .error {
+        text-align: center;
+        padding: 2rem;
+        color: #9ca3af;
+        font-style: italic;
+      }
+
+      .error {
+        color: #ef4444;
+      }
+
+      /* Responsive adjustments for photo stats */
+      @media (max-width: 768px) {
+        .photo-stat-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+
+        .photo-info {
+          width: 100%;
+        }
+
+        .photo-thumbnail-container {
+          width: 50px;
+          height: 50px;
+        }
+
+        .photo-details {
+          flex: 1;
+        }
+
+        .photo-stats {
+          align-self: stretch;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .first-click,
+        .last-click {
+          font-size: 0.7rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-content">
+      <!-- Header -->
+      <header class="glass-effect m-4 rounded-xl">
+        <div class="px-6 py-4">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+              <div
+                class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center"
+              >
+                <span class="text-white font-bold text-lg">📊</span>
+              </div>
+              <div>
+                <h1 class="text-2xl font-bold text-white font-signika">
+                  Logs Utilisateurs
+                </h1>
+                <p class="text-white/70 text-sm font-medium">
+                  Suivi et analyse de l'activité
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+              <span class="text-white/60 text-sm" id="current-time"
+                >--:--:--</span
+              >
+              <a
+                href="/admin"
+                class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors duration-200 font-medium text-sm"
+              >
+                ← Retour Admin
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Sélection de date -->
+      <div class="mx-4 mb-6">
+        <div class="glass-effect rounded-xl p-6">
+          <div
+            class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between"
+          >
+            <div>
+              <h2 class="text-xl font-bold text-white mb-2">
+                Sélectionner une date
+              </h2>
+              <p class="text-white/60 text-sm">
+                Consultez les logs d'activité par jour
+              </p>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-4">
+              <select
+                id="date-selector"
+                class="bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              >
+                <option value="">Chargement des dates...</option>
+              </select>
+
+              <button
+                id="toggle-photo-stats-btn"
+                class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200 font-medium"
+              >
+                📊 Stats Photos
+              </button>
+
+              <button
+                id="refresh-btn"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium"
+              >
+                🔄 Actualiser
+              </button>
+
+              <button
+                id="cleanup-btn"
+                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 font-medium"
+                title="Supprimer les logs de plus de 7 jours"
+              >
+                🗑️ Nettoyer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistiques générales -->
+      <div id="stats-section" class="mx-4 mb-6 hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="glass-effect rounded-xl p-6 stats-card">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-white/70 text-sm font-medium"
+                >Utilisateurs uniques</span
+              >
+              <span class="text-2xl">👥</span>
+            </div>
+            <div class="text-2xl font-bold text-white" id="unique-users">0</div>
+          </div>
+
+          <div class="glass-effect rounded-xl p-6 stats-card">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-white/70 text-sm font-medium"
+                >Actions totales</span
+              >
+              <span class="text-2xl">🎯</span>
+            </div>
+            <div class="text-2xl font-bold text-white" id="total-actions">
+              0
+            </div>
+          </div>
+
+          <div class="glass-effect rounded-xl p-6 stats-card">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-white/70 text-sm font-medium">Pages vues</span>
+              <span class="text-2xl">📄</span>
+            </div>
+            <div class="text-2xl font-bold text-white" id="page-views">0</div>
+          </div>
+
+          <div class="glass-effect rounded-xl p-6 stats-card">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-white/70 text-sm font-medium"
+                >Photos cliquées</span
+              >
+              <span class="text-2xl">🖼️</span>
+            </div>
+            <div class="text-2xl font-bold text-white" id="photo-clicks">0</div>
+          </div>
+
+          <div class="glass-effect rounded-xl p-6 stats-card">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-white/70 text-sm font-medium"
+                >Sources de trafic</span
+              >
+              <span class="text-2xl">🎯</span>
+            </div>
+            <div class="text-2xl font-bold text-white" id="traffic-sources">
+              0
+            </div>
+          </div>
+        </div>
+
+        <!-- Sources de trafic détaillées -->
+        <div class="glass-effect rounded-xl p-6 mb-6">
+          <h3 class="text-lg font-bold text-white mb-4">Sources de trafic</h3>
+          <div id="traffic-sources-detail" class="space-y-2">
+            <p class="text-white/50 text-sm italic">
+              Aucune source de trafic détectée
+            </p>
+          </div>
+        </div>
+
+        <!-- Top actions -->
+        <div class="glass-effect rounded-xl p-6 mb-6">
+          <h3 class="text-lg font-bold text-white mb-4">
+            Actions les plus fréquentes
+          </h3>
+          <div id="top-actions" class="space-y-2">
+            <!-- Actions générées dynamiquement -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Contrôles de filtrage -->
+      <div id="controls-section" class="mx-4 mb-6 hidden">
+        <div class="glass-effect rounded-xl p-6">
+          <div
+            class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between"
+          >
+            <div class="flex flex-col md:flex-row gap-4 flex-1">
+              <input
+                type="text"
+                id="search-input"
+                placeholder="Rechercher dans les logs..."
+                class="bg-white/10 border border-white/20 text-white placeholder-white/50 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none flex-1"
+              />
+
+              <select
+                id="user-filter"
+                class="bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              >
+                <option value="">Tous les utilisateurs</option>
+              </select>
+
+              <select
+                id="action-filter"
+                class="bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              >
+                <option value="">Toutes les actions</option>
+              </select>
+
+              <select
+                id="source-filter"
+                class="bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              >
+                <option value="">Toutes les sources</option>
+              </select>
+
+              <select
+                id="campaign-filter"
+                class="bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              >
+                <option value="">Toutes les campagnes</option>
+              </select>
+
+              <!-- Bouton pour masquer/afficher les photo_view -->
+              <button
+                id="toggle-photo-view"
+                class="bg-orange-600/80 hover:bg-orange-600 border border-orange-500/50 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all duration-200 text-sm font-medium"
+                title="Masquer/Afficher les logs de vue photo"
+              >
+                📷 Masquer Photos
+              </button>
+            </div>
+
+            <div class="text-white/60 text-sm" id="logs-count">
+              0 logs affichés
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Statistiques Photos -->
+      <div id="photo-stats-section" class="mx-4 mb-6 hidden">
+        <div class="glass-effect rounded-xl">
+          <div class="p-6 border-b border-white/10">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="text-lg font-bold text-white">
+                  📸 Statistiques Photos
+                </h3>
+                <p class="text-white/60 text-sm">
+                  Nombre de clics par photo sur toute la durée du site
+                </p>
+              </div>
+              <div class="flex items-center space-x-3">
+                <button
+                  id="refresh-photo-stats-btn"
+                  class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 text-sm font-medium"
+                >
+                  🔄 Actualiser
+                </button>
+                <button
+                  id="reset-photo-stats-btn"
+                  class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 text-sm font-medium"
+                  title="Réinitialiser toutes les statistiques photos"
+                >
+                  🗑️ Reset
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Statistiques globales des photos -->
+          <div class="p-6 border-b border-white/10">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="bg-white/10 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-white/70 text-sm font-medium"
+                    >Total Photos</span
+                  >
+                  <span class="text-xl">📷</span>
+                </div>
+                <div class="text-xl font-bold text-white" id="total-photos">
+                  0
+                </div>
+              </div>
+
+              <div class="bg-white/10 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-white/70 text-sm font-medium"
+                    >Total Clics</span
+                  >
+                  <span class="text-xl">👆</span>
+                </div>
+                <div
+                  class="text-xl font-bold text-white"
+                  id="total-photo-clicks"
+                >
+                  0
+                </div>
+              </div>
+
+              <div class="bg-white/10 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-white/70 text-sm font-medium"
+                    >Moy. Clics/Photo</span
+                  >
+                  <span class="text-xl">📊</span>
+                </div>
+                <div
+                  class="text-xl font-bold text-white"
+                  id="avg-clicks-per-photo"
+                >
+                  0
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Liste détaillée des photos -->
+          <div class="p-6">
+            <h4 class="text-md font-bold text-white mb-4">
+              Classement par nombre de clics
+            </h4>
+            <div
+              id="photo-stats-container"
+              class="space-y-3 max-h-96 overflow-y-auto"
+            >
+              <!-- Statistiques photos générées dynamiquement -->
+            </div>
+
+            <!-- État vide -->
+            <div id="no-photo-stats" class="text-center py-8 hidden">
+              <span class="text-4xl mb-4 block">📷</span>
+              <h4 class="text-lg font-bold text-white mb-2">
+                Aucun clic photo enregistré
+              </h4>
+              <p class="text-white/60">
+                Les statistiques apparaîtront dès que des visiteurs cliqueront
+                sur vos photos
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline des logs -->
+      <div id="logs-section" class="mx-4 mb-6 hidden">
+        <div class="glass-effect rounded-xl">
+          <div class="p-6 border-b border-white/10">
+            <h3 class="text-lg font-bold text-white">Timeline d'activité</h3>
+            <p class="text-white/60 text-sm">
+              Actions des utilisateurs par ordre chronologique
+            </p>
+          </div>
+
+          <div
+            id="logs-container"
+            class="p-6 max-h-96 overflow-y-auto activity-timeline"
+          >
+            <!-- Logs générés dynamiquement -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="loading" class="mx-4 hidden">
+        <div class="glass-effect rounded-xl p-8">
+          <div class="text-center">
+            <div
+              class="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"
+            ></div>
+            <p class="text-white/70">Chargement des logs...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div id="error-message" class="mx-4 hidden">
+        <div class="glass-effect rounded-xl p-6">
+          <div class="text-center">
+            <span class="text-4xl mb-4 block">❌</span>
+            <h3 class="text-lg font-bold text-white mb-2">
+              Erreur de chargement
+            </h3>
+            <p class="text-white/70" id="error-text">
+              Une erreur s'est produite
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Éléments DOM
+      const dateSelector = document.getElementById("date-selector");
+      const refreshBtn = document.getElementById("refresh-btn");
+      const togglePhotoStatsBtn = document.getElementById(
+        "toggle-photo-stats-btn"
+      );
+      const cleanupBtn = document.getElementById("cleanup-btn");
+      const statsSection = document.getElementById("stats-section");
+      const controlsSection = document.getElementById("controls-section");
+      const logsSection = document.getElementById("logs-section");
+      const loading = document.getElementById("loading");
+      const errorMessage = document.getElementById("error-message");
+      const searchInput = document.getElementById("search-input");
+      const userFilter = document.getElementById("user-filter");
+      const actionFilter = document.getElementById("action-filter");
+      const sourceFilter = document.getElementById("source-filter");
+      const campaignFilter = document.getElementById("campaign-filter");
+      const togglePhotoViewBtn = document.getElementById("toggle-photo-view");
+      const logsContainer = document.getElementById("logs-container");
+      const logsCount = document.getElementById("logs-count");
+
+      // Éléments DOM pour la section photos
+      const photoStatsSection = document.getElementById("photo-stats-section");
+      const refreshPhotoStatsBtn = document.getElementById(
+        "refresh-photo-stats-btn"
+      );
+      const resetPhotoStatsBtn = document.getElementById(
+        "reset-photo-stats-btn"
+      );
+      const totalPhotos = document.getElementById("total-photos");
+      const totalPhotoClicks = document.getElementById("total-photo-clicks");
+      const avgClicksPerPhoto = document.getElementById("avg-clicks-per-photo");
+      const photoStatsContainer = document.getElementById(
+        "photo-stats-container"
+      );
+      const noPhotoStats = document.getElementById("no-photo-stats");
+
+      // Variables globales
+      let currentLogs = [];
+      let filteredLogs = [];
+      let currentStats = null;
+      let hidePhotoView = false; // État pour masquer/afficher les logs photo_view
+
+      // Vérification de l'authentification
+      async function checkAuth() {
+        try {
+          const response = await fetch("/admin/session-status");
+          const data = await response.json();
+          if (!data.isLoggedIn) {
+            // Rediriger vers la page de connexion
+            window.location.href = "/admin";
+            return false;
+          }
+          return true;
+        } catch (error) {
+          console.error("Erreur de vérification auth:", error);
+          window.location.href = "/admin";
+          return false;
+        }
+      }
+
+      // Initialisation
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Vérifier l'authentification avant tout
+        const isAuthenticated = await checkAuth();
+        if (!isAuthenticated) {
+          return;
+        }
+
+        await loadAvailableDates();
+        updateTime();
+        setInterval(updateTime, 1000);
+      });
+
+      // Mise à jour de l'heure
+      function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString("fr-FR", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+        document.getElementById("current-time").textContent = timeString;
+      }
+
+      // Charger les dates disponibles
+      async function loadAvailableDates() {
+        try {
+          loading.classList.remove("hidden");
+          hideAllSections();
+
+          const response = await fetch("/admin/logs-dates");
+          if (!response.ok) throw new Error("Erreur de chargement");
+
+          const dates = await response.json();
+
+          dateSelector.innerHTML =
+            '<option value="">Sélectionner une date</option>';
+          dates.forEach((date) => {
+            const option = document.createElement("option");
+            option.value = date;
+            option.textContent = formatDate(date);
+            dateSelector.appendChild(option);
+          });
+
+          // Sélectionner automatiquement la date la plus récente
+          if (dates.length > 0) {
+            dateSelector.value = dates[0];
+            await loadLogsForDate(dates[0]);
+          }
+
+          loading.classList.add("hidden");
+        } catch (error) {
+          console.error("Erreur lors du chargement des dates:", error);
+          showError("Impossible de charger les dates disponibles");
+        }
+      }
+
+      // Charger les logs pour une date
+      // Variable globale pour stocker les associations utilisateur-campagne
+      let userCampaignMap = new Map();
+
+      async function loadLogsForDate(date) {
+        if (!date) return;
+
+        try {
+          loading.classList.remove("hidden");
+          hideAllSections();
+
+          // Charger les logs et les stats en parallèle
+          const [logsResponse, statsResponse] = await Promise.all([
+            fetch(`/admin/logs/${date}`),
+            fetch(`/admin/logs-stats/${date}`),
+          ]);
+
+          if (!logsResponse.ok || !statsResponse.ok) {
+            throw new Error("Erreur de chargement");
+          }
+
+          currentLogs = await logsResponse.json();
+          currentStats = await statsResponse.json();
+
+          // Construire le mappage utilisateur-campagne
+          buildUserCampaignMapping(currentLogs);
+
+          // Afficher les données
+          displayStats(currentStats);
+          populateFilters(currentLogs);
+          applyFilters();
+
+          // Afficher les sections
+          statsSection.classList.remove("hidden");
+          controlsSection.classList.remove("hidden");
+          logsSection.classList.remove("hidden");
+          loading.classList.add("hidden");
+        } catch (error) {
+          console.error("Erreur lors du chargement des logs:", error);
+          showError("Impossible de charger les logs pour cette date");
+        }
+      }
+
+      // Construire le mappage utilisateur-campagne en analysant tous les logs
+      function buildUserCampaignMapping(logs) {
+        userCampaignMap.clear();
+
+        console.log("🔍 Construction du mappage utilisateur-campagne...");
+        console.log("📊 Nombre de logs à analyser:", logs.length);
+
+        // Parcourir tous les logs pour identifier les associations utilisateur-campagne
+        logs.forEach((log, index) => {
+          // Debug: afficher la structure du log
+          if (index < 5) {
+            console.log(`🔍 Log ${index}:`, {
+              userId: log.userId,
+              action: log.action,
+              hasCampaignInfoInDetails: !!(
+                log.details && log.details.campaignInfo
+              ),
+              hasCampaignInfoDirect: !!log.campaignInfo,
+              campaignInfoDetails: log.details?.campaignInfo,
+              campaignInfoDirect: log.campaignInfo,
+              details: log.details,
+            });
+          }
+
+          // Vérifier plusieurs sources possibles d'informations de campagne
+          let campaignInfo = null;
+
+          // Source 1: campaignInfo dans details (nouveau système après correction)
+          if (log.details && log.details.campaignInfo) {
+            campaignInfo = log.details.campaignInfo;
+            console.log(
+              `✅ Source 1 (details.campaignInfo) - userId: ${
+                log.userId
+              }, campagne: ${
+                campaignInfo.campaignName || campaignInfo.campaignId
+              }`
+            );
+          }
+
+          // Source 2: campaignInfo direct dans le log (fallback)
+          else if (log.campaignInfo) {
+            campaignInfo = log.campaignInfo;
+            console.log(
+              `✅ Source 2 (log.campaignInfo) - userId: ${
+                log.userId
+              }, campagne: ${
+                campaignInfo.campaignName || campaignInfo.campaignId
+              }`
+            );
+          }
+
+          // Source 3: pour les logs "campaign_visit" (ancien système)
+          else if (log.action === "campaign_visit" && log.details) {
+            if (log.details.campaignName || log.details.campaign) {
+              campaignInfo = {
+                campaignId: log.details.campaign || log.details.campaignId,
+                campaignName: log.details.campaignName,
+                source: log.details.source || "unknown",
+                medium: log.details.medium || "unknown",
+                timestamp: log.timestamp,
+              };
+              console.log(
+                `✅ Source 3 (campaign_visit) - userId: ${log.userId}, campagne: ${campaignInfo.campaignName}`
+              );
+            }
+          }
+
+          // Si on a trouvé des infos de campagne et qu'on n'a pas encore d'info pour cet utilisateur
+          if (campaignInfo && !userCampaignMap.has(log.userId)) {
+            userCampaignMap.set(log.userId, campaignInfo);
+            console.log(
+              `💾 Association sauvée: ${log.userId} -> ${
+                campaignInfo.campaignName || campaignInfo.campaignId
+              }`
+            );
+          }
+        });
+
+        console.log(
+          `📊 Mappage campagne construit: ${userCampaignMap.size} utilisateurs avec campagne`
+        );
+        console.log(
+          "🗺️ Mappage complet:",
+          Array.from(userCampaignMap.entries())
+        );
+      }
+
+      // Récupérer les infos de campagne d'un utilisateur
+      function getUserCampaignInfo(userId) {
+        return userCampaignMap.get(userId) || null;
+      }
+
+      // Afficher les statistiques
+      function displayStats(stats) {
+        const userStats = Object.values(stats.userStats);
+
+        document.getElementById("unique-users").textContent = userStats.length;
+        document.getElementById("total-actions").textContent = userStats.reduce(
+          (sum, user) => sum + user.totalActions,
+          0
+        );
+        document.getElementById("page-views").textContent = currentLogs.filter(
+          (log) => log.action === "page_visit"
+        ).length;
+        document.getElementById("photo-clicks").textContent =
+          currentLogs.filter((log) => log.action.includes("photo")).length;
+
+        // Sources de trafic
+        const trafficSources = {};
+        currentLogs.forEach((log) => {
+          if (log.details && log.details.trafficSource) {
+            const source =
+              log.details.trafficSource.source ||
+              log.details.trafficSource.utm_source ||
+              log.details.trafficSource.ref ||
+              "unknown";
+            trafficSources[source] = (trafficSources[source] || 0) + 1;
+          }
+        });
+
+        const totalTrafficSources = Object.keys(trafficSources).length;
+        document.getElementById("traffic-sources").textContent =
+          totalTrafficSources;
+
+        // Afficher les sources de trafic détaillées
+        const trafficSourcesDetail = document.getElementById(
+          "traffic-sources-detail"
+        );
+        if (totalTrafficSources > 0) {
+          trafficSourcesDetail.innerHTML = "";
+
+          // Trier par nombre d'occurrences
+          const sortedSources = Object.entries(trafficSources).sort(
+            ([, a], [, b]) => b - a
+          );
+
+          sortedSources.forEach(([source, count]) => {
+            const sourceDiv = document.createElement("div");
+            sourceDiv.className =
+              "flex justify-between items-center py-2 px-4 bg-white/5 rounded-lg";
+
+            // Icône selon la source
+            let icon = "🌐";
+            const lowerSource = source.toLowerCase();
+            if (lowerSource.includes("instagram")) icon = "📷";
+            else if (lowerSource.includes("linkedin")) icon = "💼";
+            else if (lowerSource.includes("facebook")) icon = "📘";
+            else if (lowerSource.includes("twitter")) icon = "🐦";
+            else if (lowerSource.includes("google")) icon = "🔍";
+            else if (lowerSource.includes("direct")) icon = "🔗";
+
+            sourceDiv.innerHTML = `
+              <span class="text-white font-medium">${icon} ${source}</span>
+              <span class="text-green-400 font-bold">${count} visites</span>
+            `;
+            trafficSourcesDetail.appendChild(sourceDiv);
+          });
+        } else {
+          trafficSourcesDetail.innerHTML =
+            '<p class="text-white/50 text-sm italic">Aucune source de trafic détectée</p>';
+        }
+
+        // Top actions
+        const topActionsContainer = document.getElementById("top-actions");
+        topActionsContainer.innerHTML = "";
+
+        stats.topActions.slice(0, 5).forEach(({ action, count }) => {
+          const actionDiv = document.createElement("div");
+          actionDiv.className =
+            "flex justify-between items-center py-2 px-4 bg-white/5 rounded-lg";
+          actionDiv.innerHTML = `
+                    <span class="text-white font-medium">${getActionDisplayName(
+                      action
+                    )}</span>
+                    <span class="text-blue-400 font-bold">${count}</span>
+                `;
+          topActionsContainer.appendChild(actionDiv);
+        });
+      }
+
+      // Peupler les filtres
+      function populateFilters(logs) {
+        // Utilisateurs uniques
+        const users = [...new Set(logs.map((log) => log.userId))];
+        userFilter.innerHTML =
+          '<option value="">Tous les utilisateurs</option>';
+        users.forEach((user) => {
+          const option = document.createElement("option");
+          option.value = user;
+          option.textContent = user;
+          userFilter.appendChild(option);
+        });
+
+        // Actions uniques
+        const actions = [...new Set(logs.map((log) => log.action))];
+        actionFilter.innerHTML = '<option value="">Toutes les actions</option>';
+        actions.forEach((action) => {
+          const option = document.createElement("option");
+          option.value = action;
+          option.textContent = getActionDisplayName(action);
+          actionFilter.appendChild(option);
+        });
+
+        // Sources de trafic uniques
+        const sourcesFromLogs = logs.map((log) => {
+          if (!log.details || !log.details.trafficSource) {
+            return "direct";
+          }
+          const trafficSource = log.details.trafficSource;
+          return (
+            trafficSource.source ||
+            trafficSource.utm_source ||
+            trafficSource.ref ||
+            "direct"
+          );
+        });
+
+        const sources = [...new Set(sourcesFromLogs)];
+
+        sourceFilter.innerHTML = '<option value="">Toutes les sources</option>';
+        sources.forEach((source) => {
+          const option = document.createElement("option");
+          option.value = source;
+
+          // Icône selon la source
+          let icon = "🌐";
+          const lowerSource = source.toLowerCase();
+          if (lowerSource.includes("instagram")) icon = "📷";
+          else if (lowerSource.includes("linkedin")) icon = "💼";
+          else if (lowerSource.includes("facebook")) icon = "📘";
+          else if (lowerSource.includes("twitter")) icon = "🐦";
+          else if (lowerSource.includes("google")) icon = "🔍";
+          else if (lowerSource.includes("direct")) icon = "🔗";
+
+          option.textContent = `${icon} ${source}`;
+          sourceFilter.appendChild(option);
+        });
+
+        // Campagnes uniques
+        const campaigns = [
+          ...new Set(
+            logs
+              .filter(
+                (log) =>
+                  log.details &&
+                  log.details.trafficSource &&
+                  log.details.trafficSource.utm_campaign
+              )
+              .map((log) => log.details.trafficSource.utm_campaign)
+          ),
+        ];
+
+        campaignFilter.innerHTML =
+          '<option value="">Toutes les campagnes</option>';
+        campaigns.forEach((campaign) => {
+          const option = document.createElement("option");
+          option.value = campaign;
+          option.textContent = `🚀 ${campaign}`;
+          campaignFilter.appendChild(option);
+        });
+      }
+
+      // Appliquer les filtres
+      function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedUser = userFilter.value;
+        const selectedAction = actionFilter.value;
+        const selectedSource = sourceFilter.value;
+        const selectedCampaign = campaignFilter.value;
+
+        console.log("Filtres appliqués:", {
+          searchTerm,
+          selectedUser,
+          selectedAction,
+          selectedSource,
+          selectedCampaign,
+        });
+
+        filteredLogs = currentLogs.filter((log) => {
+          const matchesSearch =
+            !searchTerm ||
+            log.action.toLowerCase().includes(searchTerm) ||
+            log.userId.toLowerCase().includes(searchTerm) ||
+            (log.url && log.url.toLowerCase().includes(searchTerm));
+
+          const matchesUser = !selectedUser || log.userId === selectedUser;
+          const matchesAction =
+            !selectedAction || log.action === selectedAction;
+
+          // Filtrer par source de trafic
+          const matchesSource =
+            !selectedSource ||
+            (() => {
+              if (!log.details || !log.details.trafficSource) {
+                // Si pas de trafficSource et qu'on cherche "direct", ça correspond
+                return selectedSource === "direct";
+              }
+
+              const trafficSource = log.details.trafficSource;
+              const logSource =
+                trafficSource.source ||
+                trafficSource.utm_source ||
+                trafficSource.ref ||
+                "direct";
+
+              return logSource === selectedSource;
+            })();
+
+          // Filtrer par campagne
+          const matchesCampaign =
+            !selectedCampaign ||
+            (log.details &&
+              log.details.trafficSource &&
+              log.details.trafficSource.utm_campaign === selectedCampaign);
+
+          // Filtrer les photo_view et photo_click si demandé
+          const matchesPhotoViewFilter =
+            !hidePhotoView || (log.action !== "photo_view" && log.action !== "photo_click");
+
+          return (
+            matchesSearch &&
+            matchesUser &&
+            matchesAction &&
+            matchesSource &&
+            matchesCampaign &&
+            matchesPhotoViewFilter
+          );
+        });
+
+        console.log(
+          `Logs filtrés: ${filteredLogs.length}/${currentLogs.length}`
+        );
+
+        displayLogs(filteredLogs);
+        logsCount.textContent = `${filteredLogs.length} logs affichés`;
+      }
+
+      // Afficher les logs
+      function displayLogs(logs) {
+        logsContainer.innerHTML = "";
+
+        if (logs.length === 0) {
+          logsContainer.innerHTML =
+            '<p class="text-white/60 text-center py-8">Aucun log trouvé</p>';
+          return;
+        }
+
+        // Trier par timestamp décroissant
+        const sortedLogs = [...logs].sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+
+        sortedLogs.forEach((log) => {
+          const logDiv = document.createElement("div");
+          logDiv.className = `log-entry-enhanced timeline-item action-${log.action.replace(
+            "_",
+            "-"
+          )}`;
+
+          const time = new Date(log.timestamp).toLocaleTimeString("fr-FR");
+          const userInitial = log.userId
+            .charAt(log.userId.length - 1)
+            .toUpperCase();
+          const actionBadgeClass = `badge-${log.action.replace("-", "_")}`;
+
+          // Vérifier s'il y a une photo associée
+          const photoInfo = getPhotoInfo(log);
+          const photoPreview = photoInfo ? createPhotoPreview(photoInfo) : "";
+
+          const details = formatLogDetailsEnhanced(log);
+
+          logDiv.innerHTML = `
+            <div class="log-header">
+              <div class="flex items-center gap-3">
+                <div class="user-avatar">${userInitial}</div>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-blue-400 font-mono text-sm">${time}</span>
+                    <span class="log-action-badge ${actionBadgeClass}">${getActionDisplayName(
+            log.action
+          )}</span>
+                  </div>
+                  <div class="text-white/60 text-xs">User: ${log.userId.slice(
+                    -8
+                  )}</div>
+                </div>
+              </div>
+              ${photoPreview}
+            </div>
+            <div class="log-content">
+              ${details}
+            </div>
+          `;
+
+          logsContainer.appendChild(logDiv);
+        });
+      }
+
+      // Extraire les informations de photo d'un log
+      function getPhotoInfo(log) {
+        // Pour photo_view et photo_click
+        if (log.action === "photo_view" || log.action === "photo_click") {
+          if (log.details && log.details.photoSrc) {
+            return {
+              src: log.details.photoSrc,
+              alt: log.details.photoAlt || "Photo",
+            };
+          }
+        }
+
+        // Pour image_click
+        if (log.action === "image_click") {
+          if (log.details && log.details.src) {
+            return {
+              src: log.details.src,
+              alt: log.details.alt || "Image",
+            };
+          }
+        }
+
+        return null;
+      }
+
+      // Créer un aperçu de photo
+      function createPhotoPreview(photoInfo) {
+        // Convertir les URLs relatives en absolues si nécessaire
+        let photoSrc = photoInfo.src;
+        if (photoSrc && !photoSrc.startsWith("http")) {
+          if (photoSrc.startsWith("../")) {
+            photoSrc = photoSrc.replace("../", "/");
+          } else if (!photoSrc.startsWith("/")) {
+            photoSrc = "/" + photoSrc;
+          }
+        }
+
+        return `
+          <div class="photo-container">
+            <img src="${photoSrc}" 
+                 alt="${photoInfo.alt}" 
+                 class="photo-preview"
+                 onclick="openPhotoModal('${photoSrc}', '${photoInfo.alt}')"
+                 onerror="this.style.display='none'">
+          </div>
+        `;
+      }
+
+      // Fonction pour ouvrir la modal de photo
+      function openPhotoModal(src, alt) {
+        const modal = document.createElement("div");
+        modal.className = "modal-backdrop";
+        modal.innerHTML = `
+          <div class="modal-content">
+            <img src="${src}" alt="${alt}">
+          </div>
+        `;
+
+        modal.addEventListener("click", () => {
+          document.body.removeChild(modal);
+        });
+
+        document.body.appendChild(modal);
+      }
+
+      // Formater les détails d'un log de manière améliorée
+      function formatLogDetailsEnhanced(log) {
+        let details = [];
+
+        // Récupérer les informations de campagne soit directement du log, soit du mappage utilisateur
+        let campaignInfo = null;
+        if (log.details && log.details.campaignInfo) {
+          campaignInfo = log.details.campaignInfo;
+          console.log(
+            `🎯 Campagne directe trouvée pour ${log.userId}: ${campaignInfo.campaignName}`
+          );
+        } else {
+          // Si pas d'info de campagne directe, chercher dans le mappage utilisateur
+          campaignInfo = getUserCampaignInfo(log.userId);
+          if (campaignInfo) {
+            console.log(
+              `🎯 Campagne depuis mappage pour ${log.userId}: ${campaignInfo.campaignName}`
+            );
+          } else {
+            console.log(`❌ Aucune campagne trouvée pour ${log.userId}`);
+          }
+        }
+
+        // Afficher les informations de campagne si disponibles (priorité absolue)
+        if (campaignInfo) {
+          details.push(`
+            <div class="detail-chip bg-gradient-to-r from-orange-500/20 to-yellow-500/20 border-orange-400/30">
+              <span>🎯</span>
+              <span>Via campagne: <strong class="text-orange-300">${campaignInfo.campaignName}</strong></span>
+            </div>
+          `);
+
+          details.push(`
+            <div class="detail-chip bg-orange-500/10 border-orange-500/20">
+              <span>🔗</span>
+              <span><code class="font-mono text-xs bg-black/30 px-1 rounded">${campaignInfo.campaignId}</code></span>
+            </div>
+          `);
+
+          if (campaignInfo.source) {
+            details.push(`
+              <div class="detail-chip bg-blue-500/10 border-blue-500/20">
+                <span>📡</span>
+                <span class="text-blue-300">${campaignInfo.source}</span>
+              </div>
+            `);
+          }
+
+          if (campaignInfo.medium) {
+            details.push(`
+              <div class="detail-chip bg-purple-500/10 border-purple-500/20">
+                <span>📢</span>
+                <span class="text-purple-300">${campaignInfo.medium}</span>
+              </div>
+            `);
+          }
+        }
+
+        // Affichage spécial pour les visites de campagne (informations supplémentaires)
+        if (log.action === "campaign_visit") {
+          if (log.details && log.details.campaignName && !campaignInfo) {
+            details.push(`
+              <div class="detail-chip bg-orange-500/20 border-orange-500/30">
+                <span>🎯</span>
+                <span>Campagne: <strong class="text-orange-300">${log.details.campaignName}</strong></span>
+              </div>
+            `);
+          }
+
+          if (log.details && log.details.campaign) {
+            details.push(`
+              <div class="detail-chip bg-orange-500/10 border-orange-500/20">
+                <span>🔗</span>
+                <span>ID: <code class="font-mono text-xs bg-black/30 px-1 rounded">${log.details.campaign}</code></span>
+              </div>
+            `);
+          }
+
+          if (log.details && log.details.source && !campaignInfo) {
+            details.push(`
+              <div class="detail-chip">
+                <span>📡</span>
+                <span>Source: <strong>${log.details.source}</strong></span>
+              </div>
+            `);
+          }
+
+          if (log.details && log.details.medium && !campaignInfo) {
+            details.push(`
+              <div class="detail-chip">
+                <span>📢</span>
+                <span>Médium: <strong>${log.details.medium}</strong></span>
+              </div>
+            `);
+          }
+        }
+
+        if (log.url && log.url !== "Unknown") {
+          const urlDisplay =
+            log.url.length > 50 ? log.url.substring(0, 47) + "..." : log.url;
+          details.push(`
+            <div class="detail-chip">
+              <span>📍</span>
+              <span class="font-mono text-xs">${urlDisplay}</span>
+            </div>
+          `);
+        }
+
+        if (log.details && log.details.element) {
+          details.push(`
+            <div class="detail-chip">
+              <span>🎯</span>
+              <span>Élément: <strong>${log.details.element}</strong></span>
+            </div>
+          `);
+        }
+
+        if (
+          log.details &&
+          log.details.text &&
+          typeof log.details.text === "string"
+        ) {
+          const text = log.details.text.substring(0, 30);
+          details.push(`
+            <div class="detail-chip">
+              <span>💬</span>
+              <span>"${text}${log.details.text.length > 30 ? "..." : ""}"</span>
+            </div>
+          `);
+        }
+
+        if (
+          log.details &&
+          log.details.className &&
+          typeof log.details.className === "string" &&
+          log.details.className.trim()
+        ) {
+          details.push(`
+            <div class="detail-chip">
+              <span>🏷️</span>
+              <span>Class: ${log.details.className}</span>
+            </div>
+          `);
+        }
+
+        if (log.details && log.details.scrollPercent !== undefined) {
+          const scrollColor =
+            log.details.scrollPercent > 75
+              ? "text-green-400"
+              : log.details.scrollPercent > 50
+              ? "text-yellow-400"
+              : "text-blue-400";
+          details.push(`
+            <div class="detail-chip">
+              <span>📊</span>
+              <span class="${scrollColor}">Scroll: ${log.details.scrollPercent}%</span>
+            </div>
+          `);
+        }
+
+        if (log.details && log.details.viewport) {
+          details.push(`
+            <div class="detail-chip">
+              <span>📱</span>
+              <span>Viewport: ${log.details.viewport}</span>
+            </div>
+          `);
+        }
+
+        if (log.details && log.details.sessionDuration !== undefined) {
+          const duration = Math.round(log.details.sessionDuration / 1000);
+          details.push(`
+            <div class="detail-chip">
+              <span>⏱️</span>
+              <span>Session: ${duration}s</span>
+            </div>
+          `);
+        }
+
+        if (log.ip && log.ip !== "Unknown" && log.ip !== "::1") {
+          details.push(`
+            <div class="detail-chip">
+              <span>🌐</span>
+              <span>IP: ${log.ip}</span>
+            </div>
+          `);
+        }
+
+        // Informations de source de trafic
+        if (log.details && log.details.trafficSource) {
+          const trafficSource = log.details.trafficSource;
+
+          // Source principale
+          const mainSource =
+            trafficSource.source ||
+            trafficSource.utm_source ||
+            trafficSource.ref;
+          if (mainSource) {
+            details.push(`
+              <div class="detail-chip">
+                <span>🎯</span>
+                <span>Source: <strong>${mainSource}</strong></span>
+              </div>
+            `);
+          }
+
+          // Médium
+          if (trafficSource.utm_medium) {
+            details.push(`
+              <div class="detail-chip">
+                <span>📢</span>
+                <span>Médium: ${trafficSource.utm_medium}</span>
+              </div>
+            `);
+          }
+
+          // Campagne
+          if (trafficSource.utm_campaign) {
+            details.push(`
+              <div class="detail-chip">
+                <span>🚀</span>
+                <span>Campagne: ${trafficSource.utm_campaign}</span>
+              </div>
+            `);
+          }
+        }
+
+        // Informations spéciales pour les photos
+        if (
+          (log.action === "photo_view" || log.action === "photo_click") &&
+          log.details
+        ) {
+          if (log.details.viewportPosition !== undefined) {
+            details.push(`
+              <div class="detail-chip">
+                <span>👁️</span>
+                <span>Visibilité: ${Math.round(
+                  log.details.viewportPosition * 100
+                )}%</span>
+              </div>
+            `);
+          }
+        }
+
+        return details.length > 0
+          ? `<div class="flex flex-wrap gap-1 mt-2">${details.join("")}</div>`
+          : '<p class="text-white/50 text-sm italic">Aucun détail supplémentaire</p>';
+      }
+
+      // Version originale pour compatibilité
+      function formatLogDetails(log) {
+        let details = [];
+
+        if (log.url && log.url !== "Unknown") {
+          details.push(`📍 <span class="font-mono">${log.url}</span>`);
+        }
+
+        if (log.details && log.details.element) {
+          details.push(`🎯 Élément: <strong>${log.details.element}</strong>`);
+        }
+
+        if (log.details && log.details.text) {
+          const text = log.details.text.substring(0, 50);
+          details.push(
+            `💬 "${text}${log.details.text.length > 50 ? "..." : ""}"`
+          );
+        }
+
+        if (log.ip && log.ip !== "Unknown") {
+          details.push(`🌐 IP: ${log.ip}`);
+        }
+
+        if (log.details && log.details.scrollPercent !== undefined) {
+          details.push(`📊 Scroll: ${log.details.scrollPercent}%`);
+        }
+
+        return details.join("<br>") || "Aucun détail disponible";
+      }
+
+      // Nom d'affichage des actions
+      function getActionDisplayName(action) {
+        const actionNames = {
+          page_visit: "📄 Visite de page",
+          click: "👆 Clic général",
+          button_click: "🔘 Clic bouton",
+          link_click: "🔗 Clic lien",
+          image_click: "🖼️ Clic image",
+          photo_click: "📸 Clic photo",
+          photo_view: "👁️ Vue photo",
+          scroll: "📜 Défilement",
+          form_submit: "📝 Envoi formulaire",
+          search_input: "🔍 Recherche",
+          page_hide: "🙈 Page cachée",
+          page_show: "👁️ Page visible",
+          page_leave: "🚪 Quitter page",
+          heartbeat: "💓 Signal de vie",
+          http_request: "🌐 Requête HTTP",
+          campaign_visit: "🎯 Visite campagne",
+        };
+
+        return actionNames[action] || `❓ ${action}`;
+      }
+
+      // Formater une date
+      function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("fr-FR", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      }
+
+      // Masquer toutes les sections
+      function hideAllSections() {
+        statsSection.classList.add("hidden");
+        controlsSection.classList.add("hidden");
+        logsSection.classList.add("hidden");
+        errorMessage.classList.add("hidden");
+      }
+
+      // Afficher une erreur
+      function showError(message) {
+        document.getElementById("error-text").textContent = message;
+        hideAllSections();
+        errorMessage.classList.remove("hidden");
+        loading.classList.add("hidden");
+      }
+
+      // Fonction de nettoyage des logs
+      async function cleanupLogs() {
+        if (
+          !confirm(
+            "Êtes-vous sûr de vouloir supprimer les logs de plus de 7 jours ? Cette action est irréversible."
+          )
+        ) {
+          return;
+        }
+
+        try {
+          cleanupBtn.disabled = true;
+          cleanupBtn.textContent = "🔄 Nettoyage...";
+
+          const response = await fetch("/admin/logs/cleanup", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ maxDays: 7 }),
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              `Erreur ${response.status}: ${response.statusText}`
+            );
+          }
+
+          const result = await response.json();
+          alert(result.message);
+
+          // Recharger les dates disponibles après nettoyage
+          await loadAvailableDates();
+        } catch (error) {
+          console.error("Erreur lors du nettoyage:", error);
+          alert("Erreur lors du nettoyage des logs: " + error.message);
+        } finally {
+          cleanupBtn.disabled = false;
+          cleanupBtn.textContent = "🗑️ Nettoyer";
+        }
+      }
+
+      // Event listeners
+      dateSelector.addEventListener("change", (e) => {
+        if (e.target.value) {
+          loadLogsForDate(e.target.value);
+        } else {
+          hideAllSections();
+        }
+      });
+
+      refreshBtn.addEventListener("click", () => {
+        if (dateSelector.value) {
+          loadLogsForDate(dateSelector.value);
+        } else {
+          loadAvailableDates();
+        }
+      });
+
+      cleanupBtn.addEventListener("click", cleanupLogs);
+
+      searchInput.addEventListener("input", applyFilters);
+      userFilter.addEventListener("change", applyFilters);
+      actionFilter.addEventListener("change", applyFilters);
+      sourceFilter.addEventListener("change", applyFilters);
+      campaignFilter.addEventListener("change", applyFilters);
+
+      // Gestionnaire pour masquer/afficher les logs photo_view
+      togglePhotoViewBtn.addEventListener("click", () => {
+        hidePhotoView = !hidePhotoView;
+        togglePhotoViewBtn.innerHTML = hidePhotoView
+          ? "📷 Afficher Photos"
+          : "📷 Masquer Photos";
+        togglePhotoViewBtn.className = hidePhotoView
+          ? "bg-green-600/80 hover:bg-green-600 border border-green-500/50 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all duration-200 text-sm font-medium"
+          : "bg-orange-600/80 hover:bg-orange-600 border border-orange-500/50 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all duration-200 text-sm font-medium";
+        applyFilters(); // Reappliquer les filtres
+      });
+
+      // Photo Statistics Functions
+      async function loadPhotoStats() {
+        try {
+          refreshPhotoStatsBtn.disabled = true;
+          refreshPhotoStatsBtn.textContent = "Chargement...";
+
+          const response = await fetch("/admin/photo-stats");
+          if (!response.ok) {
+            throw new Error("Erreur lors du chargement des stats");
+          }
+
+          const stats = await response.json();
+          displayPhotoStats(stats);
+        } catch (error) {
+          console.error("Erreur:", error);
+          photoStatsContainer.innerHTML =
+            '<div class="error">Erreur lors du chargement des statistiques photos</div>';
+        } finally {
+          refreshPhotoStatsBtn.disabled = false;
+          refreshPhotoStatsBtn.textContent = "Actualiser";
+        }
+      }
+
+      function displayPhotoStats(stats) {
+        // Update summary cards
+        totalPhotos.textContent = stats.totalPhotos || 0;
+        totalPhotoClicks.textContent = stats.totalClicks || 0;
+        avgClicksPerPhoto.textContent =
+          stats.totalPhotos > 0
+            ? (stats.totalClicks / stats.totalPhotos).toFixed(1)
+            : "0";
+
+        // Clear and populate photo list
+        photoStatsContainer.innerHTML = "";
+
+        if (!stats.photos || stats.photos.length === 0) {
+          photoStatsContainer.innerHTML =
+            '<div class="no-data">Aucune statistique de photo disponible</div>';
+          return;
+        }
+
+        stats.photos.forEach((photo, index) => {
+          const photoItem = document.createElement("div");
+          photoItem.className = "photo-stat-item";
+          photoItem.innerHTML = `
+            <div class="photo-info">
+              <span class="photo-rank">#${index + 1}</span>
+              <div class="photo-thumbnail-container">
+                <img src="/photos/thumbnails/${photo.filename}" alt="${
+            photo.filename
+          }" class="photo-thumbnail" onerror="this.src='/photos/${
+            photo.filename
+          }'" onclick="openPhotoModal('/photos/${photo.filename}', '${
+            photo.filename
+          }')">
+              </div>
+              <div class="photo-details">
+                <span class="photo-name" title="${photo.filename}">${
+            photo.filename
+          }</span>
+                <span class="photo-path">📁 /photos/${photo.filename}</span>
+              </div>
+            </div>
+            <div class="photo-stats">
+              <span class="click-count">${photo.totalClicks} clics</span>
+              <span class="first-click">Premier: ${new Date(
+                photo.firstClick
+              ).toLocaleDateString("fr-FR")}</span>
+              <span class="last-click">Dernier: ${new Date(
+                photo.lastClick
+              ).toLocaleDateString("fr-FR")}</span>
+            </div>
+          `;
+          photoStatsContainer.appendChild(photoItem);
+        });
+      }
+
+      async function resetPhotoStats() {
+        if (
+          !confirm(
+            "Êtes-vous sûr de vouloir réinitialiser toutes les statistiques de photos ? Cette action est irréversible."
+          )
+        ) {
+          return;
+        }
+
+        try {
+          resetPhotoStatsBtn.disabled = true;
+          resetPhotoStatsBtn.textContent = "Réinitialisation...";
+
+          const response = await fetch("/admin/photo-stats/reset", {
+            method: "POST",
+          });
+
+          if (!response.ok) {
+            throw new Error("Erreur lors de la réinitialisation");
+          }
+
+          await loadPhotoStats(); // Reload to show empty stats
+        } catch (error) {
+          console.error("Erreur:", error);
+          alert("Erreur lors de la réinitialisation des statistiques");
+        } finally {
+          resetPhotoStatsBtn.disabled = false;
+          resetPhotoStatsBtn.textContent = "Réinitialiser";
+        }
+      }
+
+      function togglePhotoStatsSection() {
+        const isHidden = photoStatsSection.classList.contains("hidden");
+
+        if (isHidden) {
+          photoStatsSection.classList.remove("hidden");
+          togglePhotoStatsBtn.textContent = "📊 Masquer Stats";
+          togglePhotoStatsBtn.classList.remove(
+            "bg-purple-600",
+            "hover:bg-purple-700"
+          );
+          togglePhotoStatsBtn.classList.add("bg-red-600", "hover:bg-red-700");
+        } else {
+          photoStatsSection.classList.add("hidden");
+          togglePhotoStatsBtn.textContent = "📊 Stats Photos";
+          togglePhotoStatsBtn.classList.remove(
+            "bg-red-600",
+            "hover:bg-red-700"
+          );
+          togglePhotoStatsBtn.classList.add(
+            "bg-purple-600",
+            "hover:bg-purple-700"
+          );
+        }
+      }
+
+      // Photo stats event listeners
+      refreshPhotoStatsBtn.addEventListener("click", loadPhotoStats);
+      resetPhotoStatsBtn.addEventListener("click", resetPhotoStats);
+      togglePhotoStatsBtn.addEventListener("click", togglePhotoStatsSection);
+
+      // Initialize photo stats section as visible
+      photoStatsSection.classList.remove("hidden");
+      togglePhotoStatsBtn.textContent = "📊 Masquer Stats";
+      togglePhotoStatsBtn.classList.remove(
+        "bg-purple-600",
+        "hover:bg-purple-700"
+      );
+      togglePhotoStatsBtn.classList.add("bg-red-600", "hover:bg-red-700");
+
+      // Load photo stats on page load
+      loadPhotoStats();
+    </script>
+  </body>
+</html>

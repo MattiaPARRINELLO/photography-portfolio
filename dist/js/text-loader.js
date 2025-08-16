@@ -223,25 +223,11 @@ class TextLoader {
     }
 
     applyMetaTexts() {
-        if (!this.texts.main) return;
-
-        // Titre de la page dans l'onglet
-        const title = document.querySelector('title');
-        if (title && this.texts.main.nom) {
-            // Adapter selon la page
-            if (document.querySelector('#gallery-masonry')) {
-                title.textContent = `${this.texts.main.nom.toUpperCase()} - Portfolio`;
-            } else if (document.querySelector('#about-content')) {
-                title.textContent = `${this.texts.main.nom.toUpperCase()} - A propos`;
-            } else if (document.querySelector('#contact-form')) {
-                title.textContent = `${this.texts.main.nom.toUpperCase()} - Contact`;
-            }
-        }
-
-        // Mettre à jour les gros titres dans la navigation sur toutes les pages
+        // Les meta tags sont maintenant gérés côté serveur lors du rendu des pages
+        // On garde seulement la mise à jour des titres dans la navigation
         const allNavTitles = document.querySelectorAll('nav .font-signika b, header .font-signika b, .font-signika strong');
         allNavTitles.forEach(navTitle => {
-            if (this.texts.main.nom) {
+            if (this.texts.main && this.texts.main.nom) {
                 navTitle.textContent = this.texts.main.nom.toUpperCase();
             }
         });
