@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+Allow: /contact
+Allow: /a-propos
+Allow: /dist/
+Allow: /photos/
+
+# Interdire l'accès aux pages d'administration
+Disallow: /admin/
+Disallow: /admin/text-editor
+
+# Interdire l'accès aux fichiers de configuration
+Disallow: /texts.json
+Disallow: /config.json
+Disallow: /.env
+Disallow: /stats.json
+
+# Sitemap (optionnel - vous pourrez en créer un plus tard)
+# Sitemap: https://votre-domaine.com/sitemap.xml
