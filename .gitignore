@@ -23,6 +23,7 @@ photos/thumbnails/*.gif
 # Configuration et textes
 config/texts.json
 config/config.json
+config/campaigns.json
 
 # Uploads temporaires
 temp/

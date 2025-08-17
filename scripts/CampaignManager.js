@@ -3,7 +3,7 @@ const path = require('path');
 
 class CampaignManager {
     constructor() {
-        this.dataFile = path.join(__dirname, '..', 'campaigns.json');
+        this.dataFile = path.join(__dirname, '..', 'config', 'campaigns.json');
         this.initializeDataFile();
     }
 
