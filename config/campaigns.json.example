@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "created": "2024-12-01T00:00:00.000Z",
+    "lastUpdated": "2024-12-01T00:00:00.000Z",
+    "version": "1.0.0"
+  },
+  "campaigns": {
+    "example123": {
+      "id": "example123",
+      "name": "Instagram Story Décembre 2024",
+      "source": "instagram",
+      "medium": "story",
+      "description": "Campagne de promotion via les stories Instagram pour la période des fêtes",
+      "createdAt": "2024-12-01T10:30:00.000Z",
+      "visits": 0,
+      "lastVisit": null,
+      "isActive": true,
+      "visitHistory": []
+    }
+  }
+}
