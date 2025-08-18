@@ -7,8 +7,8 @@ const { requireAdminSession, requireAdminPage } = require('../middleware/auth');
 const router = express.Router();
 const paths = serverConfig.getPaths();
 
-// Route principale d'administration
-router.get('/', (req, res) => {
+// Route principale d'administration (gère / et /)
+router.get(['/', '/'], (req, res) => {
     // Headers pour éviter le cache en développement
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -18,8 +18,15 @@ router.get('/', (req, res) => {
     const filePath = path.join(paths.adminPages, 'admin.html');
     console.log('🔍 Serveur admin: Fichier servi depuis:', filePath);
     console.log('🔍 Fichier existe?', fs.existsSync(filePath));
+    console.log('🔍 URL demandée:', req.url);
 
-    res.sendFile(filePath);
+    // Vérifier que le fichier existe
+    if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+    } else {
+        console.error('❌ Fichier admin.html introuvable:', filePath);
+        res.status(404).send('Page d\'administration non trouvée');
+    }
 });
 
 // Route pour l'éditeur de texte
