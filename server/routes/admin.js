@@ -22,11 +22,6 @@ router.get('/', (req, res) => {
     res.sendFile(filePath);
 });
 
-// Redirection pour /admin/ vers /admin
-router.get('/', (req, res) => {
-    res.redirect('/admin');
-});
-
 // Route pour l'éditeur de texte
 router.get('/text-editor', (req, res) => {
     res.sendFile(path.join(paths.adminPages, 'text-editor.html'));
