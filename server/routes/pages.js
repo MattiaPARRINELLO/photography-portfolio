@@ -26,14 +26,14 @@ router.get('/', (req, res) => {
 
         const texts = textUtils.loadTexts();
         console.log('📖 Textes chargés pour /');
-        
+
         const htmlPath = path.join(paths.pages, 'home.html');
         let htmlContent = fs.readFileSync(htmlPath, 'utf-8');
         console.log('📄 HTML lu, taille:', htmlContent.length, 'caractères');
-        
+
         // Injecter les meta tags ET les informations de campagne
         htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, 'Portfolio', campaignInfo);
-        
+
         // Si on a une campagne, ajouter un script pour nettoyer l'URL côté client
         if (campaignRef) {
             const urlCleanScript = `
@@ -47,7 +47,7 @@ router.get('/', (req, res) => {
             htmlContent = htmlContent.replace('</body>', `${urlCleanScript}</body>`);
             console.log('🔄 Script de nettoyage URL ajouté');
         }
-        
+
         res.send(htmlContent);
     } catch (error) {
         console.error('❌ Erreur lors du chargement de home.html:', error);

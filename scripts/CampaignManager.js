@@ -60,7 +60,7 @@ class CampaignManager {
     // Créer une nouvelle campagne
     createCampaign(campaignData) {
         const data = this.readData();
-        
+
         const campaign = {
             id: campaignData.id,
             name: campaignData.name,
@@ -74,28 +74,28 @@ class CampaignManager {
         };
 
         data.campaigns[campaign.id] = campaign;
-        
+
         if (this.saveData(data)) {
             console.log(`📊 Nouvelle campagne créée: ${campaign.name} (${campaign.id})`);
             return campaign;
         }
-        
+
         throw new Error('Erreur lors de la sauvegarde de la campagne');
     }
 
     // Enregistrer une visite de campagne
     recordCampaignVisit(campaignId, userAgent, ip) {
         const data = this.readData();
-        
+
         if (data.campaigns[campaignId]) {
             data.campaigns[campaignId].visits += 1;
             data.campaigns[campaignId].lastVisit = new Date().toISOString();
-            
+
             // Optionnel: garder un historique des visites
             if (!data.campaigns[campaignId].visitHistory) {
                 data.campaigns[campaignId].visitHistory = [];
             }
-            
+
             data.campaigns[campaignId].visitHistory.push({
                 timestamp: new Date().toISOString(),
                 userAgent: userAgent,
@@ -106,7 +106,7 @@ class CampaignManager {
             console.log(`📊 Visite enregistrée pour la campagne: ${campaignId}`);
             return data.campaigns[campaignId];
         }
-        
+
         return null;
     }
 
@@ -125,7 +125,7 @@ class CampaignManager {
     // Supprimer une campagne
     deleteCampaign(campaignId) {
         const data = this.readData();
-        
+
         if (data.campaigns[campaignId]) {
             delete data.campaigns[campaignId];
             if (this.saveData(data)) {
@@ -133,7 +133,7 @@ class CampaignManager {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -141,7 +141,7 @@ class CampaignManager {
     getCampaignStats() {
         const data = this.readData();
         const campaigns = Object.values(data.campaigns);
-        
+
         const stats = {
             totalCampaigns: campaigns.length,
             totalVisits: campaigns.reduce((sum, c) => sum + (c.visits || 0), 0),
@@ -153,7 +153,7 @@ class CampaignManager {
         const today = new Date().toDateString();
         campaigns.forEach(campaign => {
             if (campaign.visitHistory) {
-                stats.todayVisits += campaign.visitHistory.filter(visit => 
+                stats.todayVisits += campaign.visitHistory.filter(visit =>
                     new Date(visit.timestamp).toDateString() === today
                 ).length;
             }
@@ -166,7 +166,7 @@ class CampaignManager {
         });
 
         if (Object.keys(sourceStats).length > 0) {
-            stats.topSource = Object.keys(sourceStats).reduce((a, b) => 
+            stats.topSource = Object.keys(sourceStats).reduce((a, b) =>
                 sourceStats[a] > sourceStats[b] ? a : b
             );
         }

@@ -34,7 +34,7 @@ class PhotoClickTracker {
         try {
             const rawData = fs.readFileSync(this.dataFile, 'utf-8');
             const data = JSON.parse(rawData);
-            
+
             // Convertir les arrays uniqueUsers en Set pour chaque photo
             if (data.photos) {
                 Object.keys(data.photos).forEach(photoKey => {
@@ -46,7 +46,7 @@ class PhotoClickTracker {
                     }
                 });
             }
-            
+
             return data;
         } catch (error) {
             console.error('❌ Erreur lecture photo-clicks.json:', error.message);
@@ -65,7 +65,7 @@ class PhotoClickTracker {
     saveData(data) {
         try {
             data.metadata.lastUpdated = new Date().toISOString();
-            
+
             // Créer une copie pour la sauvegarde avec les Set convertis en arrays
             const dataToSave = JSON.parse(JSON.stringify(data, (key, value) => {
                 if (key === 'uniqueUsers' && value instanceof Set) {
@@ -73,7 +73,7 @@ class PhotoClickTracker {
                 }
                 return value;
             }));
-            
+
             fs.writeFileSync(this.dataFile, JSON.stringify(dataToSave, null, 2));
             return true;
         } catch (error) {
@@ -86,10 +86,10 @@ class PhotoClickTracker {
     recordPhotoClick(photoFilename, userId = null, additionalData = {}) {
         try {
             const data = this.readData();
-            
+
             // Nettoyer le nom de fichier (enlever les chemins et paramètres)
             const cleanFilename = path.basename(photoFilename).split('?')[0];
-            
+
             // Initialiser la photo si elle n'existe pas
             if (!data.photos[cleanFilename]) {
                 data.photos[cleanFilename] = {
@@ -103,12 +103,12 @@ class PhotoClickTracker {
             }
 
             const photo = data.photos[cleanFilename];
-            
+
             // S'assurer que uniqueUsers est un Set (sécurité supplémentaire)
             if (!(photo.uniqueUsers instanceof Set)) {
                 photo.uniqueUsers = new Set(photo.uniqueUsers || []);
             }
-            
+
             // Incrémenter les compteurs
             photo.totalClicks++;
             photo.lastClick = new Date().toISOString();
@@ -135,7 +135,7 @@ class PhotoClickTracker {
             photo.uniqueUsers = Array.from(photo.uniqueUsers);
 
             const saved = this.saveData(data);
-            
+
             if (saved) {
                 console.log(`📸 Clic enregistré: ${cleanFilename} (${photo.totalClicks} clics total)`);
             }
@@ -154,7 +154,7 @@ class PhotoClickTracker {
     getAllPhotoStats() {
         try {
             const data = this.readData();
-            
+
             // Convertir les données pour l'affichage
             const photoStats = Object.values(data.photos).map(photo => ({
                 filename: photo.filename,
@@ -190,11 +190,11 @@ class PhotoClickTracker {
     // Obtenir les clics pour une période donnée (en jours)
     getClicksForPeriod(clickDetails, days) {
         if (!Array.isArray(clickDetails)) return 0;
-        
+
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - days);
-        
-        return clickDetails.filter(click => 
+
+        return clickDetails.filter(click =>
             new Date(click.timestamp) >= cutoffDate
         ).length;
     }
@@ -217,7 +217,7 @@ class PhotoClickTracker {
                 },
                 photos: {}
             };
-            
+
             fs.writeFileSync(this.dataFile, JSON.stringify(initialData, null, 2));
             console.log('🔄 Statistiques photos réinitialisées');
             return true;

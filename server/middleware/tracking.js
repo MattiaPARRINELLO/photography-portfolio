@@ -41,7 +41,7 @@ function userTrackingMiddleware(userLogger, campaignManager) {
         if (isAllowedPage && userId) {
             // Récupérer les informations de campagne depuis le cache ou le cookie
             let campaignInfo = campaignService.getUserCampaignInfo(userId);
-            
+
             if (!campaignInfo && req.cookies.user_campaign_info) {
                 try {
                     campaignInfo = JSON.parse(req.cookies.user_campaign_info);
@@ -63,7 +63,7 @@ function userTrackingMiddleware(userLogger, campaignManager) {
                     host: req.get('Host')
                 }
             };
-            
+
             // Ajouter les informations de campagne si disponibles
             if (campaignInfo) {
                 logDetails.campaignInfo = {
@@ -75,7 +75,7 @@ function userTrackingMiddleware(userLogger, campaignManager) {
                 };
                 console.log(`🎯 Log HTTP avec campagne: ${req.method} ${req.url} - ${campaignInfo.campaignName} (${campaignInfo.campaignId})`);
             }
-            
+
             userLogger.log(userId, 'http_request', logDetails);
         }
 
@@ -90,7 +90,7 @@ function campaignMiddleware(campaignManager) {
     return (req, res, next) => {
         // Vérifier s'il y a un paramètre de campagne dans l'URL
         const campaignInfo = campaignService.processCampaignFromQuery(req.query);
-        
+
         if (campaignInfo && req.userId) {
             // Enregistrer la campagne
             campaignManager.recordCampaignVisit(campaignInfo.campaignId, {

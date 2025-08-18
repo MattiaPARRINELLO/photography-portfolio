@@ -483,23 +483,63 @@
       // Copier le lien de campagne
       function copyLink(campaignId) {
         const link = `${window.location.origin}/?ref=${campaignId}`;
-        navigator.clipboard
-          .writeText(link)
-          .then(() => {
-            const button = event.target;
-            const originalText = button.innerHTML;
-            button.innerHTML = "✅ Copié!";
-            button.classList.add("copy-success");
 
-            setTimeout(() => {
-              button.innerHTML = originalText;
-              button.classList.remove("copy-success");
-            }, 2000);
-          })
-          .catch((err) => {
-            console.error("Erreur copie:", err);
-            alert("Erreur lors de la copie");
-          });
+        // Méthode moderne avec fallback
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard
+            .writeText(link)
+            .then(() => {
+              showCopySuccess(event.target);
+            })
+            .catch((err) => {
+              console.error("Erreur copie clipboard:", err);
+              fallbackCopyTextToClipboard(link, event.target);
+            });
+        } else {
+          // Fallback pour les environnements non-sécurisés
+          fallbackCopyTextToClipboard(link, event.target);
+        }
+      }
+
+      // Fallback pour la copie de texte
+      function fallbackCopyTextToClipboard(text, button) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+          const successful = document.execCommand("copy");
+          if (successful) {
+            showCopySuccess(button);
+          } else {
+            throw new Error("execCommand failed");
+          }
+        } catch (err) {
+          console.error("Erreur fallback copy:", err);
+          // Dernière solution : montrer le lien dans une alerte
+          prompt("Copiez ce lien manuellement:", text);
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
+
+      // Afficher le feedback de copie réussie
+      function showCopySuccess(button) {
+        if (!button) return;
+
+        const originalText = button.innerHTML;
+        button.innerHTML = "✅ Copié!";
+        button.classList.add("copy-success");
+
+        setTimeout(() => {
+          button.innerHTML = originalText;
+          button.classList.remove("copy-success");
+        }, 2000);
       }
 
       // Supprimer une campagne

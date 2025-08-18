@@ -788,18 +788,16 @@
             if (!confirm(`Êtes-vous sûr de vouloir supprimer "${filename}" ?`)) return;
             
             try {
-                const response = await fetch('/admin/delete', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ filename })
+                const response = await fetch(`/admin/photos/${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
                 });
                 
                 if (response.ok) {
                     loadPhotos(); // Recharger la liste
+                    alert('Photo supprimée avec succès');
                 } else {
-                    alert('Erreur lors de la suppression');
+                    const errorText = await response.text();
+                    alert('Erreur lors de la suppression: ' + errorText);
                 }
             } catch (error) {
                 alert('Erreur lors de la suppression: ' + error.message);

@@ -5,7 +5,7 @@ class CampaignService {
     constructor() {
         // Cache des associations utilisateur-campagne (expire automatiquement après 24h)
         this.userCampaignCache = new Map();
-        
+
         // Nettoyer le cache des campagnes expirées toutes les heures
         setInterval(() => this.cleanExpiredCampaigns(), 60 * 60 * 1000);
     }
@@ -16,7 +16,7 @@ class CampaignService {
     cleanExpiredCampaigns() {
         const now = Date.now();
         const twentyFourHours = 24 * 60 * 60 * 1000;
-        
+
         for (const [userId, campaignData] of this.userCampaignCache.entries()) {
             if (now - new Date(campaignData.timestamp).getTime() > twentyFourHours) {
                 this.userCampaignCache.delete(userId);
@@ -53,12 +53,12 @@ class CampaignService {
      */
     processCampaignFromQuery(query) {
         const { ref: campaignRef, utm_source, utm_medium, utm_campaign } = query;
-        
+
         if (campaignRef || utm_campaign) {
             const campaignId = campaignRef || utm_campaign;
             const source = utm_source || 'unknown';
             const medium = utm_medium || 'unknown';
-            
+
             return {
                 campaignId: campaignId,
                 campaignName: campaignId, // Peut être amélioré avec un mapping
@@ -67,7 +67,7 @@ class CampaignService {
                 timestamp: new Date().toISOString()
             };
         }
-        
+
         return null;
     }
 
@@ -81,12 +81,12 @@ class CampaignService {
     getCampaignInfo(req, userId, clientCampaignInfo = null) {
         // Priorité : client, puis cache, puis cookie
         let campaignInfo = clientCampaignInfo;
-        
+
         if (!campaignInfo) {
             // Essayer de récupérer depuis le cache
             campaignInfo = this.getUserCampaignInfo(userId);
         }
-        
+
         if (!campaignInfo && req.cookies.user_campaign_info) {
             try {
                 campaignInfo = JSON.parse(req.cookies.user_campaign_info);
@@ -98,7 +98,7 @@ class CampaignService {
                 console.log('⚠️ Erreur parsing campaign info dans les cookies:', e.message);
             }
         }
-        
+
         return campaignInfo;
     }
 }

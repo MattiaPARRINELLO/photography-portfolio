@@ -97,7 +97,7 @@ router.post('/log-action', (req, res) => {
         if (isAllowedPage && !isHeartbeat) {
             // Récupérer les informations de campagne
             const campaignInfo = campaignService.getCampaignInfo(req, finalUserId, clientCampaignInfo);
-            
+
             // Construire les détails du log
             const logDetails = {
                 ip: req.ip || req.connection.remoteAddress,

@@ -1382,7 +1382,8 @@
 
           // Filtrer les photo_view et photo_click si demandé
           const matchesPhotoViewFilter =
-            !hidePhotoView || (log.action !== "photo_view" && log.action !== "photo_click");
+            !hidePhotoView ||
+            (log.action !== "photo_view" && log.action !== "photo_click");
 
           return (
             matchesSearch &&

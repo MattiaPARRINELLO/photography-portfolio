@@ -173,7 +173,7 @@ class UserActivityTracker {
                     element.src.includes('/photos/') ||
                     element.src.match(/\.(jpg|jpeg|png|webp)$/i)
                 );
-                
+
                 // Si c'est une photo, ne pas logger ici (sera loggé comme photo_click)
                 if (!isPhotoImage) {
                     actionType = 'image_click';

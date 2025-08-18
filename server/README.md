@@ -24,6 +24,7 @@ server/
 ## 🔧 Modules Principaux
 
 ### 1. **Configuration (`server/config.js`)**
+
 - Configuration centralisée du serveur
 - Gestion des chemins de fichiers
 - Variables d'environnement
@@ -32,12 +33,14 @@ server/
 ### 2. **Utilitaires**
 
 #### `server/utils/textUtils.js`
+
 - Chargement des textes depuis `texts.json`
 - Injection des meta tags dans les pages HTML
 - Gestion des Open Graph tags
 - Support des campagnes marketing
 
 #### `server/utils/campaignService.js`
+
 - Cache des associations utilisateur-campagne
 - Traitement des paramètres de campagne depuis l'URL
 - Nettoyage automatique du cache (24h)
@@ -46,17 +49,20 @@ server/
 ### 3. **Middleware**
 
 #### `server/middleware/auth.js`
+
 - `checkAdminPassword()` : Vérification par header
 - `requireAdminSession()` : Vérification session pour API
 - `requireAdminPage()` : Vérification session pour pages
 
 #### `server/middleware/tracking.js`
+
 - `userTrackingMiddleware()` : Tracking utilisateurs et logging
 - `campaignMiddleware()` : Traitement des campagnes URL
 
 ### 4. **Routes Modulaires**
 
 #### `server/routes/pages.js` - Pages Publiques
+
 - Route `/` (accueil avec support campagnes)
 - Route `/contact`
 - Route `/a-propos`
@@ -64,23 +70,27 @@ server/
 - Redirections propres
 
 #### `server/routes/admin.js` - Administration
+
 - Interface admin principale
 - Authentification (login/logout)
 - Gestion configuration
 - Éditeur de texte
 
 #### `server/routes/photos.js` - Gestion Photos
+
 - Liste photos avec métadonnées EXIF
 - Upload avec génération thumbnails
 - Administration photos
 - Suppression photos
 
 #### `server/routes/content.js` - Contenu
+
 - CRUD textes (admin)
 - CRUD campagnes (admin)
 - Gestion campagnes marketing
 
 #### `server/routes/stats.js` - Statistiques et Logs
+
 - Envoi emails
 - Tracking legacy (`/track`)
 - Logs d'actions utilisateurs
@@ -91,21 +101,25 @@ server/
 ## 🚀 Avantages de la Modularisation
 
 ### **Maintenabilité**
+
 - Code organisé par responsabilité
 - Fichiers plus petits et focalisés
 - Réduction de la complexité
 
 ### **Lisibilité**
+
 - Structure claire et logique
 - Séparation des préoccupations
 - Documentation modulaire
 
 ### **Évolutivité**
+
 - Ajout facile de nouvelles fonctionnalités
 - Modification isolée des modules
 - Tests unitaires simplifiés
 
 ### **Réutilisabilité**
+
 - Utilitaires réutilisables
 - Middleware configurables
 - Services indépendants
@@ -131,6 +145,7 @@ node server.js
 ```
 
 Toutes les fonctionnalités sont préservées :
+
 - ✅ Portfolio de photographie
 - ✅ Système de tracking utilisateurs
 - ✅ Gestion des campagnes marketing
@@ -150,4 +165,4 @@ Toutes les fonctionnalités sont préservées :
 
 ---
 
-*Cette refactorisation améliore significativement la structure du code tout en conservant toutes les fonctionnalités existantes.*
+_Cette refactorisation améliore significativement la structure du code tout en conservant toutes les fonctionnalités existantes._

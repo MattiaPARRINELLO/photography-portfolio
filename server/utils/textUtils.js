@@ -105,7 +105,7 @@ class TextUtils {
         // Vérifier s'il y a des informations de campagne à injecter
         let campaignScript = '';
         const activeCampaignInfo = campaignInfo || (req.cookies.user_campaign_info ? JSON.parse(req.cookies.user_campaign_info) : null);
-        
+
         if (activeCampaignInfo) {
             try {
                 campaignScript = `\n    <script>\n        // Informations de campagne injectées\n        window.campaignInfo = ${JSON.stringify(activeCampaignInfo)};\n        console.log('🎯 Informations de campagne chargées:', window.campaignInfo);\n    </script>`;

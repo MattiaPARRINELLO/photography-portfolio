@@ -36,9 +36,9 @@ class ServerConfig {
             // Configuration par défaut
             this.config = {
                 thumbnails: {
-                    width: 400,
-                    height: 400,
-                    quality: 85,
+                    width: 600,
+                    height: 600,
+                    quality: 90,
                     fit: 'inside',
                     withoutEnlargement: true,
                     format: 'jpeg'
