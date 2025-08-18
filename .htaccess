@@ -1,0 +1,10 @@
+# Rediriger toutes les requêtes /admin vers Node.js
+RewriteEngine On
+
+# Rediriger /admin et /admin/ vers Node.js
+RewriteRule ^admin/?$ - [E=no-gzip:1,E=no-brotli:1]
+
+# Empêcher Apache de servir des fichiers statiques dans /admin
+<LocationMatch "^/admin">
+    SetHandler proxy:http://localhost:3000
+</LocationMatch>

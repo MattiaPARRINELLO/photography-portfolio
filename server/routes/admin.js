@@ -9,11 +9,15 @@ const paths = serverConfig.getPaths();
 
 // Route principale d'administration (gère / et /)
 router.get(['/', '/'], (req, res) => {
+    console.log('🚨 ROUTE ADMIN APPELÉE:', req.url, req.originalUrl);
+    console.log('🚨 Headers reçus:', req.headers['user-agent']);
+    
     // Headers pour éviter le cache en développement
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     res.setHeader('Surrogate-Control', 'no-store');
+    res.setHeader('X-Powered-By', 'Express-Admin-Route');
 
     const filePath = path.join(paths.adminPages, 'admin.html');
     console.log('🔍 Serveur admin: Fichier servi depuis:', filePath);
@@ -22,7 +26,23 @@ router.get(['/', '/'], (req, res) => {
 
     // Vérifier que le fichier existe
     if (fs.existsSync(filePath)) {
-        res.sendFile(filePath);
+        try {
+            const stats = fs.statSync(filePath);
+            console.log('📏 Taille fichier:', stats.size, 'bytes');
+            console.log('📅 Dernière modification:', stats.mtime);
+            
+            res.sendFile(filePath, (err) => {
+                if (err) {
+                    console.error('❌ Erreur sendFile:', err);
+                    res.status(500).send('Erreur lors de l\'envoi du fichier');
+                } else {
+                    console.log('✅ Fichier admin.html envoyé avec succès');
+                }
+            });
+        } catch (error) {
+            console.error('❌ Erreur stats fichier:', error);
+            res.status(500).send('Erreur lors de la lecture du fichier');
+        }
     } else {
         console.error('❌ Fichier admin.html introuvable:', filePath);
         res.status(404).send('Page d\'administration non trouvée');
