@@ -60,6 +60,17 @@
       .animated-bg .blob.b5{ right:30%; top:10%; background:radial-gradient(circle at 50% 40%, rgba(236,72,153,0.9), rgba(236,72,153,0.12)); opacity:0.12; }
       .animated-bg .blob.b6{ left:5%; bottom:10%; background:radial-gradient(circle at 20% 80%, rgba(250,204,21,0.88), rgba(250,204,21,0.10)); opacity:0.11; }
       .animated-bg .blob.b7{ right:5%; top:40%; background:radial-gradient(circle at 60% 30%, rgba(16,185,129,0.9), rgba(16,185,129,0.10)); opacity:0.12; }
+      /* Light-mode stronger/darker blobs */
+      @media (prefers-color-scheme: light) {
+        .animated-bg .blob{ mix-blend-mode: multiply; opacity: 0.36; filter: blur(28px); }
+        .animated-bg .blob.b1{ background:radial-gradient(circle at 30% 30%, rgba(32,78,200,0.95), rgba(32,78,200,0.32)); }
+        .animated-bg .blob.b2{ background:radial-gradient(circle at 70% 70%, rgba(120,50,20,0.96), rgba(120,50,20,0.3)); }
+        .animated-bg .blob.b3{ background:radial-gradient(circle at 50% 50%, rgba(60,10,120,0.95), rgba(60,10,120,0.28)); }
+        .animated-bg .blob.b4{ background:radial-gradient(circle at 40% 50%, rgba(40,110,200,0.92), rgba(40,110,200,0.26)); }
+        .animated-bg .blob.b5{ background:radial-gradient(circle at 50% 40%, rgba(200,40,120,0.92), rgba(200,40,120,0.26)); }
+        .animated-bg .blob.b6{ background:radial-gradient(circle at 20% 80%, rgba(200,150,20,0.9), rgba(200,150,20,0.22)); }
+        .animated-bg .blob.b7{ background:radial-gradient(circle at 60% 30%, rgba(10,140,90,0.9), rgba(10,140,90,0.22)); }
+      }
       @keyframes blobMove{
         0%{ transform: translate3d(0,0,0) scale(1); }
         25%{ transform: translate3d(4%, -2%, 0) scale(1.03); }
