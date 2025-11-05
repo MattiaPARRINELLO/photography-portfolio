@@ -317,11 +317,19 @@
               });
             });
 
-            // Fade out overlay background while moving - match duration
-            const overlayDur = parseInt(dur) || 2200;
-            overlay.style.willChange = 'opacity, background-color';
-            overlay.style.transition = `background-color ${overlayDur}ms ${ease}, opacity ${overlayDur}ms ${ease}`;
-            overlay.style.backgroundColor = 'rgba(0,0,0,0)';
+      // Fade out overlay by animating opacity only, using the page's current background color
+      const overlayDur = parseInt(dur) || 2200;
+      overlay.style.willChange = 'opacity';
+      // Use the computed background color of the page so the overlay matches light/dark mode
+      try {
+        const bodyBg = getComputedStyle(document.body).backgroundColor || '#000';
+        overlay.style.backgroundColor = bodyBg;
+      } catch (e) {
+        overlay.style.backgroundColor = '#000';
+      }
+      overlay.style.transition = `opacity ${overlayDur}ms ${ease}`;
+      // Animate to fully transparent (opacity) so the color underneath shows through
+      overlay.style.opacity = '0';
 
             // After transition, remove overlay and reveal header (slightly after transform end)
             const cleanupDelay = overlayDur + 180; // small buffer
