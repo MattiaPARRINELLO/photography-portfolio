@@ -28,12 +28,59 @@
       data-workspace="689e152e2493235550975b6a"
       src="https://cdn.jsdelivr.net/npm/litlyx-js@latest/browser/litlyx.js"
     ></script>
+    <style>
+      /* Subtle animated background used across public pages */
+      .animated-bg{
+        position:fixed;
+        inset:0;
+        z-index:0; /* above page background so blobs are visible */
+        pointer-events:none;
+        overflow:hidden;
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+      }
+      .animated-bg .blob{
+        position:absolute;
+        width:50vmax;
+        height:50vmax;
+        border-radius:50%;
+        filter: blur(38px);
+        opacity:0.22;
+        transform: translate3d(0,0,0) scale(1);
+        will-change: transform, opacity;
+        mix-blend-mode: screen;
+      }
+      .animated-bg .blob.b1{ left:-12%; top:-20%; background:radial-gradient(circle at 30% 30%, rgba(102,126,234,0.98), rgba(102,126,234,0.22)); }
+      .animated-bg .blob.b2{ right:-14%; bottom:-12%; background:radial-gradient(circle at 70% 70%, rgba(139,69,19,0.96), rgba(139,69,19,0.18)); }
+      .animated-bg .blob.b3{ left:52%; top:62%; transform:translateX(-50%); background:radial-gradient(circle at 50% 50%, rgba(75,0,130,0.95), rgba(75,0,130,0.16)); }
+      .animated-bg .blob.b4{ left:20%; top:60%; background:radial-gradient(circle at 40% 50%, rgba(66,153,225,0.9), rgba(66,153,225,0.12)); opacity:0.14; }
+      .animated-bg .blob.b5{ right:30%; top:10%; background:radial-gradient(circle at 50% 40%, rgba(236,72,153,0.9), rgba(236,72,153,0.12)); opacity:0.12; }
+      .animated-bg .blob.b6{ left:5%; bottom:10%; background:radial-gradient(circle at 20% 80%, rgba(250,204,21,0.88), rgba(250,204,21,0.10)); opacity:0.11; }
+      .animated-bg .blob.b7{ right:5%; top:40%; background:radial-gradient(circle at 60% 30%, rgba(16,185,129,0.9), rgba(16,185,129,0.10)); opacity:0.12; }
+      @keyframes blobMove{
+        0%{ transform: translate3d(0,0,0) scale(1); }
+        25%{ transform: translate3d(5%, -3%, 0) scale(1.04); }
+        50%{ transform: translate3d(0,5%,0) scale(1); }
+        75%{ transform: translate3d(-4%,-2%,0) scale(0.98); }
+        100%{ transform: translate3d(0,0,0) scale(1); }
+      }
+      @media (prefers-reduced-motion: reduce){ .animated-bg .blob{ animation: none !important; } }
+    </style>
     <!-- End Matomo Code -->
   </head>
 
   <body
     class="dark:bg-black bg-white h-screen text-black dark:text-white px-5 md:px-20 opacity-0 animate-fade-in transition duration-500"
   >
+    <!-- Subtle animated background (shared public pages) -->
+    <div class="animated-bg" aria-hidden="true">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="blob b3"></div>
+      <div class="blob b4"></div>
+      <div class="blob b5"></div>
+      <div class="blob b6"></div>
+      <div class="blob b7"></div>
+    </div>
     <!-- Navbar -->
     <header class="flex w-full overflow-hidden pt-10 pb-1">
       <nav id="nav" x-data="{ open: false }" role="navigation" class="w-full">
@@ -353,5 +400,50 @@
     <script src="/dist/js/text-loader.js"></script>
     <!-- User Activity Tracker -->
     <script src="../dist/js/user-tracker.js"></script>
+    <script>
+      // Animated blobs follow the pointer — subtle parallax + idle float
+      (function(){
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const bg = document.querySelector('.animated-bg');
+        if (!bg) return;
+        const blobs = Array.from(bg.querySelectorAll('.blob'));
+        if (!blobs.length) return;
+
+        let mx = 0, my = 0; // target normalized (-0.5..0.5)
+        let lx = 0, ly = 0; // last smoothed
+        const ease = 0.08;
+        let lastTime = performance.now();
+
+        window.addEventListener('pointermove', (e)=>{
+          mx = (e.clientX / window.innerWidth) - 0.5;
+          my = (e.clientY / window.innerHeight) - 0.5;
+        }, {passive:true});
+
+        function animate(t){
+          const dt = (t - lastTime) / 1000;
+          lastTime = t;
+          // smooth
+          lx += (mx - lx) * ease;
+          ly += (my - ly) * ease;
+
+          blobs.forEach((b,i)=>{
+            const idx = i+1;
+            const depth = idx / blobs.length; // 0..1
+            // base float using time + depth for subtle autonomous motion
+            const floatX = Math.sin(t/2000 + i) * (8 + i*2) * (0.6);
+            const floatY = Math.cos(t/1800 + i) * (6 + i*1.5) * (0.5);
+            // mouse influence scaled by depth (front blobs move more)
+            const mxPx = lx * 140 * (1 - depth*0.6);
+            const myPx = ly * 80 * (1 - depth*0.6);
+            const scale = 1 - depth * 0.06;
+            b.style.transform = `translate3d(${mxPx + floatX}px, ${myPx + floatY}px, 0) scale(${scale})`;
+          });
+
+          requestAnimationFrame(animate);
+        }
+
+        requestAnimationFrame(animate);
+      })();
+    </script>
   </body>
 </html>
