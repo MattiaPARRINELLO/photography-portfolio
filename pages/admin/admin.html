@@ -712,40 +712,75 @@
             handleFileUpload(e.target.files);
         });
 
-        async function handleFileUpload(files) {
-            if (!files.length) return;
-            
+        function handleFileUpload(files) {
+            if (!files || !files.length) return;
+
             const formData = new FormData();
+            let fileCount = 0;
             for (let file of files) {
-                if (file.type.startsWith('image/')) {
+                if (file.type && file.type.startsWith('image/')) {
                     formData.append('photos', file);
+                    fileCount++;
                 }
             }
+
+            if (fileCount === 0) return;
 
             uploadProgress.classList.remove('hidden');
             progressBar.style.width = '0%';
-            uploadStatus.textContent = 'Upload en cours...';
+            uploadStatus.textContent = `Upload de ${fileCount} fichier${fileCount>1? 's' : ''} en cours...`;
+            // disable interactions while uploading
+            uploadArea.style.pointerEvents = 'none';
 
-            try {
-                const response = await fetch('/admin/upload', {
-                    method: 'POST',
-                    body: formData
-                });
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/admin/upload');
 
-                if (response.ok) {
-                    progressBar.style.width = '100%';
-                    uploadStatus.textContent = 'Upload terminé avec succès !';
-                    setTimeout(() => {
-                        uploadProgress.classList.add('hidden');
-                        loadPhotos();
-                    }, 2000);
-                } else {
-                    throw new Error('Erreur lors de l\'upload');
+            // progress event
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = percent + '%';
+                    uploadStatus.textContent = `Upload ${percent}% — ${fileCount} fichier${fileCount>1? 's' : ''}`;
                 }
-            } catch (error) {
-                uploadStatus.textContent = 'Erreur lors de l\'upload : ' + error.message;
+            });
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    uploadArea.style.pointerEvents = ''; // re-enable
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        progressBar.style.width = '100%';
+                        uploadStatus.textContent = 'Upload terminé avec succès !';
+                        setTimeout(() => {
+                            uploadProgress.classList.add('hidden');
+                            loadPhotos();
+                        }, 1200);
+                    } else {
+                        let msg = 'Erreur lors de l\'upload';
+                        try {
+                            const res = JSON.parse(xhr.responseText || '{}');
+                            if (res.error) msg = res.error;
+                        } catch (e) {}
+                        uploadStatus.textContent = msg;
+                        progressBar.style.width = '0%';
+                    }
+                }
+            };
+
+            xhr.onerror = function() {
+                uploadArea.style.pointerEvents = '';
+                uploadStatus.textContent = 'Erreur réseau pendant l\'upload';
                 progressBar.style.width = '0%';
-            }
+            };
+
+            // Optional: set a timeout for long uploads
+            xhr.timeout = 5 * 60 * 1000; // 5 minutes
+            xhr.ontimeout = function() {
+                uploadArea.style.pointerEvents = '';
+                uploadStatus.textContent = 'Upload expiré (timeout)';
+                progressBar.style.width = '0%';
+            };
+
+            xhr.send(formData);
         }
 
         // Chargement des photos
