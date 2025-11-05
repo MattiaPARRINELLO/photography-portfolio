@@ -140,6 +140,8 @@
 
           const img = document.createElement('img');
           img.src = photo.thumbnailUrl || photo.url;
+          // Store the full-size URL on the element so we can preload it when appropriate
+          try { img.dataset.full = photo.url; } catch (e) { /* ignore */ }
           img.alt = photo.filename;
           img.loading = 'lazy';
           img.className = 'gallery-image rounded-xl shadow-lg animate-fade-in transition-all duration-700 transform-gpu';
@@ -232,6 +234,54 @@
           if (window.Fancybox) {
             Fancybox.bind('[data-fancybox="gallery"]', {});
           }
+          // --- Preload full-size images (when appropriate) ---
+          (function setupPreloader(){
+            try {
+              // Honor Save-Data preference
+              if (navigator.connection && navigator.connection.saveData) return;
+
+              // Helper to actually start loading an image and report progress to console
+              const startPreload = (url, el) => {
+                if (!url) return;
+                const i = new Image();
+                console.log('[preload] start', url, el && (el.getAttribute('alt') || el.dataset && el.dataset.file));
+                i.onload = () => {
+                  console.log('[preload] loaded', url, el && (el.getAttribute('alt') || el.dataset && el.dataset.file));
+                };
+                i.onerror = (err) => {
+                  console.warn('[preload] error', url, err);
+                };
+                // Kick off load
+                i.src = url;
+              };
+
+              // IntersectionObserver to preload when thumbnail becomes near-viewport
+              const io = new IntersectionObserver((entries, obs) => {
+                entries.forEach(ent => {
+                  if (ent.isIntersecting) {
+                    const imgEl = ent.target;
+                    const full = imgEl.dataset && imgEl.dataset.full;
+                    if (full) startPreload(full, imgEl);
+                    obs.unobserve(imgEl);
+                  }
+                });
+              }, { rootMargin: '600px 0px', threshold: 0.01 });
+
+              // Observe all gallery images that have a data-full attribute
+              document.querySelectorAll('.gallery-image[data-full]').forEach(img => {
+                try { io.observe(img); } catch (e) { /* ignore */ }
+              });
+
+              // Eagerly preload the first few full-size images to improve first interactions
+              const firstToPreload = Array.from(document.querySelectorAll('.gallery-image[data-full]')).slice(0,4);
+              firstToPreload.forEach(img => {
+                const full = img.dataset && img.dataset.full;
+                if (full) startPreload(full, img);
+              });
+            } catch (e) {
+              console.error('Preloader setup failed', e);
+            }
+          })();
         });
 
         // Handle window resize
