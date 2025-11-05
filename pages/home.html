@@ -220,6 +220,21 @@
 
           const inner = overlay.querySelector('.intro-inner');
 
+          // Adapt overlay/text colors to the user's color scheme (dark / light)
+          try {
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const bg = prefersDark ? '#000' : '#fff';
+            const textColor = prefersDark ? '#fff' : '#111';
+            // Apply initial colors inline so the animation matches the page theme
+            overlay.style.backgroundColor = bg;
+            inner.style.color = textColor;
+            // subtle text shadow on light bg for contrast
+            if (!prefersDark) inner.style.textShadow = '0 1px 0 rgba(255,255,255,0.02), 0 2px 12px rgba(0,0,0,0.06)';
+            else inner.style.textShadow = 'none';
+          } catch (e) {
+            // ignore if matchMedia unsupported
+          }
+
           // Build letters for a typewriter effect
           const title = 'MATTIA PARRINELLO';
           inner.innerHTML = '';
@@ -317,19 +332,17 @@
               });
             });
 
-      // Fade out overlay by animating opacity only, using the page's current background color
-      const overlayDur = parseInt(dur) || 2200;
-      overlay.style.willChange = 'opacity';
-      // Use the computed background color of the page so the overlay matches light/dark mode
-      try {
-        const bodyBg = getComputedStyle(document.body).backgroundColor || '#000';
-        overlay.style.backgroundColor = bodyBg;
-      } catch (e) {
-        overlay.style.backgroundColor = '#000';
-      }
-      overlay.style.transition = `opacity ${overlayDur}ms ${ease}`;
-      // Animate to fully transparent (opacity) so the color underneath shows through
-      overlay.style.opacity = '0';
+            // Fade out overlay background while moving - match duration
+            const overlayDur = parseInt(dur) || 2200;
+            overlay.style.willChange = 'opacity, background-color';
+            overlay.style.transition = `background-color ${overlayDur}ms ${ease}, opacity ${overlayDur}ms ${ease}`;
+            // Fade to transparent using the correct color channel depending on initial bg
+            try {
+              const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+              overlay.style.backgroundColor = prefersDark ? 'rgba(0,0,0,0)' : 'rgba(255,255,255,0)';
+            } catch (e) {
+              overlay.style.backgroundColor = 'rgba(0,0,0,0)';
+            }
 
             // After transition, remove overlay and reveal header (slightly after transform end)
             const cleanupDelay = overlayDur + 180; // small buffer
