@@ -91,7 +91,6 @@ class UserActivityLogger {
 
         try {
             fs.appendFileSync(logFile, logLine);
-            console.log(`📝 Log enregistré: ${userId} - ${action}`);
         } catch (error) {
             console.error('❌ Erreur lors de l\'écriture du log:', error);
         }

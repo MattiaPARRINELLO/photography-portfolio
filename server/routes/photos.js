@@ -122,8 +122,25 @@ router.get('/photos-list', async (req, res) => {
             }
         }));
         const filtered = withDates.filter(obj => obj?.filename && obj?.date);
-        const sorted = filtered.sort((a, b) => b.date - a.date);
-        res.json(sorted);
+
+        // Trier par date numérique (EXIF si présent), mais inverser l'ordre: plus récent -> plus ancien.
+        // Les éléments sans date restent en fin; en cas d'égalité, fallback sur filename pour stabilité.
+        filtered.sort((a, b) => {
+            const ta = (a && a.date) ? new Date(a.date).getTime() : NaN;
+            const tb = (b && b.date) ? new Date(b.date).getTime() : NaN;
+
+            // Mettre les éléments sans date à la fin
+            if (isNaN(ta) && !isNaN(tb)) return 1;
+            if (!isNaN(ta) && isNaN(tb)) return -1;
+            if (isNaN(ta) && isNaN(tb)) return (a.filename || '').localeCompare(b.filename || '');
+
+            // Inverser l'ordre pour avoir du plus récent au plus ancien
+            if (ta !== tb) return tb - ta;
+
+            // si mêmes timestamp, fallback sur le nom de fichier pour stabilité
+            return (a.filename || '').localeCompare(b.filename || '');
+        });
+        res.json(filtered);
     });
 });
 

@@ -21,7 +21,7 @@ class TextLoader {
 
     applyTexts() {
         // Page d'accueil (index.html)
-        if (document.querySelector('#gallery-masonry')) {
+        if (document.querySelector('#gallery-masonry') || document.querySelector('#gallery')) {
             this.applyHomeTexts();
         }
 
@@ -84,6 +84,64 @@ class TextLoader {
                 element.textContent = this.texts.main.nom.toUpperCase();
             }
         });
+
+        // Aussi : mettre à jour le texte de l'intro cinématique si présent
+        try {
+            const overlay = document.getElementById('intro-overlay');
+            if (overlay) {
+                const introName = this.texts.main.nom.toUpperCase();
+                const inner = overlay.querySelector('.intro-inner');
+
+                if (inner) {
+                    // Normaliser : on veut créer/maintenir un span par caractère (.intro-letter)
+                    const existingLine = inner.querySelector('.intro-line');
+                    // If there's a single intro-line element (non-letter mode), remove it to rebuild as letters
+                    if (existingLine && !inner.querySelector('.intro-letter')) {
+                        existingLine.remove();
+                    }
+
+                    // Build/update letter spans so the count matches the number of characters
+                    const nameChars = Array.from(introName);
+                    let letterSpans = Array.from(inner.querySelectorAll('.intro-letter'));
+
+                    // If no letter spans exist, recreate them from scratch
+                    if (letterSpans.length === 0) {
+                        inner.innerHTML = ''; // clear any leftover nodes
+                        nameChars.forEach(ch => {
+                            const span = document.createElement('span');
+                            span.className = 'intro-letter';
+                            span.textContent = ch === ' ' ? '\u00A0' : ch;
+                            inner.appendChild(span);
+                        });
+                    } else {
+                        // If there are more spans than chars, remove extras
+                        if (letterSpans.length > nameChars.length) {
+                            for (let i = nameChars.length; i < letterSpans.length; i++) {
+                                letterSpans[i].remove();
+                            }
+                            // Refresh the list
+                            letterSpans = Array.from(inner.querySelectorAll('.intro-letter'));
+                        }
+
+                        // Update existing spans and append missing ones
+                        for (let i = 0; i < nameChars.length; i++) {
+                            const ch = nameChars[i] || '\u00A0';
+                            if (i < letterSpans.length) {
+                                letterSpans[i].textContent = ch === ' ' ? '\u00A0' : ch;
+                            } else {
+                                const span = document.createElement('span');
+                                span.className = 'intro-letter';
+                                span.textContent = ch === ' ' ? '\u00A0' : ch;
+                                inner.appendChild(span);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            // Ne pas briser l'exécution si l'intro n'est pas présente
+            console.warn('Impossible de mettre à jour l\'intro avec main.nom:', e);
+        }
     }
 
     applyHomeTexts() {
