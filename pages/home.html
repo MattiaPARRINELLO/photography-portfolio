@@ -121,9 +121,7 @@
     const res = await fetch('/photos-list');
   const photos = await res.json();
 
-    // Keep skeleton visible a short moment for perceived smoothness
-    await new Promise(resolve => setTimeout(resolve, 253));
-    removeSkeletons(gallery);
+  // Skeleton will be removed once the first real thumbnail finishes loading
 
         photos.forEach((photo, index) => {
           const div = document.createElement('div');
@@ -217,71 +215,91 @@
           initLayout: false
         });
 
-        // Use imagesLoaded to layout after all images are loaded
-        imagesLoaded(gallery, function() {
-          // Reveal items with staggered animation
-          Array.from(gallery.querySelectorAll('.gallery-item')).forEach((item, i) => {
-            setTimeout(() => {
+        // Use imagesLoaded to reveal items progressively as each thumbnail finishes loading
+        const imgLoad = imagesLoaded(gallery);
+        imgLoad.on('progress', function(instance, image) {
+          try {
+            const imgEl = image.img;
+            const item = imgEl && imgEl.closest && imgEl.closest('.gallery-item');
+            if (item && item.style.opacity !== '1') {
+              // Remove skeletons once the first real image has loaded
+              removeSkeletons(gallery);
+              // Reveal this single item with a small animation
               item.style.opacity = '1';
               item.style.transform = 'translate3d(0,0,0)';
-            }, i * 30);
-          });
-          
-          // Layout Masonry
-          masonryInstance.layout();
-          
-          // Bind Fancybox after captions (data-caption) have been attached to anchors
-          if (window.Fancybox) {
-            Fancybox.bind('[data-fancybox="gallery"]', {});
-          }
-          // --- Preload full-size images (when appropriate) ---
-          (function setupPreloader(){
-            try {
-              // Honor Save-Data preference
-              if (navigator.connection && navigator.connection.saveData) return;
-
-              // Helper to actually start loading an image and report progress to console
-              const startPreload = (url, el) => {
-                if (!url) return;
-                const i = new Image();
-                console.log('[preload] start', url, el && (el.getAttribute('alt') || el.dataset && el.dataset.file));
-                i.onload = () => {
-                  console.log('[preload] loaded', url, el && (el.getAttribute('alt') || el.dataset && el.dataset.file));
-                };
-                i.onerror = (err) => {
-                  console.warn('[preload] error', url, err);
-                };
-                // Kick off load
-                i.src = url;
-              };
-
-              // IntersectionObserver to preload when thumbnail becomes near-viewport
-              const io = new IntersectionObserver((entries, obs) => {
-                entries.forEach(ent => {
-                  if (ent.isIntersecting) {
-                    const imgEl = ent.target;
-                    const full = imgEl.dataset && imgEl.dataset.full;
-                    if (full) startPreload(full, imgEl);
-                    obs.unobserve(imgEl);
-                  }
-                });
-              }, { rootMargin: '600px 0px', threshold: 0.01 });
-
-              // Observe all gallery images that have a data-full attribute
-              document.querySelectorAll('.gallery-image[data-full]').forEach(img => {
-                try { io.observe(img); } catch (e) { /* ignore */ }
-              });
-
-              // Eagerly preload the first few full-size images to improve first interactions
-              const firstToPreload = Array.from(document.querySelectorAll('.gallery-image[data-full]')).slice(0,4);
-              firstToPreload.forEach(img => {
-                const full = img.dataset && img.dataset.full;
-                if (full) startPreload(full, img);
-              });
-            } catch (e) {
-              console.error('Preloader setup failed', e);
+              // Layout Masonry incrementally to place the newly visible item
+              if (masonryInstance) masonryInstance.layout();
             }
-          })();
+          } catch (e) { console.warn('Reveal error', e); }
+        });
+
+        // When all images are done (or errored), ensure final layout and bind Fancybox + preloader
+        imgLoad.on('always', function() {
+          try {
+            // Ensure all items are visible
+            Array.from(gallery.querySelectorAll('.gallery-item')).forEach((item) => {
+              item.style.opacity = '1';
+              item.style.transform = 'translate3d(0,0,0)';
+            });
+
+            if (masonryInstance) masonryInstance.layout();
+
+            // Bind Fancybox after captions (data-caption) have been attached to anchors
+            if (window.Fancybox) {
+              Fancybox.bind('[data-fancybox="gallery"]', {});
+            }
+
+            // --- Preload full-size images (when appropriate) ---
+            (function setupPreloader(){
+              try {
+                // Honor Save-Data preference
+                if (navigator.connection && navigator.connection.saveData) return;
+
+                // Helper to actually start loading an image and report progress to console
+                const startPreload = (url, el) => {
+                  if (!url) return;
+                  const i = new Image();
+                  console.log('[preload] start', url, el && (el.getAttribute('alt') || el.dataset && el.dataset.file));
+                  i.onload = () => {
+                    console.log('[preload] loaded', url, el && (el.getAttribute('alt') || el.dataset && el.dataset.file));
+                  };
+                  i.onerror = (err) => {
+                    console.warn('[preload] error', url, err);
+                  };
+                  // Kick off load
+                  i.src = url;
+                };
+
+                // IntersectionObserver to preload when thumbnail becomes near-viewport
+                const io = new IntersectionObserver((entries, obs) => {
+                  entries.forEach(ent => {
+                    if (ent.isIntersecting) {
+                      const imgEl = ent.target;
+                      const full = imgEl.dataset && imgEl.dataset.full;
+                      if (full) startPreload(full, imgEl);
+                      obs.unobserve(imgEl);
+                    }
+                  });
+                }, { rootMargin: '600px 0px', threshold: 0.01 });
+
+                // Observe all gallery images that have a data-full attribute
+                document.querySelectorAll('.gallery-image[data-full]').forEach(img => {
+                  try { io.observe(img); } catch (e) { /* ignore */ }
+                });
+
+                // Eagerly preload the first few full-size images to improve first interactions
+                const firstToPreload = Array.from(document.querySelectorAll('.gallery-image[data-full]')).slice(0,4);
+                firstToPreload.forEach(img => {
+                  const full = img.dataset && img.dataset.full;
+                  if (full) startPreload(full, img);
+                });
+              } catch (e) {
+                console.error('Preloader setup failed', e);
+              }
+            })();
+          } catch (e) {
+            console.error('imagesLoaded always handler error', e);
+          }
         });
 
         // Handle window resize
