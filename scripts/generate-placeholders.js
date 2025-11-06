@@ -21,7 +21,7 @@ async function generatePlaceholders() {
 
         for (let i = 0; i < images.length; i++) {
             const filename = images[i];
-            const placeholderName = filename.replace(/\.[^.]+$/, '.jpg');
+            const placeholderName = filename.replace(/\.[^.]+$/, '.webp');
             const imagePath = path.join(photosDir, filename);
             const placeholderPath = path.join(placeholdersDir, placeholderName);
 
@@ -38,7 +38,7 @@ async function generatePlaceholders() {
                         withoutEnlargement: false
                     })
                     .blur(2) // Léger flou pour masquer la pixelisation
-                    .jpeg({ quality: 20, progressive: true })
+                    .webp({ quality: 20 })
                     .toFile(placeholderPath);
 
                 console.log(`✅ Placeholder créé: ${placeholderName} (${i + 1}/${images.length})`);

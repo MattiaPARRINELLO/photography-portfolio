@@ -78,7 +78,7 @@ router.get('/photos-list', async (req, res) => {
             try {
                 const url = '/photos/' + f;
                 const filename = f;
-                const thumbnailUrl = `/photos/thumbnails/${f.replace(/\.[^.]+$/, '.jpg')}`;
+                const thumbnailUrl = `/photos/thumbnails/${f.replace(/\.[^.]+$/, '.webp')}`;
                 const filePath = path.join(paths.photos, f);
 
                 // Essayer de lire les métadonnées EXIF
@@ -215,7 +215,7 @@ router.post('/admin/upload', requireAdminSession, upload.array('photos'), async 
             await sharpInstance.toFile(finalPath);
 
             // Créer la thumbnail
-            const thumbName = uniqueName.replace(/\.[^.]+$/, '.jpg');
+            const thumbName = uniqueName.replace(/\.[^.]+$/, '.webp');
             const thumbPath = path.join(thumbsDir, thumbName);
 
             await sharp(file.path)
@@ -223,7 +223,7 @@ router.post('/admin/upload', requireAdminSession, upload.array('photos'), async 
                     fit: config.thumbnails.fit,
                     withoutEnlargement: config.thumbnails.withoutEnlargement
                 })
-                .jpeg({ quality: config.thumbnails.quality })
+                .webp({ quality: config.thumbnails.quality })
                 .toFile(thumbPath);
 
             // Supprimer le fichier temporaire
@@ -252,7 +252,7 @@ router.delete('/admin/photos/:filename', requireAdminSession, (req, res) => {
     try {
         const filename = req.params.filename;
         const photoPath = path.join(paths.photos, filename);
-        const thumbName = filename.replace(/\.[^.]+$/, '.jpg');
+        const thumbName = filename.replace(/\.[^.]+$/, '.webp');
         const thumbnailPath = path.join(paths.photos, 'thumbnails', thumbName);
 
         // Vérifier que la photo existe
