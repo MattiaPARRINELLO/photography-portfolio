@@ -590,6 +590,17 @@
                   infos.push(`📷 <b>Appareil :</b> ${exif.Model}`);
                 if (exif.LensModel)
                   infos.push(`🔍 <b>Objectif :</b> ${exif.LensModel}`);
+                // Focale (mm) - prefer the actual FocalLength, fall back to 35mm equivalent if available
+                try {
+                  const focal = (typeof exif.FocalLength !== 'undefined') ? exif.FocalLength : (typeof exif.FocalLengthIn35mmEquivalent !== 'undefined' ? exif.FocalLengthIn35mmEquivalent : null);
+                  if (focal !== null) {
+                    const fnum = Number(focal);
+                    const focalText = (!Number.isNaN(fnum) && Math.abs(fnum - Math.round(fnum)) > 0.05) ? `${fnum.toFixed(1)}mm` : `${Math.round(fnum)}mm`;
+                    infos.push(`🔭 <b>Focale :</b> ${focalText}`);
+                  }
+                } catch (e) {
+                  // ignore parse errors
+                }
                 if (exif.FNumber)
                   infos.push(`🌞 <b>Ouverture :</b> f/${exif.FNumber}`);
                 if (exif.ExposureTime)
