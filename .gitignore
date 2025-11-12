@@ -19,6 +19,8 @@ photos/thumbnails/*.gif
 # Mais garder la structure et les fichiers README
 !photos/README.md
 !photos/thumbnails/.gitkeep
+# Generated/resized images cache — do not track
+photos/resized/
 
 # Configuration et textes
 config/texts.json

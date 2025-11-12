@@ -17,6 +17,7 @@ const { userTrackingMiddleware, campaignMiddleware } = require('./server/middlew
 const pagesRouter = require('./server/routes/pages');
 const adminRouter = require('./server/routes/admin');
 const photosRouter = require('./server/routes/photos');
+const imageResizeRouter = require('./server/routes/image-resize');
 const contentRouter = require('./server/routes/content');
 const statsRouter = require('./server/routes/stats');
 
@@ -80,6 +81,8 @@ app.use(campaignMiddleware(campaignManager));
 app.use('/', pagesRouter);
 app.use('/admin', adminRouter);
 app.use('/', photosRouter);
+// Route pour le proxy de redimensionnement d'images
+app.use('/photos', imageResizeRouter);
 app.use('/', contentRouter);
 app.use('/', statsRouter);
 

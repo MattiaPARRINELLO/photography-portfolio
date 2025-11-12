@@ -123,7 +123,8 @@
 
   // Skeleton will be removed once the first real thumbnail finishes loading
 
-        photos.forEach((photo, index) => {
+  const galleryItems = [];
+  photos.forEach((photo, index) => {
           const div = document.createElement('div');
           div.className = 'gallery-item';
           div.style.opacity = '0';
@@ -132,14 +133,20 @@
           div.style.transform = 'translate3d(0,10px,0)';
 
           const a = document.createElement('a');
-          a.href = photo.url;
+          // When clicking a photo, open a resized/full proxy to reduce payload
+          const fileParam = encodeURIComponent(photo.filename);
+          const clickWidth = 1600; // width used when opening the image in the lightbox
+          a.href = `/photos/resize?file=${fileParam}&w=${clickWidth}`;
           a.setAttribute('data-fancybox', 'gallery');
           a.setAttribute('data-file', photo.filename);
+          // Keep the original full-size URL so we can swap to it on zoom
+          a.setAttribute('data-original', photo.url);
 
           const img = document.createElement('img');
+          // Use the small generated thumbnail (do NOT use the resize proxy for thumbnails)
           img.src = photo.thumbnailUrl || photo.url;
-          // Store the full-size URL on the element so we can preload it when appropriate
-          try { img.dataset.full = photo.url; } catch (e) { /* ignore */ }
+          // Store the resized-full URL on the element so we can preload it when appropriate
+          try { img.dataset.full = `/photos/resize?file=${fileParam}&w=${clickWidth}`; } catch (e) { /* ignore */ }
           img.alt = photo.filename;
           img.loading = 'lazy';
           img.className = 'gallery-image rounded-xl shadow-lg animate-fade-in transition-all duration-700 transform-gpu';
@@ -159,6 +166,417 @@
           a.appendChild(imageContainer);
           div.appendChild(a);
           gallery.appendChild(div);
+
+          // Prepare galleryItems for Fancybox and attach click handler to open via Fancybox
+          const itemIndex = galleryItems.length;
+          galleryItems.push({ src: a.href, type: 'image', thumb: img.src, caption: '', original: photo.url });
+
+          a.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+              if (window.Fancybox) {
+                Fancybox.show(galleryItems, {
+                  startIndex: itemIndex,
+                  on: {
+                    reveal: (fancybox, slide) => {
+                      // Debug: log slide structure once per slide index to help find where the original URL is stored
+                      try {
+                        try {
+                          window.__fb_logged_slides = window.__fb_logged_slides || new Set();
+                          const sidx = slide && (typeof slide.index !== 'undefined' ? slide.index : (slide && slide.$index));
+                          if (!window.__fb_logged_slides.has(sidx)) {
+                            window.__fb_logged_slides.add(sidx);
+                            console.debug && console.debug('Fancybox: reveal called for slide', sidx, ' — dumping slide object once');
+                            try { console.dir && console.dir(slide); } catch (e) { console.debug && console.debug('Fancybox: cannot dir slide', e); }
+                          }
+                        } catch (e) {}
+                        const original = (slide && slide.$trigger && slide.$trigger.dataset && slide.$trigger.dataset.original)
+                          || (slide && slide.item && slide.item.original)
+                          || (slide && slide.original)
+                          || (typeof galleryItems !== 'undefined' && galleryItems[slide && slide.index] && galleryItems[slide.index].original);
+                        if (!original) {
+                          console.debug && console.debug('Fancybox: original HD url not found for slide', slide && slide.index, slide);
+                          return;
+                        }
+
+                        let highLoaded = false;
+
+                        // Resolve slide content element once and reuse
+                        const container = (slide && (slide.$content || slide.contentEl || (slide.content && slide.content.el) || slide.html)) || null;
+                        if (!container) {
+                          console.debug && console.debug('Fancybox: no slide content element for HD bindings', slide && slide.index);
+                          return;
+                        }
+
+                        const imgEl = () => {
+                          try {
+                            if (container && container.querySelector) return container.querySelector('img');
+                            if (slide && slide.imageEl) return slide.imageEl;
+                            if (slide && slide.image && slide.image.el) return slide.image.el.querySelector('img');
+                          } catch (e) {}
+                          return null;
+                        };
+
+                        function loadHighRes() {
+                          if (highLoaded) return;
+                          const target = imgEl();
+                          if (!target) return;
+
+                          // If an HD request button exists in the slide, hide it immediately
+                          try {
+                            const existingHdBtn = container.querySelector('.hd-request-btn');
+                            if (existingHdBtn) {
+                              existingHdBtn.style.display = 'none';
+                            }
+                          } catch (e) { /* ignore */ }
+
+                          // Create / show loading badge (but animate icon -> badge first when possible)
+                          function createNotice() {
+                            let notice = container.querySelector('.hd-loading');
+                            if (!notice) {
+                              notice = document.createElement('div');
+                              notice.className = 'hd-loading';
+                              // styling: small semi-transparent badge (moved to top-left)
+                              notice.style.position = 'absolute';
+                              notice.style.top = '8px';
+                              notice.style.left = '8px';
+                              notice.style.padding = '6px 8px';
+                              notice.style.background = 'rgba(0,0,0,0.6)';
+                              notice.style.color = '#fff';
+                              notice.style.borderRadius = '6px';
+                              notice.style.fontSize = '12px';
+                              notice.style.zIndex = '9999';
+                              // Include a small SVG icon (clone from HD button if available) for a consistent look
+                              try {
+                                // ensure badge contents stay on one line
+                                notice.style.display = 'inline-flex';
+                                notice.style.alignItems = 'center';
+                                notice.style.gap = '8px';
+                                notice.style.whiteSpace = 'nowrap';
+
+                                const hdBtn = container.querySelector('.hd-request-btn');
+                                let svgClone = null;
+                                if (hdBtn) {
+                                  const s = hdBtn.querySelector && hdBtn.querySelector('svg');
+                                  if (s) svgClone = s.cloneNode(true);
+                                }
+                                if (svgClone) {
+                                  svgClone.style.width = '14px';
+                                  svgClone.style.height = '14px';
+                                  svgClone.style.display = 'inline-block';
+                                  svgClone.style.marginRight = '8px';
+                                  svgClone.style.opacity = '0.95';
+                                  svgClone.style.verticalAlign = 'middle';
+                                  notice.appendChild(svgClone);
+                                }
+                              } catch (e) {
+                                // ignore svg clone errors
+                              }
+                              const span = document.createElement('span');
+                              span.textContent = 'Chargement HD...';
+                              span.style.display = 'inline-block';
+                              span.style.lineHeight = '1';
+                              span.style.whiteSpace = 'nowrap';
+                              notice.appendChild(span);
+                              try { container.appendChild(notice); } catch (e) { /* ignore */ }
+                            }
+                            return notice;
+                          }
+
+                          // Try to animate the HD icon into the small badge for a nicer transition.
+                          function animateIconToBadge() {
+                            return new Promise((resolve) => {
+                              try {
+                                // Respect reduced motion
+                                if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                                  return resolve();
+                                }
+
+                                const hdBtn = container.querySelector('.hd-request-btn');
+                                const containerRect = container.getBoundingClientRect();
+                                if (!containerRect) return resolve();
+
+                                let startRect = null;
+                                if (hdBtn) {
+                                  const r = hdBtn.getBoundingClientRect();
+                                  if (r && r.width > 2 && r.height > 2) startRect = r;
+                                }
+                                if (!startRect) {
+                                  startRect = { left: containerRect.left + 12, top: containerRect.top + 12, width: 36, height: 36 };
+                                }
+
+                                // target (top-left badge) - align with badge left:8px inside container
+                                const targetLeft = containerRect.left + 8;
+                                const targetTop = containerRect.top + 8;
+                                const targetWidth = 140; // wider to fit the text during morph
+                                const targetHeight = 28;
+
+                                // Build a morphing clone: a pill that contains the svg and a hidden text span
+                                const wrap = document.createElement('div');
+                                wrap.className = 'hd-anim-clone';
+                                wrap.style.position = 'fixed';
+                                wrap.style.left = startRect.left + 'px';
+                                wrap.style.top = startRect.top + 'px';
+                                wrap.style.width = startRect.width + 'px';
+                                wrap.style.height = startRect.height + 'px';
+                                wrap.style.padding = '6px';
+                                wrap.style.display = 'inline-flex';
+                                wrap.style.alignItems = 'center';
+                                wrap.style.justifyContent = 'center';
+                                wrap.style.borderRadius = Math.max(6, startRect.height/2) + 'px';
+                                wrap.style.background = 'transparent';
+                                wrap.style.overflow = 'hidden';
+                                wrap.style.boxSizing = 'border-box';
+                                // disable transition initially to avoid abrupt start
+                                wrap.style.transition = 'none';
+                                wrap.style.willChange = 'transform, width, height, border-radius, background, opacity';
+
+                                // inner svg
+                                let svgEl = null;
+                                // compute sizes: keep starting svg size consistent and animate scale
+                                const startSvgSize = Math.max(12, Math.min(startRect.height - 6, startRect.width - 6));
+                                const targetSvgSize = 14;
+                                try {
+                                  if (hdBtn) {
+                                    const s = hdBtn.querySelector && hdBtn.querySelector('svg');
+                                    if (s) svgEl = s.cloneNode(true);
+                                  }
+                                } catch (e) { svgEl = null; }
+                                if (svgEl) {
+                                  svgEl.style.width = startSvgSize + 'px';
+                                  svgEl.style.height = startSvgSize + 'px';
+                                  svgEl.style.transform = 'scale(1)';
+                                  svgEl.style.transition = 'transform 520ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease';
+                                  svgEl.style.opacity = '1';
+                                  wrap.appendChild(svgEl);
+                                }
+
+                                // text that will appear (initially hidden)
+                                const text = document.createElement('span');
+                                text.textContent = 'Chargement HD...';
+                                text.style.color = '#fff';
+                                text.style.fontSize = '12px';
+                                text.style.marginLeft = svgEl ? '8px' : '6px';
+                                text.style.opacity = '0';
+                                text.style.whiteSpace = 'nowrap';
+                                text.style.transition = 'opacity 260ms ease 220ms';
+                                wrap.appendChild(text);
+
+                                document.body.appendChild(wrap);
+                                // Force layout
+                                wrap.getBoundingClientRect();
+
+                                const deltaX = targetLeft - startRect.left;
+                                const deltaY = targetTop - startRect.top;
+
+                                // enable smooth transitions now that layout is settled
+                                wrap.style.transition = 'transform 520ms cubic-bezier(.2,.9,.2,1), width 520ms cubic-bezier(.2,.9,.2,1), height 520ms cubic-bezier(.2,.9,.2,1), border-radius 420ms ease, background-color 420ms ease, padding 420ms ease, opacity 260ms ease';
+
+                                // compute svg scale to keep visual size consistent at the end
+                                const svgScale = (targetSvgSize / Math.max(1, startSvgSize));
+
+                                // Animate: move + expand + become pill + background
+                                requestAnimationFrame(() => {
+                                  // move via transform for smoother motion
+                                  wrap.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
+                                  // expand to target size
+                                  wrap.style.width = targetWidth + 'px';
+                                  wrap.style.height = targetHeight + 'px';
+                                  wrap.style.padding = '6px 12px';
+                                  wrap.style.borderRadius = (targetHeight/2 + 2) + 'px';
+                                  wrap.style.background = 'rgba(0,0,0,0.6)';
+
+                                  // smoothly scale svg (rather than changing its width/height)
+                                  try { if (svgEl) svgEl.style.transform = `scale(${svgScale})`; } catch (e) {}
+                                  try { text.style.opacity = '1'; } catch (e) {}
+                                });
+
+                                // When the expansion transition ends, cross-fade into the real badge to avoid jumps
+                                const onEnd = async (ev) => {
+                                  if (ev && ev.propertyName && (ev.propertyName !== 'width' && ev.propertyName !== 'transform')) return;
+                                  wrap.removeEventListener('transitionend', onEnd);
+                                  try {
+                                    // Create the persistent notice but keep it invisible for smooth crossfade
+                                    const notice = (typeof createNotice === 'function') ? createNotice() : null;
+                                    if (notice) {
+                                      notice.style.transition = 'opacity 220ms ease';
+                                      notice.style.opacity = '0';
+                                      // Force layout application
+                                      // eslint-disable-next-line no-unused-expressions
+                                      notice.getBoundingClientRect();
+                                      // Fade in notice and fade out clone
+                                      requestAnimationFrame(() => {
+                                        try { notice.style.opacity = '1'; } catch (e) {}
+                                        try { wrap.style.transition = 'opacity 220ms ease'; wrap.style.opacity = '0'; } catch (e) {}
+                                      });
+                                      // After the badge is visible, animate hiding the small svg logo inside it
+                                      try {
+                                        setTimeout(() => {
+                                          try { if (notice) notice.classList.add('hide-logo'); } catch (e) {}
+                                        }, 260);
+                                      } catch (e) {}
+                                      // Remove clone after fade completes
+                                      setTimeout(() => { try { if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap); } catch (e) {} ; resolve(); }, 260);
+                                    } else {
+                                      try { if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap); } catch (e) {};
+                                      resolve();
+                                    }
+                                  } catch (e) {
+                                    try { if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap); } catch (err) {}
+                                    resolve();
+                                  }
+                                };
+                                wrap.addEventListener('transitionend', onEnd);
+
+                                // Safety fallback
+                                setTimeout(() => { try { if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap); } catch (e) {} ; resolve(); }, 1100);
+                              } catch (e) {
+                                resolve();
+                              }
+                            });
+                          }
+
+                          // Start animation (if possible), then show badge and preload
+                          animateIconToBadge().then(() => {
+                            const notice = createNotice();
+
+                            const preload = new Image();
+                            preload.onload = () => {
+                              try {
+                                const cur = imgEl();
+                                if (cur) {
+                                  cur.src = preload.src;
+                                }
+                                highLoaded = true;
+                                // animate the badge logo disappearance before removing the badge
+                                try {
+                                  if (notice) {
+                                    // add class to trigger svg hide animation
+                                    notice.classList.add('hide-logo');
+                                    // fade out the badge after logo hides
+                                    setTimeout(() => {
+                                      try { if (notice && notice.parentNode) notice.parentNode.removeChild(notice); } catch (e) {}
+                                    }, 360);
+                                  } else {
+                                    if (notice && notice.parentNode) notice.parentNode.removeChild(notice);
+                                  }
+                                } catch (e) {
+                                  try { if (notice && notice.parentNode) notice.parentNode.removeChild(notice); } catch (err) {}
+                                }
+                                console.debug && console.debug('Fancybox: HD image loaded and swapped', preload.src);
+                              } catch (e) { console.warn('HD swap failed', e); }
+                            };
+                            preload.onerror = () => {
+                              try {
+                                if (notice) {
+                                  // gracefully fade out when error
+                                  notice.style.transition = 'opacity 220ms ease';
+                                  notice.style.opacity = '0';
+                                  setTimeout(() => { try { if (notice && notice.parentNode) notice.parentNode.removeChild(notice); } catch (e) {} }, 260);
+                                }
+                              } catch (e) {}
+                              console.warn && console.warn('Fancybox: failed to preload HD original', original);
+                            };
+                            preload.src = original;
+                          }).catch(() => {
+                            // fallback: if animation code throws, just do the minimal behaviour
+                            const notice = createNotice();
+                            const preload = new Image();
+                            preload.onload = () => {
+                              try {
+                                const cur = imgEl();
+                                if (cur) cur.src = preload.src;
+                                highLoaded = true;
+                                if (notice && notice.parentNode) notice.parentNode.removeChild(notice);
+                              } catch (e) {}
+                            };
+                            preload.onerror = () => { if (notice && notice.parentNode) notice.parentNode.removeChild(notice); };
+                            preload.src = original;
+                          });
+                        }
+
+                        // container already resolved above
+
+                        // Add a visible HD button for testing (and to let users explicitly request HD)
+                        try {
+                          if (!slide.__hd_button_added) {
+                            const hdBtn = document.createElement('button');
+                            hdBtn.className = 'hd-request-btn';
+                            hdBtn.setAttribute('aria-label', 'Charger la version HD de l’image');
+                            hdBtn.style.position = 'absolute';
+                            hdBtn.style.left = '8px';
+                            hdBtn.style.top = '8px';
+                            hdBtn.style.zIndex = '9999';
+                            // Insert SVG icon + label for subtlety
+                            hdBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 12h4M17 12h4M12 3v4M12 17v4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Charger HD</span>`;
+                            try { container && container.appendChild(hdBtn); } catch (e) {}
+                            slide.__hd_button_added = true;
+                            hdBtn.addEventListener('click', (ev) => { ev.stopPropagation(); console.debug && console.debug('Fancybox: HD button clicked for slide', slide && slide.index); loadHighRes(); hdBtn.style.display = 'none'; });
+                            slide.$el && slide.$el.addEventListener('fancybox:close', () => { try { if (hdBtn && hdBtn.parentNode) hdBtn.parentNode.removeChild(hdBtn); } catch (e) {} });
+                          }
+                        } catch (e) { /* ignore */ }
+
+                        // Prevent double-binding when reveal called multiple times for same slide
+                        if (!container.__hd_bindings_added) {
+                          const dbl = (e) => { console.debug && console.debug('Fancybox: dblclick -> load HD', slide && slide.index); try { e.preventDefault && e.preventDefault(); } catch (er) {} loadHighRes(); };
+                          const wheel = (e) => { if (e.deltaY < 0) { console.debug && console.debug('Fancybox: wheel up -> load HD', slide && slide.index); loadHighRes(); } };
+
+                          // Bind dblclick to container as a broad catch, but also bind directly on the image element
+                          container.addEventListener('dblclick', dbl, { passive: false });
+                          container.addEventListener('wheel', wheel, { passive: true });
+
+                          // Try to bind directly to the <img> inside the slide for more reliable dblclick handling
+                          let boundImg = null;
+                          let boundClick = null;
+                          try {
+                            const directImg = imgEl();
+                            if (directImg) {
+                              directImg.addEventListener('dblclick', dbl, { passive: false });
+                              // also listen to wheel on image as fallback
+                              directImg.addEventListener('wheel', wheel, { passive: true });
+                              // Also start HD load on single click - do not prevent default so Fancybox's zoom still runs
+                              const clickHandler = (ev) => { try { /* don't prevent Fancybox zoom */ } catch (er) {} loadHighRes(); };
+                              directImg.addEventListener('click', clickHandler, { passive: true });
+                              boundClick = clickHandler;
+                              boundImg = directImg;
+                            }
+                          } catch (e) {
+                            // ignore
+                          }
+
+                          container.__hd_bindings_added = true;
+
+                          slide.$el && slide.$el.addEventListener('fancybox:close', () => {
+                            try {
+                              container.removeEventListener('dblclick', dbl);
+                              container.removeEventListener('wheel', wheel);
+                              if (boundImg) {
+                                try { boundImg.removeEventListener('dblclick', dbl); } catch (e) {}
+                                try { boundImg.removeEventListener('wheel', wheel); } catch (e) {}
+                                try { if (boundClick) boundImg.removeEventListener('click', boundClick); } catch (err) {}
+                                boundImg = null;
+                                boundClick = null;
+                              }
+                              container.__hd_bindings_added = false;
+                            } catch (e) {}
+                          });
+                        }
+                      } catch (e) {
+                        console.warn('Fancybox reveal handler error', e);
+                      }
+                    }
+                  }
+                });
+              } else {
+                // fallback: open in new tab
+                window.open(a.href, '_blank');
+              }
+            } catch (err) {
+              console.error('Fancybox show failed', err);
+              window.open(a.href, '_blank');
+            }
+          });
 
           // Pré-chargement EXIF et ajout dans data-caption (comme avant)
           img.addEventListener("load", async () => {
@@ -181,13 +599,11 @@
                     )}s`
                   );
                 if (exif.ISO) infos.push(`🧬 <b>ISO :</b> ${exif.ISO}`);
-                if (infos.length)
-                  a.setAttribute(
-                    "data-caption",
-                    `<div class='exif-info-fb text-xs text-gray-200 bg-black/70 rounded p-2 mt-2'>${infos.join(
-                      " | "
-                    )}</div>`
-                  );
+                if (infos.length) {
+                  const captionHtml = `<div class='exif-info-fb text-xs text-gray-200 bg-black/70 rounded p-2 mt-2'>${infos.join(" | ")}</div>`;
+                  a.setAttribute("data-caption", captionHtml);
+                  try { if (galleryItems && galleryItems[itemIndex]) galleryItems[itemIndex].caption = captionHtml; } catch (e) { /* ignore */ }
+                }
               }
             } catch (e) {
               console.error("Error parsing EXIF data:", e);
@@ -244,10 +660,7 @@
 
             if (masonryInstance) masonryInstance.layout();
 
-            // Bind Fancybox after captions (data-caption) have been attached to anchors
-            if (window.Fancybox) {
-              Fancybox.bind('[data-fancybox="gallery"]', {});
-            }
+            // Fancybox handling is performed when opening via Fancybox.show (click handler)
 
             // --- Preload full-size images (when appropriate) ---
             (function setupPreloader(){
@@ -415,7 +828,7 @@
               resolve();
               return;
             }
-
+  
             const tRect = target.getBoundingClientRect();
             const iRect = inner.getBoundingClientRect();
 
@@ -718,6 +1131,57 @@
               @media (max-width: 640px) {
                 .skeleton-item { flex: 1 0 calc(50% - 12px); height: 160px; }
               }
+
+              /* HD request button (discrete) */
+              .hd-request-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: rgba(0,0,0,0.45);
+                color: #fff;
+                border: 1px solid rgba(255,255,255,0.06);
+                padding: 6px 8px;
+                border-radius: 8px;
+                font-size: 12px;
+                cursor: pointer;
+                opacity: 0.9;
+                transition: opacity 180ms ease, transform 160ms ease;
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+              }
+              .hd-request-btn:hover { opacity: 1; transform: translateY(-1px); }
+              .hd-request-btn:active { transform: translateY(0); }
+              .hd-request-btn svg { width: 14px; height: 14px; display: block; }
+              .hd-loading { pointer-events: none; }
+              /* SVG pulse animation */
+              @keyframes hd-pulse {
+                0% { transform: scale(1); opacity: 0.85; }
+                50% { transform: scale(1.08); opacity: 1; }
+                100% { transform: scale(1); opacity: 0.85; }
+              }
+              /* Button gentle lift + shadow pulse */
+              @keyframes hd-pulse-btn {
+                0% { transform: translateY(0) scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0.0); }
+                50% { transform: translateY(-2px) scale(1.02); box-shadow: 0 10px 24px rgba(0,0,0,0.22); }
+                100% { transform: translateY(0) scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0.0); }
+              }
+              .hd-request-btn { animation: hd-pulse-btn 2400ms ease-in-out infinite; }
+              .hd-request-btn svg { transform-box: fill-box; transform-origin: center center; animation: hd-pulse 2000ms ease-in-out infinite; transition: transform 140ms ease, opacity 120ms ease; }
+              .hd-request-btn:hover { animation-play-state: paused; transform: translateY(-1px) scale(1.02); }
+              .hd-request-btn:hover svg { transform: scale(1.14) rotate(-6deg); animation-play-state: paused; opacity: 1; }
+              .hd-request-btn:active svg { transform: scale(1.04) rotate(0deg); }
+              /* animated clone used for transition from icon -> loading badge */
+              .hd-anim-clone {
+                position: fixed;
+                pointer-events: none;
+                z-index: 10050;
+                transition: transform 520ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease;
+                will-change: transform, opacity;
+                filter: drop-shadow(0 6px 18px rgba(0,0,0,0.3));
+              }
+              /* persistent loading badge svg hide animation */
+              .hd-loading svg { transition: transform 320ms ease, opacity 240ms ease; transform-origin: center center; }
+              .hd-loading.hide-logo svg { transform: scale(0.6) translateY(-4px); opacity: 0; }
 
                 /* Intro cinematic styles */
                 #intro-overlay {
