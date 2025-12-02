@@ -1,36 +1,36 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
-const user = process.env.GMAIL_USER;
-const pass = process.env.GMAIL_PASS;
+const user = process.env.SMTP_USER;
+const pass = process.env.SMTP_PASS;
+const host = process.env.SMTP_HOST;
+const port = parseInt(process.env.SMTP_PORT || '465');
 
+console.log('Host:', host);
+console.log('Port:', port);
 console.log('User:', user ? `Defined (len=${user.length})` : 'Undefined');
 console.log('Pass:', pass ? `Defined (len=${pass.length})` : 'Undefined');
 
-if (!user || !pass) {
-    console.error('Missing GMAIL_USER or GMAIL_PASS in .env');
+if (!user || !pass || !host) {
+    console.error('Missing SMTP config in .env');
     process.exit(1);
 }
 
-// Tentative sur le port 465 (SSL implicite) pour voir si ça contourne le proxy
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    host: host,
+    port: port,
+    secure: port === 465,
     auth: {
         user: user,
         pass: pass
-    },
-    tls: {
-        rejectUnauthorized: false // Toujours nécessaire si interception
     }
 });
 
 const mailOptions = {
-    from: user,
-    to: user, // Send to self
-    subject: 'Test Email from Server',
-    text: 'If you receive this, sending emails works from the server.'
+    from: `"Test Script" <${user}>`,
+    to: 'contact.mprnl@gmail.com', // Envoi vers votre adresse perso
+    subject: 'Test Email from Server (Hosterfy SMTP)',
+    text: 'Si vous recevez ceci, la configuration SMTP Hosterfy fonctionne !'
 };
 
 transporter.sendMail(mailOptions, (error, info) => {

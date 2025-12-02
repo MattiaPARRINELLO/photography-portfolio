@@ -24,8 +24,12 @@ class ServerConfig {
     loadEnvironmentVariables() {
         this.port = process.env.PORT || 3000;
         this.adminPassword = process.env.ADMIN_PASSWORD;
-        this.gmailUser = process.env.GMAIL_USER;
-        this.gmailPass = process.env.GMAIL_PASS;
+        
+        // Configuration SMTP
+        this.smtpHost = process.env.SMTP_HOST;
+        this.smtpPort = parseInt(process.env.SMTP_PORT || '465');
+        this.smtpUser = process.env.SMTP_USER;
+        this.smtpPass = process.env.SMTP_PASS;
     }
 
     loadConfig() {

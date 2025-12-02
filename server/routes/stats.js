@@ -22,36 +22,36 @@ router.post('/send-mail', async (req, res) => {
     }
 
     // Debug credentials (masked)
-    const user = serverConfig.gmailUser;
-    const pass = serverConfig.gmailPass;
-    console.log('🔑 Credentials:', {
-        user: user ? `${user.substring(0, 3)}...` : 'UNDEFINED',
-        pass: pass ? 'DEFINED' : 'UNDEFINED'
+    const smtpUser = serverConfig.smtpUser;
+    const smtpPass = serverConfig.smtpPass;
+    const smtpHost = serverConfig.smtpHost;
+    const smtpPort = serverConfig.smtpPort;
+
+    console.log('🔑 Credentials:', { 
+        host: smtpHost,
+        port: smtpPort,
+        user: smtpUser ? `${smtpUser.substring(0, 3)}...` : 'UNDEFINED', 
+        pass: smtpPass ? 'DEFINED' : 'UNDEFINED' 
     });
 
     try {
         let transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpPort === 465, // true pour 465, false pour les autres
             auth: {
-                user: user,
-                pass: pass
-            },
-            tls: {
-                rejectUnauthorized: false
+                user: smtpUser,
+                pass: smtpPass
             }
         });
-
+        
         await transporter.sendMail({
-            from: user,
-            to: user,
-            replyTo: email,
+            from: `"Portfolio" <${smtpUser}>`, // Expéditeur authentifié
+            to: 'contact.mprnl@gmail.com', // Votre adresse perso pour recevoir les messages
+            replyTo: email, // Pour répondre directement au visiteur
             subject: `[Portfolio] ${subject}`,
-            text: `De: ${email}\n\n${message}`
-        });
-
-        console.log('✅ Mail envoyé avec succès');
+            text: `Nouveau message de: ${email}\n\n${message}`
+        });        console.log('✅ Mail envoyé avec succès');
         res.status(200).json({ success: true });
     } catch (err) {
         console.error('❌ Erreur lors de l\'envoi du mail:', err);
