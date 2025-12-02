@@ -15,18 +15,18 @@ const paths = serverConfig.getPaths();
 router.post('/send-mail', async (req, res) => {
     const { email, subject, message } = req.body;
     console.log('📧 Tentative d\'envoi de mail:', { email, subject, messageLength: message ? message.length : 0 });
-    
+
     if (!email || !subject || !message) {
         console.warn('⚠️ Champs manquants pour l\'envoi de mail');
         return res.status(400).json({ error: 'Champs manquants' });
     }
-    
+
     // Debug credentials (masked)
     const user = serverConfig.gmailUser;
     const pass = serverConfig.gmailPass;
-    console.log('🔑 Credentials:', { 
-        user: user ? `${user.substring(0, 3)}...` : 'UNDEFINED', 
-        pass: pass ? 'DEFINED' : 'UNDEFINED' 
+    console.log('🔑 Credentials:', {
+        user: user ? `${user.substring(0, 3)}...` : 'UNDEFINED',
+        pass: pass ? 'DEFINED' : 'UNDEFINED'
     });
 
     try {
@@ -37,7 +37,7 @@ router.post('/send-mail', async (req, res) => {
                 pass: pass
             }
         });
-        
+
         await transporter.sendMail({
             from: user,
             to: user,
@@ -45,7 +45,7 @@ router.post('/send-mail', async (req, res) => {
             subject: `[Portfolio] ${subject}`,
             text: `De: ${email}\n\n${message}`
         });
-        
+
         console.log('✅ Mail envoyé avec succès');
         res.status(200).json({ success: true });
     } catch (err) {
