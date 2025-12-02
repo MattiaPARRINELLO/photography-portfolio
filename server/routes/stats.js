@@ -14,28 +14,43 @@ const paths = serverConfig.getPaths();
 // Route pour l'envoi d'email
 router.post('/send-mail', async (req, res) => {
     const { email, subject, message } = req.body;
+    console.log('📧 Tentative d\'envoi de mail:', { email, subject, messageLength: message ? message.length : 0 });
+    
     if (!email || !subject || !message) {
+        console.warn('⚠️ Champs manquants pour l\'envoi de mail');
         return res.status(400).json({ error: 'Champs manquants' });
     }
+    
+    // Debug credentials (masked)
+    const user = serverConfig.gmailUser;
+    const pass = serverConfig.gmailPass;
+    console.log('🔑 Credentials:', { 
+        user: user ? `${user.substring(0, 3)}...` : 'UNDEFINED', 
+        pass: pass ? 'DEFINED' : 'UNDEFINED' 
+    });
+
     try {
         let transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: serverConfig.gmailUser,
-                pass: serverConfig.gmailPass
+                user: user,
+                pass: pass
             }
         });
+        
         await transporter.sendMail({
-            from: serverConfig.gmailUser,
-            to: serverConfig.gmailUser,
+            from: user,
+            to: user,
             replyTo: email,
             subject: `[Portfolio] ${subject}`,
             text: `De: ${email}\n\n${message}`
         });
+        
+        console.log('✅ Mail envoyé avec succès');
         res.status(200).json({ success: true });
     } catch (err) {
-        console.error('Erreur lors de l\'envoi du mail:', err);
-        res.status(500).json({ error: 'Erreur lors de l\'envoi du mail' });
+        console.error('❌ Erreur lors de l\'envoi du mail:', err);
+        res.status(500).json({ error: 'Erreur lors de l\'envoi du mail: ' + err.message });
     }
 });
 
