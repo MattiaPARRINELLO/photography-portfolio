@@ -9,7 +9,8 @@
     <!-- META_PLACEHOLDER_END -->
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="../dist/assets/Logo_MP.svg" />
-    <link rel="stylesheet" href="../dist/css/output.css" />
+    <link rel="stylesheet" href="../dist/css/output.css" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="../dist/css/output.css" /></noscript>
     <!-- Alpine.js -->
     <script
       defer
@@ -283,11 +284,11 @@
         </div>
       </div>
     </footer>
-    <script src="/dist/js/fade_in.js"></script>
-    <script src="/dist/js/menu.js"></script>
-    <script src="/dist/js/text-loader.js"></script>
+    <script defer src="/dist/js/fade_in.js"></script>
+    <script defer src="/dist/js/menu.js"></script>
+    <script defer src="/dist/js/text-loader.js"></script>
     <!-- User Activity Tracker -->
-    <script src="../dist/js/user-tracker.js"></script>
+    <script defer src="../dist/js/user-tracker.js"></script>
     <script>
       // Animated blobs follow the pointer — subtle parallax + idle float
       (function(){

@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const path = require('path');
@@ -38,6 +39,9 @@ userLogger.startPeriodicCleanup(24, 7);
 const app = express();
 const PORT = serverConfig.getPort();
 const paths = serverConfig.getPaths();
+
+// Activer la compression Gzip/Brotli pour toutes les réponses
+app.use(compression());
 
 // Configuration des sessions
 app.use(session({

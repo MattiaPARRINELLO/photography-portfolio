@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/JoaoFranco03/photography-portfolio#readme",
   "dependencies": {
+    "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.1",
     "exifr": "^7.1.3",

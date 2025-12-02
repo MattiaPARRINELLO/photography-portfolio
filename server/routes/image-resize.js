@@ -59,7 +59,8 @@ router.get('/resize', async (req, res) => {
             const origStat = fs.statSync(originalPath);
             if (cacheStat.mtimeMs >= origStat.mtimeMs) {
                 res.setHeader('Content-Type', `image/${fmt === 'jpeg' ? 'jpeg' : fmt}`);
-                res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+                // Cache for 1 year (31536000 seconds) as these are immutable generated files
+                res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
                 res.setHeader('Vary', 'Accept');
                 return fs.createReadStream(cachePath).pipe(res);
             }
@@ -86,7 +87,8 @@ router.get('/resize', async (req, res) => {
         try { fs.writeFileSync(cachePath, buffer); } catch (e) { console.warn('Failed to write cache', e.message); }
 
         res.setHeader('Content-Type', `image/${fmt === 'jpeg' ? 'jpeg' : fmt}`);
-        res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+        // Cache for 1 year (31536000 seconds)
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
         res.setHeader('Vary', 'Accept');
         res.send(buffer);
     } catch (err) {
