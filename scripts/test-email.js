@@ -4,25 +4,25 @@ const nodemailer = require('nodemailer');
 const user = process.env.GMAIL_USER;
 const pass = process.env.GMAIL_PASS;
 
-console.log('User:', user ? 'Defined' : 'Undefined');
-console.log('Pass:', pass ? 'Defined' : 'Undefined');
+console.log('User:', user ? `Defined (len=${user.length})` : 'Undefined');
+console.log('Pass:', pass ? `Defined (len=${pass.length})` : 'Undefined');
 
 if (!user || !pass) {
     console.error('Missing GMAIL_USER or GMAIL_PASS in .env');
     process.exit(1);
 }
 
+// Tentative sur le port 465 (SSL implicite) pour voir si ça contourne le proxy
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     auth: {
         user: user,
         pass: pass
     },
     tls: {
-        // Nécessaire car l'hébergeur intercepte la connexion SSL et présente son propre certificat
-        rejectUnauthorized: false
+        rejectUnauthorized: false // Toujours nécessaire si interception
     }
 });
 
