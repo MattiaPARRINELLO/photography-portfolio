@@ -24,7 +24,7 @@ class ServerConfig {
     loadEnvironmentVariables() {
         this.port = process.env.PORT || 3000;
         this.adminPassword = process.env.ADMIN_PASSWORD;
-        
+
         // Configuration SMTP
         this.smtpHost = process.env.SMTP_HOST;
         this.smtpPort = parseInt(process.env.SMTP_PORT || '465');

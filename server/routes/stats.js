@@ -27,11 +27,11 @@ router.post('/send-mail', async (req, res) => {
     const smtpHost = serverConfig.smtpHost;
     const smtpPort = serverConfig.smtpPort;
 
-    console.log('🔑 Credentials:', { 
+    console.log('🔑 Credentials:', {
         host: smtpHost,
         port: smtpPort,
-        user: smtpUser ? `${smtpUser.substring(0, 3)}...` : 'UNDEFINED', 
-        pass: smtpPass ? 'DEFINED' : 'UNDEFINED' 
+        user: smtpUser ? `${smtpUser.substring(0, 3)}...` : 'UNDEFINED',
+        pass: smtpPass ? 'DEFINED' : 'UNDEFINED'
     });
 
     try {
@@ -44,14 +44,14 @@ router.post('/send-mail', async (req, res) => {
                 pass: smtpPass
             }
         });
-        
+
         await transporter.sendMail({
             from: `"Portfolio" <${smtpUser}>`, // Expéditeur authentifié
             to: 'contact.mprnl@gmail.com', // Votre adresse perso pour recevoir les messages
             replyTo: email, // Pour répondre directement au visiteur
             subject: `[Portfolio] ${subject}`,
             text: `Nouveau message de: ${email}\n\n${message}`
-        });        console.log('✅ Mail envoyé avec succès');
+        }); console.log('✅ Mail envoyé avec succès');
         res.status(200).json({ success: true });
     } catch (err) {
         console.error('❌ Erreur lors de l\'envoi du mail:', err);
