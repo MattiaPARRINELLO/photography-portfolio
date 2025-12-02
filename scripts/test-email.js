@@ -15,13 +15,14 @@ if (!user || !pass) {
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
-    secure: false, // true for 465, false for other ports
+    secure: false,
     auth: {
         user: user,
         pass: pass
     },
     tls: {
-        ciphers: 'SSLv3'
+        // Nécessaire car l'hébergeur intercepte la connexion SSL et présente son propre certificat
+        rejectUnauthorized: false
     }
 });
 
