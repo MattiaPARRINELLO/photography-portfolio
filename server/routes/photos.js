@@ -99,9 +99,9 @@ router.post('/admin/upload', requireAdminSession, upload.array('photos'), async 
             try {
                 // failOnError: false permet de tolérer les fichiers JPEG légèrement corrompus (ex: fin prématurée)
                 // limitInputPixels: false permet de traiter de très grandes images
-                const sharpInstance = sharp(file.path, { 
+                const sharpInstance = sharp(file.path, {
                     failOnError: false,
-                    limitInputPixels: false 
+                    limitInputPixels: false
                 })
                     .jpeg({ quality: 95 });
 
@@ -121,7 +121,7 @@ router.post('/admin/upload', requireAdminSession, upload.array('photos'), async 
             const thumbPath = path.join(thumbsDir, thumbName);
 
             try {
-                await sharp(file.path, { 
+                await sharp(file.path, {
                     failOnError: false,
                     limitInputPixels: false
                 })
