@@ -111,6 +111,22 @@ router.post('/admin/upload', requireAdminSession, upload.array('photos'), async 
                 }
 
                 await sharpInstance.toFile(finalPath);
+
+                // VÉRIFICATION POST-OPTIMISATION :
+                // Si l'image originale avait des EXIF mais que le résultat n'en a plus (ex: corruption gérée par sharp en supprimant les métadonnées),
+                // on rétablit le fichier original.
+                if (originalExifData) {
+                    try {
+                        const newExif = await exifr.parse(finalPath);
+                        if (!newExif) {
+                            console.warn(`⚠️ Sharp a supprimé les métadonnées de ${file.originalname} (probablement dû à une corruption). Rétablissement du fichier original.`);
+                            fs.copyFileSync(file.path, finalPath);
+                        }
+                    } catch (e) {
+                        console.warn(`⚠️ Impossible de vérifier les EXIF du fichier optimisé ${file.originalname}. Rétablissement du fichier original par précaution.`);
+                        fs.copyFileSync(file.path, finalPath);
+                    }
+                }
             } catch (error) {
                 console.warn(`⚠️ Erreur optimisation Sharp pour ${file.originalname}, utilisation du fichier original:`, error.message);
                 fs.copyFileSync(file.path, finalPath);
