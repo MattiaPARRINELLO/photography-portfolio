@@ -96,27 +96,47 @@ router.post('/admin/upload', requireAdminSession, upload.array('photos'), async 
             const finalPath = path.join(paths.photos, uniqueName);
 
             // Optimiser et sauvegarder l'image principale en préservant les métadonnées
-            const sharpInstance = sharp(file.path)
-                .jpeg({ quality: 95 });
+            try {
+                // failOnError: false permet de tolérer les fichiers JPEG légèrement corrompus (ex: fin prématurée)
+                // limitInputPixels: false permet de traiter de très grandes images
+                const sharpInstance = sharp(file.path, { 
+                    failOnError: false,
+                    limitInputPixels: false 
+                })
+                    .jpeg({ quality: 95 });
 
-            // Préserver les métadonnées EXIF si elles existent
-            if (originalExifData) {
-                sharpInstance.withMetadata();
+                // Préserver les métadonnées EXIF si elles existent
+                if (originalExifData) {
+                    sharpInstance.withMetadata();
+                }
+
+                await sharpInstance.toFile(finalPath);
+            } catch (error) {
+                console.warn(`⚠️ Erreur optimisation Sharp pour ${file.originalname}, utilisation du fichier original:`, error.message);
+                fs.copyFileSync(file.path, finalPath);
             }
-
-            await sharpInstance.toFile(finalPath);
 
             // Créer la thumbnail
             const thumbName = uniqueName.replace(/\.[^.]+$/, '.webp');
             const thumbPath = path.join(thumbsDir, thumbName);
 
-            await sharp(file.path)
-                .resize(config.thumbnails.width, config.thumbnails.height, {
-                    fit: config.thumbnails.fit,
-                    withoutEnlargement: config.thumbnails.withoutEnlargement
+            try {
+                await sharp(file.path, { 
+                    failOnError: false,
+                    limitInputPixels: false
                 })
-                .webp({ quality: config.thumbnails.quality })
-                .toFile(thumbPath);
+                    .resize(config.thumbnails.width, config.thumbnails.height, {
+                        fit: config.thumbnails.fit,
+                        withoutEnlargement: config.thumbnails.withoutEnlargement
+                    })
+                    .webp({ quality: config.thumbnails.quality })
+                    .toFile(thumbPath);
+            } catch (error) {
+                console.error(`❌ Impossible de créer la miniature pour ${file.originalname}:`, error.message);
+                // Fallback: on copie l'original en tant que "thumbnail" (attention au poids)
+                // On change l'extension pour .webp pour que le front le trouve, même si c'est du jpeg
+                fs.copyFileSync(file.path, thumbPath);
+            }
 
             // Supprimer le fichier temporaire
             fs.unlinkSync(file.path);
