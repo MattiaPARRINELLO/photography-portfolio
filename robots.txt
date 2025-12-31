@@ -15,5 +15,4 @@ Disallow: /config.json
 Disallow: /.env
 Disallow: /stats.json
 
-# Sitemap (optionnel - vous pourrez en créer un plus tard)
-# Sitemap: https://votre-domaine.com/sitemap.xml
+Sitemap: https://www.photo.mprnl.fr/sitemap.xml

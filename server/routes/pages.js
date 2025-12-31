@@ -215,4 +215,73 @@ router.get('/portfolio', (req, res) => {
     res.redirect('/');
 });
 
+// Dynamic sitemap.xml generation optimized for portfolio (static pages only)
+router.get('/sitemap.xml', async (req, res) => {
+    try {
+        const baseUrl = 'https://www.photo.mprnl.fr';
+        
+        // Determine latest photo date to use as lastmod for homepage
+        let latestPhotoDate = null;
+        try {
+            const photos = await photoService.getPhotosList();
+            if (photos.length > 0) {
+                // Photos are already sorted by date (most recent first)
+                const mostRecent = photos[0];
+                if (mostRecent && mostRecent.date) {
+                    latestPhotoDate = new Date(mostRecent.date);
+                }
+            }
+        } catch (e) {
+            console.warn('Could not fetch photos for sitemap date:', e.message);
+        }
+
+        // Static pages with metadata
+        const staticPages = [
+            { 
+                loc: '/', 
+                lastmod: latestPhotoDate ? latestPhotoDate.toISOString().slice(0,10) : new Date().toISOString().slice(0,10),
+                changefreq: 'weekly', 
+                priority: '1.0' 
+            },
+            { 
+                loc: '/a-propos', 
+                lastmod: '2025-12-31',
+                changefreq: 'monthly', 
+                priority: '0.7' 
+            },
+            { 
+                loc: '/contact', 
+                lastmod: '2025-12-31',
+                changefreq: 'monthly', 
+                priority: '0.6' 
+            },
+            { 
+                loc: '/mentions-legales', 
+                lastmod: '2025-12-31',
+                changefreq: 'yearly', 
+                priority: '0.3' 
+            }
+        ];
+
+        // Build XML
+        let urls = '';
+        staticPages.forEach(p => {
+            urls += `  <url>\n`;
+            urls += `    <loc>${baseUrl}${p.loc}</loc>\n`;
+            urls += `    <lastmod>${p.lastmod}</lastmod>\n`;
+            urls += `    <changefreq>${p.changefreq}</changefreq>\n`;
+            urls += `    <priority>${p.priority}</priority>\n`;
+            urls += `  </url>\n`;
+        });
+
+        const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}</urlset>`;
+        
+        res.header('Content-Type', 'application/xml');
+        res.send(xml);
+    } catch (error) {
+        console.error('Error generating sitemap:', error);
+        res.status(500).send('Error generating sitemap');
+    }
+});
+
 module.exports = router;
