@@ -163,8 +163,8 @@
                       openFancybox(itemIndex);
                    });
                    
-                   // Attach EXIF loader
-                   attachExifLoader(img, photoUrl, a, itemIndex);
+                   // EXIF display disabled: attachExifLoader removed to prevent EXIF caption on click
+                   // attachExifLoader(img, photoUrl, a, itemIndex);
                 }
             });
         }
@@ -700,8 +700,8 @@
                 openFancybox(itemIndex);
               });
 
-              // Attach EXIF loader
-              attachExifLoader(img, photo.url, a, itemIndex);
+              // EXIF display disabled: attachExifLoader removed to prevent EXIF caption on click
+              // attachExifLoader(img, photo.url, a, itemIndex);
           }
         });
 
