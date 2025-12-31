@@ -1,18 +1,31 @@
 User-agent: *
 Allow: /
-Allow: /contact
 Allow: /a-propos
+Allow: /contact
+Allow: /mentions-legales
 Allow: /dist/
 Allow: /photos/
 
 # Interdire l'accès aux pages d'administration
 Disallow: /admin/
-Disallow: /admin/text-editor
+Disallow: /pages/admin/
 
-# Interdire l'accès aux fichiers de configuration
+# Interdire l'accès aux fichiers de configuration et logs
 Disallow: /texts.json
-Disallow: /config.json
+Disallow: /config/
 Disallow: /.env
 Disallow: /stats.json
+Disallow: /logs/
+Disallow: /server/
+Disallow: /scripts/
+Disallow: /temp/
 
+# Interdire l'accès aux fichiers système
+Disallow: /.git
+Disallow: /.gitignore
+Disallow: /node_modules/
+Disallow: /package.json
+Disallow: /package-lock.json
+
+# Sitemap dynamique mise à jour automatiquement avec les nouvelles photos
 Sitemap: https://www.photo.mprnl.fr/sitemap.xml
