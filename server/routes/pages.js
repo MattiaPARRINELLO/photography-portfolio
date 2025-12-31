@@ -219,7 +219,7 @@ router.get('/portfolio', (req, res) => {
 router.get('/sitemap.xml', async (req, res) => {
     try {
         const baseUrl = 'https://www.photo.mprnl.fr';
-        
+
         // Determine latest photo date to use as lastmod for homepage
         let latestPhotoDate = null;
         try {
@@ -237,29 +237,29 @@ router.get('/sitemap.xml', async (req, res) => {
 
         // Static pages with metadata
         const staticPages = [
-            { 
-                loc: '/', 
-                lastmod: latestPhotoDate ? latestPhotoDate.toISOString().slice(0,10) : new Date().toISOString().slice(0,10),
-                changefreq: 'weekly', 
-                priority: '1.0' 
+            {
+                loc: '/',
+                lastmod: latestPhotoDate ? latestPhotoDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+                changefreq: 'weekly',
+                priority: '1.0'
             },
-            { 
-                loc: '/a-propos', 
+            {
+                loc: '/a-propos',
                 lastmod: '2025-12-31',
-                changefreq: 'monthly', 
-                priority: '0.7' 
+                changefreq: 'monthly',
+                priority: '0.7'
             },
-            { 
-                loc: '/contact', 
+            {
+                loc: '/contact',
                 lastmod: '2025-12-31',
-                changefreq: 'monthly', 
-                priority: '0.6' 
+                changefreq: 'monthly',
+                priority: '0.6'
             },
-            { 
-                loc: '/mentions-legales', 
+            {
+                loc: '/mentions-legales',
                 lastmod: '2025-12-31',
-                changefreq: 'yearly', 
-                priority: '0.3' 
+                changefreq: 'yearly',
+                priority: '0.3'
             }
         ];
 
@@ -275,7 +275,7 @@ router.get('/sitemap.xml', async (req, res) => {
         });
 
         const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}</urlset>`;
-        
+
         res.header('Content-Type', 'application/xml');
         res.send(xml);
     } catch (error) {
