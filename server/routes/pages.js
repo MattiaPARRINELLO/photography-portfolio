@@ -193,6 +193,23 @@ router.get('/a-propos/', (req, res) => {
     res.redirect('/a-propos');
 });
 
+// Route pour les mentions légales
+router.get('/mentions-legales', (req, res) => {
+    console.log('🚀 Route /mentions-legales appelée');
+    try {
+        const htmlPath = path.join(paths.pages, 'mentions.html');
+        res.sendFile(htmlPath);
+    } catch (error) {
+        console.error('❌ Erreur lors du chargement de mentions.html:', error);
+        res.status(404).send('Page non trouvée');
+    }
+});
+
+// Redirection pour /mentions-legales/ vers /mentions-legales
+router.get('/mentions-legales/', (req, res) => {
+    res.redirect('/mentions-legales');
+});
+
 // Redirection pour /portfolio vers /
 router.get('/portfolio', (req, res) => {
     res.redirect('/');

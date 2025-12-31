@@ -103,13 +103,12 @@ router.post('/admin/upload', requireAdminSession, upload.array('photos'), async 
                     failOnError: false,
                     limitInputPixels: false
                 })
-                    .jpeg({ quality: 95 })
-                    .withMetadata(); // Toujours essayer de préserver les métadonnées
+                    .jpeg({ quality: 95 });
 
                 // Préserver les métadonnées EXIF si elles existent
-                // if (originalExifData) {
-                //     sharpInstance.withMetadata();
-                // }
+                if (originalExifData) {
+                    sharpInstance.withMetadata();
+                }
 
                 await sharpInstance.toFile(finalPath);
 

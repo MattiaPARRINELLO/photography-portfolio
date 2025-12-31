@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mentions Légales - Mattia Parrinello</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../dist/assets/Logo_MP.svg" />
+    <link rel="stylesheet" href="../dist/css/output.css" />
+    <!-- Start - Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Signika:wght@400;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Signika:wght@400;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+    <!-- End - Fonts -->
+    <style>
+      /* Subtle animated background used across public pages */
+      .animated-bg {
+        position: fixed;
+        inset: 0;
+        z-index: 0; /* above page background so blobs are visible */
+        pointer-events: none;
+        overflow: hidden;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0.02),
+          rgba(0, 0, 0, 0.04)
+        );
+      }
+      .animated-bg .blob {
+        position: absolute;
+        width: 50vmax;
+        height: 50vmax;
+        border-radius: 50%;
+        filter: blur(36px);
+        opacity: 0.22;
+        transform: translate3d(0, 0, 0) scale(1);
+        will-change: transform, opacity;
+        mix-blend-mode: screen;
+      }
+      /* positions and color variations for 7 blobs */
+      .animated-bg .blob.b1 {
+        left: -12%;
+        top: -20%;
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(102, 126, 234, 0.98),
+          rgba(102, 126, 234, 0.22)
+        );
+      }
+      .animated-bg .blob.b2 {
+        right: -14%;
+        bottom: -12%;
+        background: radial-gradient(
+          circle at 70% 70%,
+          rgba(139, 69, 19, 0.96),
+          rgba(139, 69, 19, 0.18)
+        );
+      }
+      .animated-bg .blob.b3 {
+        left: 52%;
+        top: 62%;
+        transform: translateX(-50%);
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(75, 0, 130, 0.95),
+          rgba(75, 0, 130, 0.16)
+        );
+      }
+      .animated-bg .blob.b4 {
+        left: 20%;
+        top: 60%;
+        background: radial-gradient(
+          circle at 40% 50%,
+          rgba(66, 153, 225, 0.9),
+          rgba(66, 153, 225, 0.12)
+        );
+        opacity: 0.14;
+      }
+      .animated-bg .blob.b5 {
+        right: 30%;
+        top: 10%;
+        background: radial-gradient(
+          circle at 50% 40%,
+          rgba(236, 72, 153, 0.9),
+          rgba(236, 72, 153, 0.12)
+        );
+        opacity: 0.12;
+      }
+      .animated-bg .blob.b6 {
+        left: 5%;
+        bottom: 10%;
+        background: radial-gradient(
+          circle at 20% 80%,
+          rgba(250, 204, 21, 0.88),
+          rgba(250, 204, 21, 0.1)
+        );
+        opacity: 0.11;
+      }
+      .animated-bg .blob.b7 {
+        right: 5%;
+        top: 40%;
+        background: radial-gradient(
+          circle at 60% 30%,
+          rgba(16, 185, 129, 0.9),
+          rgba(16, 185, 129, 0.1)
+        );
+        opacity: 0.12;
+      }
+      /* Light-mode stronger/darker blobs */
+      @media (prefers-color-scheme: light) {
+        .animated-bg .blob {
+          mix-blend-mode: multiply;
+          opacity: 0.36;
+          filter: blur(28px);
+        }
+        .animated-bg .blob.b1 {
+          background: radial-gradient(
+            circle at 30% 30%,
+            rgba(32, 78, 200, 0.95),
+            rgba(32, 78, 200, 0.32)
+          );
+        }
+        .animated-bg .blob.b2 {
+          background: radial-gradient(
+            circle at 70% 70%,
+            rgba(120, 50, 20, 0.96),
+            rgba(120, 50, 20, 0.3)
+          );
+        }
+        .animated-bg .blob.b3 {
+          background: radial-gradient(
+            circle at 50% 50%,
+            rgba(60, 10, 120, 0.95),
+            rgba(60, 10, 120, 0.28)
+          );
+        }
+        .animated-bg .blob.b4 {
+          background: radial-gradient(
+            circle at 40% 50%,
+            rgba(40, 110, 200, 0.92),
+            rgba(40, 110, 200, 0.26)
+          );
+        }
+        .animated-bg .blob.b5 {
+          background: radial-gradient(
+            circle at 50% 40%,
+            rgba(200, 40, 120, 0.92),
+            rgba(200, 40, 120, 0.26)
+          );
+        }
+        .animated-bg .blob.b6 {
+          background: radial-gradient(
+            circle at 20% 80%,
+            rgba(200, 150, 20, 0.9),
+            rgba(200, 150, 20, 0.22)
+          );
+        }
+        .animated-bg .blob.b7 {
+          background: radial-gradient(
+            circle at 60% 30%,
+            rgba(10, 140, 90, 0.9),
+            rgba(10, 140, 90, 0.22)
+          );
+        }
+      }
+      @keyframes blobMove {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        25% {
+          transform: translate3d(5%, -3%, 0) scale(1.05);
+        }
+        50% {
+          transform: translate3d(0, 5%, 0) scale(1);
+        }
+        75% {
+          transform: translate3d(-4%, -2%, 0) scale(0.98);
+        }
+        100% {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .animated-bg .blob {
+          animation: none !important;
+        }
+      }
+    </style>
+    <script>
+      // Dark mode detection for Tailwind CSS
+      function updateDarkMode() {
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        if (prefersDark) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+        console.log("Dark mode applied:", prefersDark);
+      }
+
+      // Apply dark mode immediately
+      updateDarkMode();
+
+      // Listen for changes
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", updateDarkMode);
+    </script>
+  </head>
+  <body
+    class="dark:bg-black bg-white min-h-screen text-black dark:text-white px-5 md:px-20 opacity-0 animate-fade-in transition duration-500"
+  >
+    <!-- Subtle animated background -->
+    <div class="animated-bg" aria-hidden="true">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="blob b3"></div>
+      <div class="blob b4"></div>
+      <div class="blob b5"></div>
+      <div class="blob b6"></div>
+      <div class="blob b7"></div>
+    </div>
+
+    <!-- Navbar -->
+    <header class="flex w-full overflow-hidden pt-10 pb-1">
+      <nav role="navigation" class="w-full">
+        <div
+          class="container mx-auto flex flex-wrap items-center md:flex-no-wrap"
+        >
+          <div class="mr-4 md:mr-8">
+            <a href="/" class="text-2xl font-signika font-bold"
+              >MATTIA PARRINELLO</a
+            >
+          </div>
+          <div class="flex-1 text-right">
+            <a
+              href="/"
+              class="text-sm font-signika hover:opacity-75 transition duration-300"
+              >← Retour à l'accueil</a
+            >
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 pt-8 pb-16">
+      <div class="container mx-auto max-w-4xl">
+        <div
+          class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-12 md:p-20"
+          style="padding: 20px"
+        >
+          <h1
+            class="text-4xl md:text-5xl font-signika font-bold text-center mb-8 text-black dark:text-white"
+          >
+            Mentions légales
+          </h1>
+
+          <div
+            class="text-sm text-gray-600 dark:text-gray-400 text-center mb-12"
+          >
+            En vigueur au 28/12/2025
+          </div>
+
+          <div class="prose prose-lg dark:prose-invert max-w-none space-y-8">
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+              Conformément à la loi n°2004-575 du 21 juin 2004 pour la Confiance
+              en l'économie numérique (LCEN), il est porté à la connaissance des
+              utilisateurs du site
+              <a
+                href="https://www.photo.mprnl.fr"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >www.photo.mprnl.fr</a
+              >
+              (ci-après le "Site") les présentes mentions légales.
+            </p>
+
+            <h2
+              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
+            >
+              Édition du site
+            </h2>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-10 mb-8">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                <div>
+                  <strong class="text-gray-900 dark:text-white"
+                    >Éditeur :</strong
+                  >
+                  Mattia Parrinello
+                </div>
+                <div>
+                  <strong class="text-gray-900 dark:text-white"
+                    >Statut :</strong
+                  >
+                  Auto-entrepreneur / Entreprise individuelle
+                </div>
+                <div>
+                  <strong class="text-gray-900 dark:text-white"
+                    >Adresse :</strong
+                  >
+                  1 rue Victor Basch, 95130 Franconville
+                </div>
+                <div>
+                  <strong class="text-gray-900 dark:text-white"
+                    >Téléphone :</strong
+                  >
+                  06 50 58 62 51
+                </div>
+                <div>
+                  <strong class="text-gray-900 dark:text-white">Email :</strong>
+                  contact.mprnl@gmail.com
+                </div>
+                <div>
+                  <strong class="text-gray-900 dark:text-white">SIRET :</strong>
+                  991 469 974
+                </div>
+                <div class="md:col-span-2">
+                  <strong class="text-gray-900 dark:text-white"
+                    >Numéro de TVA intracommunautaire :</strong
+                  >
+                  Non applicable
+                </div>
+                <div class="md:col-span-2">
+                  <strong class="text-gray-900 dark:text-white"
+                    >Directeur de la publication :</strong
+                  >
+                  Mattia Parrinello
+                </div>
+              </div>
+            </div>
+
+            <h2
+              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
+            >
+              Hébergement
+            </h2>
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-10 mb-8">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                <div>
+                  <strong class="text-gray-900 dark:text-white"
+                    >Hébergeur :</strong
+                  >
+                  Hosterfy
+                </div>
+                <div>
+                  <strong class="text-gray-900 dark:text-white"
+                    >Adresse :</strong
+                  >
+                  6 Rue d'Entraigues, 37000 Tours
+                </div>
+                <div class="md:col-span-2">
+                  <strong class="text-gray-900 dark:text-white"
+                    >Téléphone :</strong
+                  >
+                  33 9 72 51 19 35
+                </div>
+              </div>
+            </div>
+
+            <h2
+              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
+            >
+              Accès au site
+            </h2>
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+              Le Site est normalement accessible à tout moment. L'Éditeur peut
+              toutefois suspendre, limiter ou interrompre le Site pour des mises
+              à jour ou modifications. L'Éditeur ne pourra être tenu responsable
+              des conséquences éventuelles de cette indisponibilité.
+            </p>
+
+            <h2
+              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
+            >
+              Propriété intellectuelle
+            </h2>
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+              Toutes les photos et contenus du Site sont la propriété exclusive
+              de Mattia Parrinello. Toute reproduction, diffusion, modification
+              ou utilisation, totale ou partielle, sans autorisation écrite de
+              l'Éditeur est interdite et pourra entraîner des actions
+              judiciaires conformément à la réglementation en vigueur.
+            </p>
+
+            <h2
+              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
+            >
+              Données personnelles
+            </h2>
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+              Les informations collectées via le formulaire de contact (nom,
+              prénom, email, message, ville) sont utilisées uniquement pour
+              répondre à vos demandes. Elles ne sont pas transmises à des tiers.
+              Conformément à la loi Informatique et Libertés, vous pouvez
+              exercer vos droits d'accès, de rectification et de suppression en
+              contactant l'Éditeur à l'adresse email ci-dessus.
+            </p>
+
+            <h2
+              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
+            >
+              Responsabilité
+            </h2>
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+              L'Éditeur ne peut être tenu responsable des dommages directs ou
+              indirects liés à l'accès ou à l'utilisation du Site.
+            </p>
+
+            <div
+              class="text-center text-sm text-gray-500 dark:text-gray-400 mt-12 pt-8 border-t border-gray-200 dark:border-gray-700"
+            >
+              Rédigé sur
+              <a
+                href="http://legalplace.fr"
+                target="_blank"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >LegalPlace</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <style>
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .animate-fade-in {
+        animation: fade-in 0.5s ease-out forwards;
+      }
+    </style>
+    <script>
+      // Dark mode detection for Tailwind CSS
+      function updateDarkMode() {
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        if (prefersDark) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+      }
+
+      // Apply dark mode immediately
+      updateDarkMode();
+
+      // Listen for changes
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", updateDarkMode);
+
+      // Diagnostic log: report current preference and html class
+      console.log(
+        "prefers-color-scheme dark =",
+        window.matchMedia("(prefers-color-scheme: dark)").matches,
+        "html.classList:",
+        document.documentElement.className
+      );
+    </script>
+
+    <style>
+      /* Fallback overrides: when html has class "dark", enforce dark backgrounds/text
+         This is a local fix because Tailwind here was built with media-based dark mode.
+         These rules only affect this page and use !important to override compiled utilities. */
+      html.dark body {
+        background-color: #000 !important;
+        color: #e5e7eb !important;
+      }
+      html.dark .bg-white {
+        background-color: #0b0b0b !important;
+      }
+      html.dark .bg-gray-50 {
+        background-color: #111827 !important;
+      }
+      html.dark .text-black {
+        color: #e5e7eb !important;
+      }
+      html.dark .text-gray-700 {
+        color: #d1d5db !important;
+      }
+      html.dark .text-gray-600 {
+        color: #9ca3af !important;
+      }
+      html.dark .border-gray-200 {
+        border-color: #2b2b2b !important;
+      }
+      html.dark .shadow-xl {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+      }
+    </style>
+  </body>
+</html>
