@@ -366,7 +366,6 @@
         if (isProduction) {
           document.addEventListener('contextmenu', prevent, true);
           document.addEventListener('keydown', function(e){ const k = e.key && e.key.toLowerCase(); if (e.key === 'F12') prevent(e); if ((e.ctrlKey || e.metaKey) && e.shiftKey && (k === 'i' || k === 'j' || k === 'c')) prevent(e); if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'u')) prevent(e); }, true);
-          setInterval(function(){ debugger; }, 100);
         } else {
           document.addEventListener('contextmenu', function(e){ if (e.target && e.target.tagName === 'IMG') prevent(e); }, true);
           document.addEventListener('keydown', function(e){ const k = e.key && e.key.toLowerCase(); if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'u')) prevent(e); }, true);
