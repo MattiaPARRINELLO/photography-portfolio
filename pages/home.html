@@ -93,6 +93,77 @@
       @media (prefers-reduced-motion: reduce){ .animated-bg .blob{ animation: none !important; } }
     </style>
     <script defer>
+      // Protection et logs conditionnels
+      const isProduction = !window.location.hostname.match(/localhost|127\.0\.0\.1/);
+      const devLog = isProduction ? function(){} : console.log.bind(console);
+      const devWarn = isProduction ? function(){} : console.warn.bind(console);
+      const devError = isProduction ? function(){} : console.error.bind(console);
+      
+      if (isProduction) {
+        console.log('%c\n' +
+          '═══════════════════════════════════════════════════════════════════\n' +
+          '║                                                                 ║\n' +
+          '║               ⚠️  AVERTISSEMENT DE SÉCURITÉ  ⚠️                ║\n' +
+          '║                                                                 ║\n' +
+          '═══════════════════════════════════════════════════════════════════',
+          'color: #ff3333; font-size: 16px; font-weight: bold; font-family: monospace; line-height: 1.5;'
+        );
+        
+        console.log('%c\n🚫 ACCÈS NON AUTORISÉ À LA CONSOLE DE DÉVELOPPEMENT 🚫\n',
+          'color: #ff6600; font-size: 22px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: linear-gradient(90deg, #330000, #000000); padding: 15px 20px; border-radius: 5px;'
+        );
+        
+        console.log(
+          '%c┌────────────────────────────────────────────────────────────┐\n' +
+          '│  Vous tentez d\'accéder aux photos de ce site ?            │\n' +
+          '│                                                            │\n' +
+          '│  ❌ TÉLÉCHARGEMENT INTERDIT                                │\n' +
+          '│  ❌ COPIE INTERDITE                                        │\n' +
+          '│  ❌ UTILISATION NON AUTORISÉE INTERDITE                    │\n' +
+          '└────────────────────────────────────────────────────────────┘',
+          'color: #ffff00; font-size: 15px; font-weight: bold; font-family: monospace; line-height: 1.8; background: #1a1a1a; padding: 20px; border-left: 5px solid #ff0000;'
+        );
+        
+        console.log(
+          '%c\n📸 PROTECTION DU DROIT D\'AUTEUR\n',
+          'color: #00ffff; font-size: 18px; font-weight: bold; text-decoration: underline;'
+        );
+        
+        console.log(
+          '%c© Mattia Parrinello - Tous droits réservés\n\n' +
+          'Toutes les photographies publiées sur ce site sont protégées par le droit d\'auteur.\n' +
+          'Toute reproduction, représentation, modification, publication, transmission,\n' +
+          'dénaturation, totale ou partielle du site ou de son contenu, par quelque\n' +
+          'procédé que ce soit, sans autorisation écrite préalable est interdite et\n' +
+          'constitue un délit de contrefaçon sanctionné par les articles L.335-2 et\n' +
+          'suivants du Code de la propriété intellectuelle.\n',
+          'color: #ffffff; font-size: 14px; line-height: 1.6; background: #1a1a1a; padding: 15px; border-left: 4px solid #00ff00;'
+        );
+        
+        console.log(
+          '%c⚖️  SANCTIONS PÉNALES\n',
+          'color: #ff6666; font-size: 16px; font-weight: bold; text-decoration: underline;'
+        );
+        
+        console.log(
+          '%cLa contrefaçon est punie de :\n' +
+          '• 300 000 € d\'amende\n' +
+          '• 3 ans d\'emprisonnement\n' +
+          '(Articles L.335-2 et suivants du Code de la propriété intellectuelle)\n',
+          'color: #ff9999; font-size: 13px; line-height: 1.8; font-weight: bold; background: #2a0000; padding: 15px; border-left: 4px solid #ff0000;'
+        );
+        
+        console.log(
+          '%c📋 Pour toute demande d\'utilisation légitime :\n' +
+            '→ Utilisez le formulaire de contact : ' + window.location.origin + '/contact\n' +
+        );
+        
+        console.log('%c\n' +
+          '═══════════════════════════════════════════════════════════════════\n',
+          'color: #ff3333; font-size: 16px; font-weight: bold; font-family: monospace;'
+        );
+      }
+
       // Start fetching photos list immediately to improve LCP (fallback if not injected)
       const photosListPromise = window.INJECTED_PHOTOS 
         ? Promise.resolve(window.INJECTED_PHOTOS) 
@@ -185,7 +256,7 @@
                   window.open(galleryItems[startIndex].src, '_blank');
                 }
             } catch (err) {
-                console.error('Fancybox show failed', err);
+                devError('Fancybox show failed', err);
             }
         }
 
@@ -198,8 +269,8 @@
                 const sidx = slide && (typeof slide.index !== 'undefined' ? slide.index : (slide && slide.$index));
                 if (!window.__fb_logged_slides.has(sidx)) {
                   window.__fb_logged_slides.add(sidx);
-                  console.debug && console.debug('Fancybox: reveal called for slide', sidx, ' — dumping slide object once');
-                  try { console.dir && console.dir(slide); } catch (e) { console.debug && console.debug('Fancybox: cannot dir slide', e); }
+                  devDebug('Fancybox: reveal called for slide', sidx, ' — dumping slide object once');
+                  try { console.dir && console.dir(slide); } catch (e) { devDebug('Fancybox: cannot dir slide', e); }
                 }
               } catch (e) {}
               const original = (slide && slide.$trigger && slide.$trigger.dataset && slide.$trigger.dataset.original)
@@ -207,7 +278,7 @@
                 || (slide && slide.original)
                 || (typeof galleryItems !== 'undefined' && galleryItems[slide && slide.index] && galleryItems[slide.index].original);
               if (!original) {
-                console.debug && console.debug('Fancybox: original HD url not found for slide', slide && slide.index, slide);
+                devDebug('Fancybox: original HD url not found for slide', slide && slide.index, slide);
                 return;
               }
 
@@ -216,7 +287,7 @@
               // Resolve slide content element once and reuse
               const container = (slide && (slide.$content || slide.contentEl || (slide.content && slide.content.el) || slide.html)) || null;
               if (!container) {
-                console.debug && console.debug('Fancybox: no slide content element for HD bindings', slide && slide.index);
+                devDebug('Fancybox: no slide content element for HD bindings', slide && slide.index);
                 return;
               }
 
@@ -449,8 +520,19 @@
                 }
 
                 // Start animation (if possible), then show badge and preload
-                animateIconToBadge().then(() => {
+                animateIconToBadge().then(async () => {
                   const notice = createNotice();
+
+                  // Demander l'URL signée pour la version HD
+                  let hdUrl = original;
+                  if (typeof window.requestHDImage === 'function') {
+                    try {
+                      const signedUrl = await window.requestHDImage(original);
+                      if (signedUrl) hdUrl = signedUrl;
+                    } catch (err) {
+                      devWarn('Erreur lors de la demande d\'URL signée, utilisation de l\'URL originale', err);
+                    }
+                  }
 
                   const preload = new Image();
                   preload.onload = () => {
@@ -475,8 +557,8 @@
                       } catch (e) {
                         try { if (notice && notice.parentNode) notice.parentNode.removeChild(notice); } catch (err) {}
                       }
-                      console.debug && console.debug('Fancybox: HD image loaded and swapped', preload.src);
-                    } catch (e) { console.warn('HD swap failed', e); }
+                      devDebug('Fancybox: HD image loaded and swapped', preload.src);
+                    } catch (e) { devWarn('HD swap failed', e); }
                   };
                   preload.onerror = () => {
                     try {
@@ -487,12 +569,23 @@
                         setTimeout(() => { try { if (notice && notice.parentNode) notice.parentNode.removeChild(notice); } catch (e) {} }, 260);
                       }
                     } catch (e) {}
-                    console.warn && console.warn('Fancybox: failed to preload HD original', original);
+                    devWarn('Fancybox: failed to preload HD original', hdUrl);
                   };
-                  preload.src = original;
-                }).catch(() => {
+                  preload.src = hdUrl;
+                }).catch(async () => {
                   // fallback: if animation code throws, just do the minimal behaviour
                   const notice = createNotice();
+                  
+                  let hdUrl = original;
+                  if (typeof window.requestHDImage === 'function') {
+                    try {
+                      const signedUrl = await window.requestHDImage(original);
+                      if (signedUrl) hdUrl = signedUrl;
+                    } catch (err) {
+                      devWarn('Erreur lors de la demande d\'URL signée (fallback)', err);
+                    }
+                  }
+                  
                   const preload = new Image();
                   preload.onload = () => {
                     try {
@@ -503,7 +596,7 @@
                     } catch (e) {}
                   };
                   preload.onerror = () => { if (notice && notice.parentNode) notice.parentNode.removeChild(notice); };
-                  preload.src = original;
+                  preload.src = hdUrl;
                 });
               }
 
@@ -523,15 +616,15 @@
                   hdBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 12h4M17 12h4M12 3v4M12 17v4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only">Charger HD</span>`;
                   try { container && container.appendChild(hdBtn); } catch (e) {}
                   slide.__hd_button_added = true;
-                  hdBtn.addEventListener('click', (ev) => { ev.stopPropagation(); console.debug && console.debug('Fancybox: HD button clicked for slide', slide && slide.index); loadHighRes(); hdBtn.style.display = 'none'; });
+                  hdBtn.addEventListener('click', (ev) => { ev.stopPropagation(); devDebug('Fancybox: HD button clicked for slide', slide && slide.index); loadHighRes(); hdBtn.style.display = 'none'; });
                   slide.$el && slide.$el.addEventListener('fancybox:close', () => { try { if (hdBtn && hdBtn.parentNode) hdBtn.parentNode.removeChild(hdBtn); } catch (e) {} });
                 }
               } catch (e) { /* ignore */ }
 
               // Prevent double-binding when reveal called multiple times for same slide
               if (!container.__hd_bindings_added) {
-                const dbl = (e) => { console.debug && console.debug('Fancybox: dblclick -> load HD', slide && slide.index); try { e.preventDefault && e.preventDefault(); } catch (er) {} loadHighRes(); };
-                const wheel = (e) => { if (e.deltaY < 0) { console.debug && console.debug('Fancybox: wheel up -> load HD', slide && slide.index); loadHighRes(); } };
+                const dbl = (e) => { devDebug('Fancybox: dblclick -> load HD', slide && slide.index); try { e.preventDefault && e.preventDefault(); } catch (er) {} loadHighRes(); };
+                const wheel = (e) => { if (e.deltaY < 0) { devDebug('Fancybox: wheel up -> load HD', slide && slide.index); loadHighRes(); } };
 
                 // Bind dblclick to container as a broad catch, but also bind directly on the image element
                 container.addEventListener('dblclick', dbl, { passive: false });
@@ -574,7 +667,7 @@
                 });
               }
             } catch (e) {
-              console.warn('Fancybox reveal handler error', e);
+              devWarn('Fancybox reveal handler error', e);
             }
         }
 
@@ -618,7 +711,7 @@
                   }
                 }
               } catch (e) {
-                console.error("Error parsing EXIF data:", e);
+                devError("Error parsing EXIF data:", e);
               }
             });
         }
@@ -740,7 +833,7 @@
               // Layout Masonry incrementally to place the newly visible item
               if (masonryInstance) masonryInstance.layout();
             }
-          } catch (e) { console.warn('Reveal error', e); }
+          } catch (e) { devWarn('Reveal error', e); }
         });
 
         // When all images are done (or errored), ensure final layout and bind Fancybox + preloader
@@ -766,12 +859,12 @@
                 const startPreload = (url, el) => {
                   if (!url) return;
                   const i = new Image();
-                  console.log('[preload] start', url, el && (el.getAttribute('alt') || el.dataset && el.dataset.file));
+                  devLog('[preload] start', url, el && (el.getAttribute('alt') || el.dataset && el.dataset.file));
                   i.onload = () => {
-                    console.log('[preload] loaded', url, el && (el.getAttribute('alt') || el.dataset && el.dataset.file));
+                    devLog('[preload] loaded', url, el && (el.getAttribute('alt') || el.dataset && el.dataset.file));
                   };
                   i.onerror = (err) => {
-                    console.warn('[preload] error', url, err);
+                    devWarn('[preload] error', url, err);
                   };
                   // Kick off load
                   i.src = url;
@@ -801,11 +894,11 @@
                   if (full) startPreload(full, img);
                 });
               } catch (e) {
-                console.error('Preloader setup failed', e);
+                devError('Preloader setup failed', e);
               }
             })();
           } catch (e) {
-            console.error('imagesLoaded always handler error', e);
+            devError('imagesLoaded always handler error', e);
           }
         });
 
@@ -1448,6 +1541,24 @@
         </div>
       </div>
     </footer>
+    <script>
+      (function(){
+        const isProduction = !window.location.hostname.match(/localhost|127\.0\.0\.1/);
+        function prevent(e){ e.preventDefault(); e.stopPropagation(); }
+        if (isProduction) {
+          document.addEventListener('contextmenu', prevent, true);
+          document.addEventListener('keydown', function(e){ const k = e.key && e.key.toLowerCase(); if (e.key === 'F12') prevent(e); if ((e.ctrlKey || e.metaKey) && e.shiftKey && (k === 'i' || k === 'j' || k === 'c')) prevent(e); if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'u')) prevent(e); }, true);
+          setInterval(function(){ debugger; }, 100);
+        } else {
+          document.addEventListener('contextmenu', function(e){ if (e.target && e.target.tagName === 'IMG') prevent(e); }, true);
+          document.addEventListener('keydown', function(e){ const k = e.key && e.key.toLowerCase(); if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'u')) prevent(e); }, true);
+        }
+        document.addEventListener('dragstart', function(e){ if (e.target && e.target.tagName === 'IMG') prevent(e); }, true);
+        document.querySelectorAll('img').forEach(function(img){ try{ img.setAttribute('draggable','false'); img.style.userSelect='none'; img.style.webkitUserDrag='none'; }catch(e){} });
+        document.querySelectorAll('a > img').forEach(function(img){ try{ var a = img.parentElement; if (!a) return; if (getComputedStyle(a).position === 'static') a.style.position = 'relative'; if (a.querySelector('.img-protect-overlay')) return; var ov = document.createElement('span'); ov.className='img-protect-overlay'; ov.style.position='absolute'; ov.style.inset='0'; ov.style.display='block'; ov.style.zIndex='3'; ov.style.background='transparent'; ov.style.cursor='pointer'; ov.addEventListener('click', function(){ a.click(); }); ov.addEventListener('contextmenu', prevent); a.appendChild(ov); }catch(e){} });
+        window.requestHDImage = async function(originalPath) { try { devLog('🔐 Demande URL signée pour:', originalPath); const response = await fetch('/api/request-hd-access', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imagePath: originalPath }) }); if (!response.ok) { const errorText = await response.text(); devError('❌ Erreur serveur:', response.status, errorText); return originalPath; } const data = await response.json(); if (data.success) { devLog('✅ URL signée reçue:', data.url); return data.url; } throw new Error(data.error || 'Erreur accès HD'); } catch (err) { devError('Erreur requestHDImage:', err); return originalPath; } };
+      })();
+    </script>
     <!-- Script for the LightBox (no-op here, binding done after gallery init) -->
     <script defer src="/dist/js/fade_in.js"></script>
     <script defer src="/dist/js/menu.js"></script>

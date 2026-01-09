@@ -21,6 +21,7 @@ const photosRouter = require('./server/routes/photos');
 const imageResizeRouter = require('./server/routes/image-resize');
 const contentRouter = require('./server/routes/content');
 const statsRouter = require('./server/routes/stats');
+const signedImagesRouter = require('./server/routes/signed-images');
 
 // Classes de gestion
 const UserActivityLogger = require('./scripts/UserActivityLogger');
@@ -89,6 +90,7 @@ app.use('/', photosRouter);
 app.use('/photos', imageResizeRouter);
 app.use('/', contentRouter);
 app.use('/', statsRouter);
+app.use('/api', signedImagesRouter);
 
 // Gestion des erreurs 404
 app.use((req, res) => {
