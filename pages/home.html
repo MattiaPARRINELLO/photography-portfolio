@@ -1544,6 +1544,9 @@
     <script>
       (function(){
         const isProduction = !window.location.hostname.match(/localhost|127\.0\.0\.1/);
+        const devLog = isProduction ? function(){} : console.log.bind(console);
+        const devError = isProduction ? function(){} : console.error.bind(console);
+        
         function prevent(e){ e.preventDefault(); e.stopPropagation(); }
         if (isProduction) {
           document.addEventListener('contextmenu', prevent, true);
