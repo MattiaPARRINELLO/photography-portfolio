@@ -1,10 +1,12 @@
 # Restructuration des fichiers HTML - Plan d'action
 
 ## Problème actuel
+
 Les fichiers HTML contiennent trop de code JavaScript inline :
+
 - **home.html** : 1612 lignes (trop volumineux !)
 - **mentions.html** : 754 lignes
-- **contact.html** : 553 lignes  
+- **contact.html** : 553 lignes
 - **about_me.html** : 430 lignes
 
 ## Solution : Extraction du JavaScript
@@ -12,16 +14,21 @@ Les fichiers HTML contiennent trop de code JavaScript inline :
 ### Fichiers créés
 
 #### 1. `/dist/js/console-warning.js`
+
 ✅ Créé - Contient le message d'avertissement console en production
 
 #### 2. `/dist/js/photo-protection.js`
+
 ✅ Créé - Protection des photos (clic droit, F12, etc.) + fonction `window.requestHDImage()`
 
 #### 3. `/dist/js/animated-blobs.js`
+
 ✅ Créé - Animation des blobs de fond avec parallax
 
 #### 4. `/dist/js/gallery-loader.js`
+
 ⚠️ Créé mais incomplet - Doit contenir :
+
 - Fonction `loadGallery()` complète (800+ lignes)
 - Logique Masonry
 - Logique Fancybox avec HD loading
@@ -29,32 +36,37 @@ Les fichiers HTML contiennent trop de code JavaScript inline :
 - Preloading des images
 
 #### 5. `/dist/js/cinematic-intro.js`
+
 ⚠️ Créé mais incomplet - Doit contenir :
+
 - Animation typewriter complète
 - Transition vers header
 
 ## Plan de restructuration par page
 
 ### home.html (PRIORITAIRE - 1612 lignes)
+
 **À extraire :**
+
 1. Tout le bloc `<script defer>` lignes 95-1089 (995 lignes de JS!)
 2. Le déplacer dans les fichiers modulaires appropriés
 
 **Structure finale :**
+
 ```html
 <head>
   ... (liens CSS, fonts, etc.)
-  
+
   <!-- Scripts de sécurité et protection -->
   <script defer src="/dist/js/console-warning.js"></script>
-  
+
   <!-- Bibliothèques externes -->
   <script defer src="...alpinejs..."></script>
   <script defer src="...exifr..."></script>
   <script defer src="...fancybox..."></script>
   <script defer src="...masonry..."></script>
   <script defer src="...imagesloaded..."></script>
-  
+
   <!-- Scripts de la galerie -->
   <script defer src="/dist/js/gallery-loader.js"></script>
   <script defer src="/dist/js/cinematic-intro.js"></script>
@@ -62,7 +74,7 @@ Les fichiers HTML contiennent trop de code JavaScript inline :
 
 <body>
   ... (contenu HTML uniquement)
-  
+
   <!-- Scripts de fin de page -->
   <script defer src="/dist/js/photo-protection.js"></script>
   <script defer src="/dist/js/animated-blobs.js"></script>
@@ -74,19 +86,25 @@ Les fichiers HTML contiennent trop de code JavaScript inline :
 ```
 
 ### mentions.html (754 lignes)
+
 **À extraire :**
+
 - Script de dark mode (50 lignes)
 - Console warning (déjà dans console-warning.js)
 - Photo protection (déjà dans photo-protection.js)
 
 ### contact.html (553 lignes)
+
 **À extraire :**
+
 - Console warning (déjà dans console-warning.js)
 - Photo protection (déjà dans photo-protection.js)
 - Animated blobs (déjà dans animated-blobs.js)
 
 ### about_me.html (430 lignes)
+
 **À extraire :**
+
 - Console warning (déjà dans console-warning.js)
 - Photo protection (déjà dans photo-protection.js)
 - Animated blobs (déjà dans animated-blobs.js)

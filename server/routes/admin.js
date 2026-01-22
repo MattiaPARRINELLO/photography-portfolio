@@ -12,7 +12,7 @@ const paths = serverConfig.getPaths();
 router.get(['/', '/'], (req, res) => {
     console.log('🚨 ROUTE ADMIN APPELÉE:', req.url, req.originalUrl);
     console.log('🚨 Headers reçus:', req.headers['user-agent']);
-    
+
     // Headers pour éviter le cache en développement
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -31,7 +31,7 @@ router.get(['/', '/'], (req, res) => {
             const stats = fs.statSync(filePath);
             console.log('📏 Taille fichier:', stats.size, 'bytes');
             console.log('📅 Dernière modification:', stats.mtime);
-            
+
             res.sendFile(filePath, (err) => {
                 if (err) {
                     console.error('❌ Erreur sendFile:', err);
@@ -159,7 +159,7 @@ router.put('/api/links', requireAdminSession, (req, res) => {
     try {
         const newConfig = req.body;
         const success = linksService.saveLinksConfig(newConfig);
-        
+
         if (success) {
             res.json({ success: true, message: 'Configuration des liens mise à jour' });
         } else {
@@ -189,7 +189,7 @@ router.put('/api/links/:linkId', requireAdminSession, (req, res) => {
         const { linkId } = req.params;
         const updates = req.body;
         const config = linksService.updateLink(linkId, updates);
-        
+
         if (config) {
             res.json({ success: true, config });
         } else {
@@ -206,7 +206,7 @@ router.delete('/api/links/:linkId', requireAdminSession, (req, res) => {
     try {
         const { linkId } = req.params;
         const config = linksService.deleteLink(linkId);
-        
+
         if (config) {
             res.json({ success: true, config });
         } else {
@@ -260,20 +260,20 @@ router.get('/api/links/icons', requireAdminSession, (req, res) => {
 router.post('/api/links/event', requireAdminSession, (req, res) => {
     try {
         const { message, url, icon, days } = req.body;
-        
+
         if (!message || message.trim() === '') {
             return res.status(400).json({ error: 'Le message est requis' });
         }
-        
+
         const config = linksService.setEventBanner(
             { message: message.trim(), url: url || '', icon: icon || 'camera' },
             days || 7
         );
-        
+
         const timeRemaining = linksService.getEventTimeRemaining(config.event);
-        
-        res.json({ 
-            success: true, 
+
+        res.json({
+            success: true,
             event: config.event,
             timeRemaining
         });
@@ -301,8 +301,8 @@ router.get('/api/links/event', requireAdminSession, (req, res) => {
         const event = config.event || { enabled: false };
         const isActive = linksService.isEventActive(event);
         const timeRemaining = linksService.getEventTimeRemaining(event);
-        
-        res.json({ 
+
+        res.json({
             event,
             isActive,
             timeRemaining

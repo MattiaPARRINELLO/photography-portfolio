@@ -24,36 +24,38 @@
 Le fichier home.html contient **995 lignes de JavaScript inline** qui doivent être extraites.
 
 **Fichiers à créer :**
+
 - `home-gallery-core.js` - Logique principale de la galerie (500+ lignes)
-- `home-fancybox-hd.js` - Gestion du chargement HD dans Fancybox (300+ lignes)  
+- `home-fancybox-hd.js` - Gestion du chargement HD dans Fancybox (300+ lignes)
 - `home-cinematic-intro.js` - Animation d'introduction (150+ lignes)
 
 **Nouvelle structure HTML recommandée :**
+
 ```html
 <!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
   <title>Galerie Photo - Mattia Parrinello</title>
-  
+
   <!-- CSS -->
   <link rel="stylesheet" href="../dist/css/output.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
-  
+
   <!-- Bibliothèques externes -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
   <script defer src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
   <script defer src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
-  
+
   <!-- Scripts de sécurité (chargés en premier) -->
   <script defer src="/dist/js/console-warning.js"></script>
-  
+
   <!-- Scripts de la galerie (TODO: à créer) -->
   <script defer src="/dist/js/home-gallery-core.js"></script>
   <script defer src="/dist/js/home-fancybox-hd.js"></script>
   <script defer src="/dist/js/home-cinematic-intro.js"></script>
-  
+
   <!-- CSS inline minimal pour les blobs -->
   <style>
     .animated-bg{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
@@ -103,6 +105,7 @@ Le fichier home.html contient **995 lignes de JavaScript inline** qui doivent ê
 ## État actuel
 
 **Avant refactoring :**
+
 - home.html : **1612 lignes** (dont ~1000 de JS)
 - mentions.html : 754 lignes
 - contact.html : 553 lignes
@@ -110,6 +113,7 @@ Le fichier home.html contient **995 lignes de JavaScript inline** qui doivent ê
 - **Total : 3349 lignes**
 
 **Après refactoring (objectif) :**
+
 - home.html : ~250-300 lignes (HTML pur)
 - mentions.html : ~200 lignes
 - contact.html : ~200 lignes
@@ -135,6 +139,7 @@ sed -n '95,1089p' /home/mattia/photography-portfolio/pages/home.html > extracted
 ```
 
 Cette extraction nécessite une attention particulière car le code est très complexe avec :
+
 - Gestion Masonry
 - Intégration Fancybox
 - Chargement progressif des images

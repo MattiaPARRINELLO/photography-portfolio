@@ -30,11 +30,11 @@ async function cinematicIntro() {
       inner.style.color = textColor;
       if (!prefersDark) inner.style.textShadow = '0 1px 0 rgba(255,255,255,0.02), 0 2px 12px rgba(0,0,0,0.06)';
       else inner.style.textShadow = 'none';
-    } catch (e) {}
+    } catch (e) { }
 
     // Voir fichier complet pour l'animation complète...
     // Animation typewriter + transition vers header
-    
+
     // Pour l'instant, résoudre rapidement pour ne pas bloquer
     setTimeout(() => {
       overlay.remove();
@@ -47,5 +47,5 @@ async function cinematicIntro() {
 // Démarrer l'intro au chargement de la page
 document.addEventListener('DOMContentLoaded', () => {
   const galleryPromise = window.loadGallery && window.loadGallery();
-  cinematicIntro().catch(() => {});
+  cinematicIntro().catch(() => { });
 });

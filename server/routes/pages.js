@@ -200,13 +200,13 @@ router.get('/links', (req, res) => {
     try {
         const htmlPath = path.join(paths.pages, 'links.html');
         let htmlContent = fs.readFileSync(htmlPath, 'utf-8');
-        
+
         // Charger la configuration des liens
         const linksConfig = linksService.loadLinksConfig();
-        
+
         // Injecter les données dans le template
         htmlContent = linksService.injectLinksData(htmlContent, linksConfig, req);
-        
+
         // Headers pour optimisation mobile
         res.setHeader('Cache-Control', 'public, max-age=300'); // 5 min cache
         res.send(htmlContent);

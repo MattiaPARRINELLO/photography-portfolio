@@ -2,8 +2,8 @@
 // Ce fichier gère le chargement des photos, Masonry, et Fancybox
 
 // Start fetching photos list immediately
-const photosListPromise = window.INJECTED_PHOTOS 
-  ? Promise.resolve(window.INJECTED_PHOTOS) 
+const photosListPromise = window.INJECTED_PHOTOS
+  ? Promise.resolve(window.INJECTED_PHOTOS)
   : fetch('/photos-list').then(res => res.json()).catch(err => []);
 
 // Masonry instance holder

@@ -1,1111 +1,1621 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="robots"
+      content="noindex, nofollow, noarchive, nosnippet, noimageindex"
+    />
     <title>Gestion des Liens - Administration</title>
-    <link rel="icon" type="image/svg+xml" href="../../dist/assets/Logo_MP.svg">
-    <link rel="stylesheet" href="../../dist/css/output.css">
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="../../dist/assets/Logo_MP.svg"
+    />
+    <link rel="stylesheet" href="../../dist/css/output.css" />
     <!-- Alpine.js avec plugin Sortable -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Signika:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Signika:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
-        * { 
-            font-family: 'Signika', sans-serif;
-            box-sizing: border-box;
+      * {
+        font-family: "Signika", sans-serif;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: linear-gradient(135deg, #000 0%, #1a1a2e 50%, #000 100%);
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+      }
+
+      .admin-header {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 0, 0, 0.98) 0%,
+          rgba(20, 25, 45, 0.95) 50%,
+          rgba(0, 0, 0, 0.98) 100%
+        );
+        backdrop-filter: blur(25px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+      }
+
+      .section-card {
+        background: linear-gradient(
+          145deg,
+          rgba(15, 15, 25, 0.95) 0%,
+          rgba(25, 25, 35, 0.9) 50%,
+          rgba(35, 35, 45, 0.95) 100%
+        );
+        backdrop-filter: blur(30px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow:
+          0 10px 30px rgba(0, 0, 0, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      }
+
+      .link-item {
+        background: linear-gradient(
+          145deg,
+          rgba(20, 20, 30, 0.95) 0%,
+          rgba(30, 30, 40, 0.85) 100%
+        );
+        border-radius: 14px;
+        padding: 0.875rem 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: grab;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .link-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        border-color: rgba(102, 126, 234, 0.3);
+      }
+
+      .link-item.dragging {
+        opacity: 0.5;
+        cursor: grabbing;
+      }
+
+      .link-item.drag-over {
+        border-color: rgba(102, 126, 234, 0.6);
+        background: rgba(102, 126, 234, 0.1);
+      }
+
+      .toggle-switch {
+        position: relative;
+        width: 48px;
+        height: 26px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 13px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      .toggle-switch.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+
+      .toggle-switch::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .toggle-switch.active::after {
+        transform: translateX(22px);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 0.625rem 1.25rem;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        padding: 0.625rem 1.25rem;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        transition: all 0.3s ease;
+      }
+
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.25);
+      }
+
+      .btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        color: white;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+      }
+
+      .btn-danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+      }
+
+      .input-field {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        color: white;
+        width: 100%;
+        font-size: 0.9375rem;
+        transition: all 0.3s ease;
+      }
+
+      .input-field:focus {
+        outline: none;
+        border-color: rgba(102, 126, 234, 0.5);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .input-field::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      select.input-field {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1rem;
+        padding-right: 2.5rem;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .modal-content {
+        background: linear-gradient(
+          145deg,
+          rgba(20, 20, 30, 0.98) 0%,
+          rgba(30, 30, 40, 0.98) 100%
+        );
+        border-radius: 20px;
+        padding: 1.75rem;
+        width: 100%;
+        max-width: 480px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .preview-frame {
+        background: #000;
+        border-radius: 32px;
+        padding: 10px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        max-width: 260px;
+        margin: 0 auto;
+      }
+
+      .preview-screen {
+        background: #000;
+        border-radius: 26px;
+        overflow: hidden;
+        aspect-ratio: 9/16;
+        max-height: 480px;
+      }
+
+      .preview-screen iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      .drag-handle {
+        cursor: grab;
+        padding: 0.5rem;
+        color: rgba(255, 255, 255, 0.4);
+        transition: color 0.2s;
+      }
+
+      .drag-handle:hover {
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.5rem;
+      }
+
+      .icon-option {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.625rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid transparent;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        aspect-ratio: 1;
+      }
+
+      .icon-option:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .icon-option.selected {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.2);
+      }
+
+      .icon-option svg {
+        width: 18px;
+        height: 18px;
+        color: white;
+      }
+
+      svg.w-3\.5.h-3\.5 {
+        width: 30px;
+        height: 30px;
+      }
+
+      svg.w-4.h-4 {
+        width: 30px;
+        height: 30px;
+      }
+
+      img[src*="Avatar"] {
+        width: 80px !important;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
+        z-index: 100;
+        animation:
+          slideIn 0.3s ease,
+          slideOut 0.3s ease 2.7s;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
         }
-        
-        body {
-            background: linear-gradient(135deg, #000 0%, #1a1a2e 50%, #000 100%);
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
+        to {
+          transform: translateX(0);
+          opacity: 1;
         }
-        
-        .admin-header {
-            background: linear-gradient(135deg, rgba(0,0,0,0.98) 0%, rgba(20,25,45,0.95) 50%, rgba(0,0,0,0.98) 100%);
-            backdrop-filter: blur(25px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            position: sticky;
-            top: 0;
-            z-index: 40;
+      }
+
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
         }
-        
-        .section-card {
-            background: linear-gradient(145deg, rgba(15,15,25,0.95) 0%, rgba(25,25,35,0.9) 50%, rgba(35,35,45,0.95) 100%);
-            backdrop-filter: blur(30px);
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.08);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+        to {
+          transform: translateX(100%);
+          opacity: 0;
         }
-        
-        .link-item {
-            background: linear-gradient(145deg, rgba(20,20,30,0.95) 0%, rgba(30,30,40,0.85) 100%);
-            border-radius: 14px;
-            padding: 0.875rem 1rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: grab;
-            border: 1px solid rgba(255,255,255,0.06);
-        }
-        
-        .link-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-            border-color: rgba(102,126,234,0.3);
-        }
-        
-        .link-item.dragging {
-            opacity: 0.5;
-            cursor: grabbing;
-        }
-        
-        .link-item.drag-over {
-            border-color: rgba(102,126,234,0.6);
-            background: rgba(102,126,234,0.1);
-        }
-        
-        .toggle-switch {
-            position: relative;
-            width: 48px;
-            height: 26px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 13px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        
-        .toggle-switch.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .toggle-switch.active::after {
-            transform: translateX(22px);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 10px;
-            padding: 0.625rem 1.25rem;
-            color: white;
-            font-weight: 600;
-            font-size: 0.9375rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(102,126,234,0.3);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(102,126,234,0.4);
-        }
-        
-        .btn-secondary {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 10px;
-            padding: 0.625rem 1.25rem;
-            color: white;
-            font-weight: 600;
-            font-size: 0.9375rem;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.12);
-            border-color: rgba(255,255,255,0.25);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            border: none;
-            border-radius: 10px;
-            padding: 0.5rem 1rem;
-            color: white;
-            font-weight: 600;
-            font-size: 0.875rem;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-danger:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(239,68,68,0.4);
-        }
-        
-        .input-field {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 10px;
-            padding: 0.75rem 1rem;
-            color: white;
-            width: 100%;
-            font-size: 0.9375rem;
-            transition: all 0.3s ease;
-        }
-        
-        .input-field:focus {
-            outline: none;
-            border-color: rgba(102,126,234,0.5);
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
-        }
-        
-        .input-field::placeholder {
-            color: rgba(255,255,255,0.4);
-        }
-        
-        select.input-field {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1rem;
-            padding-right: 2.5rem;
-        }
-        
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(8px);
-            z-index: 50;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-        
-        .modal-content {
-            background: linear-gradient(145deg, rgba(20,20,30,0.98) 0%, rgba(30,30,40,0.98) 100%);
-            border-radius: 20px;
-            padding: 1.75rem;
-            width: 100%;
-            max-width: 480px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-        
-        .preview-frame {
-            background: #000;
-            border-radius: 32px;
-            padding: 10px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-            max-width: 260px;
-            margin: 0 auto;
-        }
-        
-        .preview-screen {
-            background: #000;
-            border-radius: 26px;
-            overflow: hidden;
-            aspect-ratio: 9/16;
-            max-height: 480px;
-        }
-        
-        .preview-screen iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        
-        .drag-handle {
-            cursor: grab;
-            padding: 0.5rem;
-            color: rgba(255,255,255,0.4);
-            transition: color 0.2s;
-        }
-        
-        .drag-handle:hover {
-            color: rgba(255,255,255,0.8);
-        }
-        
-        .icon-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 0.5rem;
-        }
-        
-        .icon-option {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.625rem;
-            background: rgba(255,255,255,0.05);
-            border: 2px solid transparent;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            aspect-ratio: 1;
-        }
-        
-        .icon-option:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        
-        .icon-option.selected {
-            border-color: #667eea;
-            background: rgba(102,126,234,0.2);
-        }
-        
-        .icon-option svg {
-            width: 18px;
-            height: 18px;
-            color: white;
-        }
-        
-        svg.w-3\.5.h-3\.5 {
-            width: 30px;
-            height: 30px;
-        }
-        
-        svg.w-4.h-4 {
-            width: 30px;
-            height: 30px;
-        }
-        
-        img[src*="Avatar"] {
-            width: 80px !important;
-        }
-        
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(34,197,94,0.3);
-            z-index: 100;
-            animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s;
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-        
-        .qr-section {
-            background: white;
-            border-radius: 14px;
-            padding: 1.25rem;
-            text-align: center;
-        }
-        
-        .qr-section img {
-            max-width: 180px;
-            margin: 0 auto;
-        }
+      }
+
+      .qr-section {
+        background: white;
+        border-radius: 14px;
+        padding: 1.25rem;
+        text-align: center;
+      }
+
+      .qr-section img {
+        max-width: 180px;
+        margin: 0 auto;
+      }
     </style>
-</head>
-<body class="text-white" x-data="linksAdmin()">
+  </head>
+  <body class="text-white" x-data="linksAdmin()">
     <!-- Login check -->
-    <div x-show="!isAuthenticated" class="min-h-screen flex items-center justify-center">
-        <div class="text-center">
-            <p class="text-white/70 mb-4">Authentification requise</p>
-            <a href="/admin" class="btn-primary inline-block">Se connecter</a>
-        </div>
+    <div
+      x-show="!isAuthenticated"
+      class="min-h-screen flex items-center justify-center"
+    >
+      <div class="text-center">
+        <p class="text-white/70 mb-4">Authentification requise</p>
+        <a href="/admin" class="btn-primary inline-block">Se connecter</a>
+      </div>
     </div>
-    
+
     <!-- Main Admin Panel -->
     <div x-show="isAuthenticated" x-cloak>
-        <!-- Header -->
-        <header class="admin-header py-3 border-b border-white/10">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center gap-4">
-                    <div class="flex items-center gap-4">
-                        <a href="/admin" class="text-white/70 hover:text-white transition">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                            </svg>
-                        </a>
-                        <div>
-                            <h1 class="text-xl font-bold leading-tight">Gestion des Liens</h1>
-                            <p class="text-white/50 text-xs mt-0.5">Page /links</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <a href="/links" target="_blank" class="btn-secondary flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                            </svg>
-                            Voir la page
-                        </a>
-                        <button @click="saveAll()" class="btn-primary flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            Sauvegarder
-                        </button>
-                    </div>
-                </div>
+      <!-- Header -->
+      <header class="admin-header py-3 border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+              <a
+                href="/admin"
+                class="text-white/70 hover:text-white transition"
+              >
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                  />
+                </svg>
+              </a>
+              <div>
+                <h1 class="text-xl font-bold leading-tight">
+                  Gestion des Liens
+                </h1>
+                <p class="text-white/50 text-xs mt-0.5">Page /links</p>
+              </div>
             </div>
-        </header>
-        
-        <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <!-- Event Banner Quick Action -->
-            <section class="section-card p-5 mb-6">
-                <div class="flex items-center justify-between mb-3.5">
-                    <h2 class="text-lg font-bold flex items-center gap-2.5">
-                        <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
-                        </svg>
-                        Bandeau Événement
-                        <span x-show="eventStatus.isActive" class="px-2 py-0.5 text-xs font-semibold bg-green-500/20 text-green-400 rounded-full">
-                            Actif
-                        </span>
-                    </h2>
-                    <div x-show="eventStatus.isActive" class="text-xs text-white/40">
-                        Expire <span x-text="eventStatus.timeRemaining?.formattedExpiry"></span>
-                    </div>
-                </div>
-                
-                <!-- Active Event Display -->
-                <div x-show="eventStatus.isActive" class="mb-3.5 p-3.5 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
-                    <div class="flex items-center justify-between gap-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-400 [&_svg]:w-4 [&_svg]:h-4"
-                                 x-html="getIconSvg(config.event?.icon || 'camera')">
-                            </div>
-                            <div>
-                                <p class="font-semibold text-yellow-300" x-text="config.event?.message"></p>
-                                <p class="text-sm text-white/50" x-text="config.event?.url || 'Aucun lien'"></p>
-                            </div>
-                        </div>
-                        <button @click="clearEvent()" class="btn-danger flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                            Supprimer
-                        </button>
-                    </div>
-                    <div class="mt-3 flex items-center gap-2 text-sm text-white/50">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <span x-show="eventStatus.timeRemaining?.days > 0">
-                            <span x-text="eventStatus.timeRemaining?.days"></span> jour(s) et 
-                        </span>
-                        <span x-text="eventStatus.timeRemaining?.hours"></span> heure(s) restantes
-                    </div>
-                </div>
-                
-                <!-- Create Event Form -->
-                <div x-show="!eventStatus.isActive || showEventForm" class="space-y-4">
-                    <p class="text-white/60 text-sm" x-show="!eventStatus.isActive">
-                        📢 Créez un bandeau temporaire pour annoncer un événement, une nouvelle série de photos, etc. Il disparaîtra automatiquement.
-                    </p>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="md:col-span-2">
-                            <label class="block text-white/70 text-xs font-medium mb-1.5">Message du bandeau *</label>
-                            <input type="text" x-model="newEvent.message" class="input-field" 
-                                   placeholder="📸 Récupère tes photos du concert X !">
-                        </div>
-                        <div>
-                            <label class="block text-white/70 text-xs font-medium mb-1.5">Lien (optionnel)</label>
-                            <input type="url" x-model="newEvent.url" class="input-field" 
-                                   placeholder="https://drive.google.com/...">
-                        </div>
-                        <div>
-                            <label class="block text-white/70 text-xs font-medium mb-1.5">Durée d'affichage</label>
-                            <select x-model="newEvent.days" class="input-field">
-                                <option value="1">1 jour</option>
-                                <option value="2">2 jours</option>
-                                <option value="3">3 jours</option>
-                                <option value="5">5 jours</option>
-                                <option value="7" selected>7 jours (max)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-white/70 text-xs font-medium mb-1.5">Icône</label>
-                        <div class="flex gap-2 flex-wrap">
-                            <template x-for="iconName in ['camera', 'link', 'mail', 'instagram', 'phone']" :key="iconName">
-                                <div class="icon-option w-9 h-9" 
-                                     :class="{ 'selected': newEvent.icon === iconName }"
-                                     @click="newEvent.icon = iconName"
-                                     x-html="getIconSvg(iconName)">
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-                    
-                    <div class="flex gap-2.5 pt-3">
-                        <button @click="createEvent()" class="btn-primary flex items-center gap-2"
-                                :disabled="!newEvent.message.trim()">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
-                            </svg>
-                            <span x-text="eventStatus.isActive ? 'Remplacer le bandeau' : 'Activer le bandeau'"></span>
-                        </button>
-                        <button x-show="eventStatus.isActive" @click="showEventForm = false" class="btn-secondary">
-                            Annuler
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Button to show form when event is active -->
-                <button x-show="eventStatus.isActive && !showEventForm" 
-                        @click="showEventForm = true" 
-                        class="btn-secondary mt-4 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                    </svg>
-                    Modifier le bandeau
-                </button>
-            </section>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Left Column: Settings -->
-                <div class="lg:col-span-2 space-y-5">
-                    <!-- Profile Section -->
-                    <section class="section-card p-5">
-                        <h2 class="text-lg font-bold mb-5 flex items-center gap-2.5">
-                            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                            Profil
-                        </h2>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-3.5">
-                            <div>
-                                <label class="block text-white/70 text-xs font-medium mb-1.5">Nom</label>
-                                <input type="text" x-model="config.profile.name" class="input-field" placeholder="Votre nom">
-                            </div>
-                            <div>
-                                <label class="block text-white/70 text-xs font-medium mb-1.5">Rôle</label>
-                                <input type="text" x-model="config.profile.role" class="input-field" placeholder="Photographe">
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3.5">
-                            <label class="block text-white/70 text-xs font-medium mb-1.5">Tagline</label>
-                            <input type="text" x-model="config.profile.tagline" class="input-field" placeholder="Concerts • Lives • Backstage">
-                        </div>
-                        
-                        <div class="flex items-center justify-between p-3.5 bg-black/30 rounded-xl">
-                            <div class="flex items-center gap-3">
-                                <img :src="config.profile.avatar?.url || '/dist/assets/Avatar.png'" 
-                                     class="w-10 h-10 rounded-full object-cover border-2 border-white/20">
-                                <div>
-                                    <p class="font-medium text-sm">Photo de profil</p>
-                                    <p class="text-white/50 text-xs">Affichée sur la page /links</p>
-                                </div>
-                            </div>
-                            <div class="toggle-switch" 
-                                 :class="{ 'active': config.profile.avatar?.enabled }"
-                                 @click="config.profile.avatar.enabled = !config.profile.avatar.enabled">
-                            </div>
-                        </div>
-                    </section>
-                    
-                    <!-- Links Section -->
-                    <!-- Links Section -->
-                    <section class="section-card p-5">
-                        <div class="flex items-center justify-between mb-5">
-                            <h2 class="text-lg font-bold flex items-center gap-2.5">
-                                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                                </svg>
-                                Liens
-                            </h2>
-                            <button @click="openAddModal()" class="btn-primary flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg>
-                                Ajouter
-                            </button>
-                        </div>
-                        
-                        <p class="text-white/40 text-xs mb-3.5 flex items-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
-                            </svg>
-                            Glissez-déposez pour réordonner les liens
-                        </p>
-                        
-                        <!-- Links List -->
-                        <div class="space-y-3" 
-                             x-ref="linksList"
-                             @dragover.prevent
-                             @drop="handleDrop($event)">
-                            <template x-for="(link, index) in sortedLinks" :key="link.id">
-                                <div class="link-item flex items-center gap-4"
-                                     draggable="true"
-                                     :data-id="link.id"
-                                     @dragstart="handleDragStart($event, link)"
-                                     @dragend="handleDragEnd($event)"
-                                     @dragover.prevent="handleDragOver($event)"
-                                     @dragleave="handleDragLeave($event)">
-                                    
-                                    <!-- Drag Handle -->
-                                    <div class="drag-handle">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
-                                        </svg>
-                                    </div>
-                                    
-                                    <!-- Icon -->
-                                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0"
-                                         x-html="getIconSvg(link.icon)">
-                                    </div>
-                                    
-                                    <!-- Link Info -->
-                                    <div class="flex-1 min-w-0">
-                                        <p class="font-semibold truncate" x-text="link.label"></p>
-                                        <p class="text-white/50 text-sm truncate" x-text="link.url"></p>
-                                    </div>
-                                    
-                                    <!-- Style Badge -->
-                                    <span x-show="link.style === 'primary'" 
-                                          class="px-2 py-1 text-xs font-bold bg-purple-500/30 text-purple-300 rounded-full">
-                                        Principal
-                                    </span>
-                                    
-                                    <!-- Toggle -->
-                                    <div class="toggle-switch" 
-                                         :class="{ 'active': link.enabled }"
-                                         @click="toggleLink(link)">
-                                    </div>
-                                    
-                                    <!-- Actions -->
-                                    <div class="flex gap-2">
-                                        <button @click="openEditModal(link)" 
-                                                class="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                            </svg>
-                                        </button>
-                                        <button @click="deleteLink(link)" 
-                                                class="p-2 text-red-400/50 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            </template>
-                            
-                            <!-- Empty State -->
-                            <div x-show="config.links.length === 0" 
-                                 class="text-center py-12 text-white/50">
-                                <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                                </svg>
-                                <p>Aucun lien configuré</p>
-                                <button @click="openAddModal()" class="btn-primary mt-4">
-                                    Ajouter votre premier lien
-                                </button>
-                            </div>
-                        </div>
-                    </section>
-                    
-                    <!-- SEO Section -->
-                    <section class="section-card p-5">
-                        <h2 class="text-lg font-bold mb-5 flex items-center gap-2.5">
-                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                            SEO & Partage
-                        </h2>
-                        
-                        <div class="space-y-3.5">
-                            <div>
-                                <label class="block text-white/70 text-xs font-medium mb-1.5">Titre de la page</label>
-                                <input type="text" x-model="config.seo.title" class="input-field" 
-                                       placeholder="Mattia Parrinello | Photographe">
-                            </div>
-                            <div>
-                                <label class="block text-white/70 text-xs font-medium mb-1.5">Description</label>
-                                <textarea x-model="config.seo.description" class="input-field resize-none" rows="2.5"
-                                          placeholder="Description pour les moteurs de recherche..."></textarea>
-                            </div>
-                        </div>
-                    </section>
-                    
-                    <!-- Appearance Section -->
-                    <!-- Appearance Section -->
-                    <section class="section-card p-5">
-                        <h2 class="text-lg font-bold mb-5 flex items-center gap-2.5">
-                            <svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
-                            </svg>
-                            Apparence
-                        </h2>
-                        
-                        <div class="flex items-center justify-between p-3.5 bg-black/30 rounded-xl">
-                            <div>
-                                <p class="font-medium text-sm">Afficher le watermark</p>
-                                <p class="text-white/50 text-xs">Lien vers votre portfolio en bas de page</p>
-                            </div>
-                            <div class="toggle-switch" 
-                                 :class="{ 'active': config.appearance?.showWatermark }"
-                                 @click="config.appearance.showWatermark = !config.appearance.showWatermark">
-                            </div>
-                        </div>
-                    </section>
-                </div>
-                
-                <!-- Right Column: Preview & QR -->
-                <div class="space-y-5">
-                    <!-- Live Preview -->
-                    <section class="section-card p-5">
-                        <h2 class="text-lg font-bold mb-4 flex items-center gap-2.5">
-                            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                            </svg>
-                            Aperçu mobile
-                        </h2>
-                        
-                        <div class="preview-frame">
-                            <div class="preview-screen">
-                                <iframe :src="'/links?preview=' + Date.now()" 
-                                        x-ref="previewFrame"
-                                        title="Aperçu de la page links"></iframe>
-                            </div>
-                        </div>
-                        
-                        <button @click="refreshPreview()" 
-                                class="btn-secondary w-full mt-3 flex items-center justify-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                            </svg>
-                            Actualiser l'aperçu
-                        </button>
-                    </section>
-                    
-                    <!-- QR Code -->
-                    <section class="section-card p-5">
-                        <h2 class="text-lg font-bold mb-4 flex items-center gap-2.5">
-                            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h2M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
-                            </svg>
-                            QR Code
-                        </h2>
-                        
-                        <div class="qr-section">
-                            <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(linksUrl)" 
-                                 alt="QR Code pour /links"
-                                 class="mx-auto">
-                            <p class="text-gray-600 text-xs mt-2.5" x-text="linksUrl"></p>
-                        </div>
-                        
-                        <a :href="'https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&format=png&data=' + encodeURIComponent(linksUrl)" 
-                           download="qr-code-links.png"
-                           class="btn-secondary w-full mt-3 flex items-center justify-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                            </svg>
-                            Télécharger HD
-                        </a>
-                    </section>
-                </div>
+            <div class="flex items-center gap-4">
+              <a
+                href="/links"
+                target="_blank"
+                class="btn-secondary flex items-center gap-2"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+                Voir la page
+              </a>
+              <button
+                @click="saveAll()"
+                class="btn-primary flex items-center gap-2"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                Sauvegarder
+              </button>
             </div>
-        </main>
-    </div>
-    
-    <!-- Add/Edit Link Modal -->
-    <div x-show="showModal" 
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="modal-overlay"
-         @click.self="closeModal()"
-         x-cloak>
-        <div class="modal-content" @click.stop>
-            <h3 class="text-lg font-bold mb-5" x-text="editingLink ? 'Modifier le lien' : 'Ajouter un lien'"></h3>
-            
-            <div class="space-y-3.5">
-                <div>
-                    <label class="block text-white/70 text-xs font-medium mb-1.5">Label du bouton *</label>
-                    <input type="text" x-model="modalData.label" class="input-field" 
-                           placeholder="Voir mon Portfolio">
-                </div>
-                
-                <div>
-                    <label class="block text-white/70 text-xs font-medium mb-1.5">URL *</label>
-                    <input type="url" x-model="modalData.url" class="input-field" 
-                           placeholder="https://...">
-                </div>
-                
-                <div>
-                    <label class="block text-white/70 text-xs font-medium mb-1.5">Icône</label>
-                    <div class="icon-grid">
-                        <template x-for="iconName in availableIcons" :key="iconName">
-                            <div class="icon-option" 
-                                 :class="{ 'selected': modalData.icon === iconName }"
-                                 @click="modalData.icon = iconName"
-                                 x-html="getIconSvg(iconName)">
-                            </div>
-                        </template>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-white/70 text-xs font-medium mb-1.5">Style</label>
-                    <select x-model="modalData.style" class="input-field">
-                        <option value="default">Standard</option>
-                        <option value="primary">Principal (mis en avant)</option>
-                    </select>
-                </div>
-                
-                <div class="flex items-center justify-between p-3.5 bg-black/30 rounded-xl">
-                    <div>
-                        <p class="font-medium text-sm">Activer ce lien</p>
-                        <p class="text-white/50 text-xs">Visible sur la page /links</p>
-                    </div>
-                    <div class="toggle-switch" 
-                         :class="{ 'active': modalData.enabled }"
-                         @click="modalData.enabled = !modalData.enabled">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex gap-2.5 mt-6">
-                <button @click="closeModal()" class="btn-secondary flex-1">Annuler</button>
-                <button @click="saveLink()" class="btn-primary flex-1">
-                    <span x-text="editingLink ? 'Mettre à jour' : 'Ajouter'"></span>
-                </button>
-            </div>
+          </div>
         </div>
+      </header>
+
+      <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <!-- Event Banner Quick Action -->
+        <section class="section-card p-5 mb-6">
+          <div class="flex items-center justify-between mb-3.5">
+            <h2 class="text-lg font-bold flex items-center gap-2.5">
+              <svg
+                class="w-5 h-5 text-yellow-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+                />
+              </svg>
+              Bandeau Événement
+              <span
+                x-show="eventStatus.isActive"
+                class="px-2 py-0.5 text-xs font-semibold bg-green-500/20 text-green-400 rounded-full"
+              >
+                Actif
+              </span>
+            </h2>
+            <div x-show="eventStatus.isActive" class="text-xs text-white/40">
+              Expire
+              <span x-text="eventStatus.timeRemaining?.formattedExpiry"></span>
+            </div>
+          </div>
+
+          <!-- Active Event Display -->
+          <div
+            x-show="eventStatus.isActive"
+            class="mb-3.5 p-3.5 bg-yellow-500/10 border border-yellow-500/30 rounded-xl"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-400 [&_svg]:w-4 [&_svg]:h-4"
+                  x-html="getIconSvg(config.event?.icon || 'camera')"
+                ></div>
+                <div>
+                  <p
+                    class="font-semibold text-yellow-300"
+                    x-text="config.event?.message"
+                  ></p>
+                  <p
+                    class="text-sm text-white/50"
+                    x-text="config.event?.url || 'Aucun lien'"
+                  ></p>
+                </div>
+              </div>
+              <button
+                @click="clearEvent()"
+                class="btn-danger flex items-center gap-2"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                Supprimer
+              </button>
+            </div>
+            <div class="mt-3 flex items-center gap-2 text-sm text-white/50">
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span x-show="eventStatus.timeRemaining?.days > 0">
+                <span x-text="eventStatus.timeRemaining?.days"></span> jour(s)
+                et
+              </span>
+              <span x-text="eventStatus.timeRemaining?.hours"></span> heure(s)
+              restantes
+            </div>
+          </div>
+
+          <!-- Create Event Form -->
+          <div
+            x-show="!eventStatus.isActive || showEventForm"
+            class="space-y-4"
+          >
+            <p class="text-white/60 text-sm" x-show="!eventStatus.isActive">
+              📢 Créez un bandeau temporaire pour annoncer un événement, une
+              nouvelle série de photos, etc. Il disparaîtra automatiquement.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="md:col-span-2">
+                <label class="block text-white/70 text-xs font-medium mb-1.5"
+                  >Message du bandeau *</label
+                >
+                <input
+                  type="text"
+                  x-model="newEvent.message"
+                  class="input-field"
+                  placeholder="📸 Récupère tes photos du concert X !"
+                />
+              </div>
+              <div>
+                <label class="block text-white/70 text-xs font-medium mb-1.5"
+                  >Lien (optionnel)</label
+                >
+                <input
+                  type="url"
+                  x-model="newEvent.url"
+                  class="input-field"
+                  placeholder="https://drive.google.com/..."
+                />
+              </div>
+              <div>
+                <label class="block text-white/70 text-xs font-medium mb-1.5"
+                  >Durée d'affichage</label
+                >
+                <select x-model="newEvent.days" class="input-field">
+                  <option value="1">1 jour</option>
+                  <option value="2">2 jours</option>
+                  <option value="3">3 jours</option>
+                  <option value="5">5 jours</option>
+                  <option value="7" selected>7 jours (max)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-white/70 text-xs font-medium mb-1.5"
+                >Icône</label
+              >
+              <div class="flex gap-2 flex-wrap">
+                <template
+                  x-for="iconName in ['camera', 'link', 'mail', 'instagram', 'phone']"
+                  :key="iconName"
+                >
+                  <div
+                    class="icon-option w-9 h-9"
+                    :class="{ 'selected': newEvent.icon === iconName }"
+                    @click="newEvent.icon = iconName"
+                    x-html="getIconSvg(iconName)"
+                  ></div>
+                </template>
+              </div>
+            </div>
+
+            <div class="flex gap-2.5 pt-3">
+              <button
+                @click="createEvent()"
+                class="btn-primary flex items-center gap-2"
+                :disabled="!newEvent.message.trim()"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+                  />
+                </svg>
+                <span
+                  x-text="eventStatus.isActive ? 'Remplacer le bandeau' : 'Activer le bandeau'"
+                ></span>
+              </button>
+              <button
+                x-show="eventStatus.isActive"
+                @click="showEventForm = false"
+                class="btn-secondary"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+
+          <!-- Button to show form when event is active -->
+          <button
+            x-show="eventStatus.isActive && !showEventForm"
+            @click="showEventForm = true"
+            class="btn-secondary mt-4 flex items-center gap-2"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            Modifier le bandeau
+          </button>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Left Column: Settings -->
+          <div class="lg:col-span-2 space-y-5">
+            <!-- Profile Section -->
+            <section class="section-card p-5">
+              <h2 class="text-lg font-bold mb-5 flex items-center gap-2.5">
+                <svg
+                  class="w-5 h-5 text-purple-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+                Profil
+              </h2>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-3.5">
+                <div>
+                  <label class="block text-white/70 text-xs font-medium mb-1.5"
+                    >Nom</label
+                  >
+                  <input
+                    type="text"
+                    x-model="config.profile.name"
+                    class="input-field"
+                    placeholder="Votre nom"
+                  />
+                </div>
+                <div>
+                  <label class="block text-white/70 text-xs font-medium mb-1.5"
+                    >Rôle</label
+                  >
+                  <input
+                    type="text"
+                    x-model="config.profile.role"
+                    class="input-field"
+                    placeholder="Photographe"
+                  />
+                </div>
+              </div>
+
+              <div class="mb-3.5">
+                <label class="block text-white/70 text-xs font-medium mb-1.5"
+                  >Tagline</label
+                >
+                <input
+                  type="text"
+                  x-model="config.profile.tagline"
+                  class="input-field"
+                  placeholder="Concerts • Lives • Backstage"
+                />
+              </div>
+
+              <div
+                class="flex items-center justify-between p-3.5 bg-black/30 rounded-xl"
+              >
+                <div class="flex items-center gap-3">
+                  <img
+                    :src="config.profile.avatar?.url || '/dist/assets/Avatar.png'"
+                    class="w-10 h-10 rounded-full object-cover border-2 border-white/20"
+                  />
+                  <div>
+                    <p class="font-medium text-sm">Photo de profil</p>
+                    <p class="text-white/50 text-xs">
+                      Affichée sur la page /links
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="toggle-switch"
+                  :class="{ 'active': config.profile.avatar?.enabled }"
+                  @click="config.profile.avatar.enabled = !config.profile.avatar.enabled"
+                ></div>
+              </div>
+            </section>
+
+            <!-- Links Section -->
+            <!-- Links Section -->
+            <section class="section-card p-5">
+              <div class="flex items-center justify-between mb-5">
+                <h2 class="text-lg font-bold flex items-center gap-2.5">
+                  <svg
+                    class="w-5 h-5 text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                    />
+                  </svg>
+                  Liens
+                </h2>
+                <button
+                  @click="openAddModal()"
+                  class="btn-primary flex items-center gap-2"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  Ajouter
+                </button>
+              </div>
+
+              <p class="text-white/40 text-xs mb-3.5 flex items-center gap-1.5">
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+                  />
+                </svg>
+                Glissez-déposez pour réordonner les liens
+              </p>
+
+              <!-- Links List -->
+              <div
+                class="space-y-3"
+                x-ref="linksList"
+                @dragover.prevent
+                @drop="handleDrop($event)"
+              >
+                <template x-for="(link, index) in sortedLinks" :key="link.id">
+                  <div
+                    class="link-item flex items-center gap-4"
+                    draggable="true"
+                    :data-id="link.id"
+                    @dragstart="handleDragStart($event, link)"
+                    @dragend="handleDragEnd($event)"
+                    @dragover.prevent="handleDragOver($event)"
+                    @dragleave="handleDragLeave($event)"
+                  >
+                    <!-- Drag Handle -->
+                    <div class="drag-handle">
+                      <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 8h16M4 16h16"
+                        />
+                      </svg>
+                    </div>
+
+                    <!-- Icon -->
+                    <div
+                      class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0"
+                      x-html="getIconSvg(link.icon)"
+                    ></div>
+
+                    <!-- Link Info -->
+                    <div class="flex-1 min-w-0">
+                      <p class="font-semibold truncate" x-text="link.label"></p>
+                      <p
+                        class="text-white/50 text-sm truncate"
+                        x-text="link.url"
+                      ></p>
+                    </div>
+
+                    <!-- Style Badge -->
+                    <span
+                      x-show="link.style === 'primary'"
+                      class="px-2 py-1 text-xs font-bold bg-purple-500/30 text-purple-300 rounded-full"
+                    >
+                      Principal
+                    </span>
+
+                    <!-- Toggle -->
+                    <div
+                      class="toggle-switch"
+                      :class="{ 'active': link.enabled }"
+                      @click="toggleLink(link)"
+                    ></div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-2">
+                      <button
+                        @click="openEditModal(link)"
+                        class="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition"
+                      >
+                        <svg
+                          class="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        @click="deleteLink(link)"
+                        class="p-2 text-red-400/50 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition"
+                      >
+                        <svg
+                          class="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </template>
+
+                <!-- Empty State -->
+                <div
+                  x-show="config.links.length === 0"
+                  class="text-center py-12 text-white/50"
+                >
+                  <svg
+                    class="w-16 h-16 mx-auto mb-4 opacity-50"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1"
+                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                    />
+                  </svg>
+                  <p>Aucun lien configuré</p>
+                  <button @click="openAddModal()" class="btn-primary mt-4">
+                    Ajouter votre premier lien
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- SEO Section -->
+            <section class="section-card p-5">
+              <h2 class="text-lg font-bold mb-5 flex items-center gap-2.5">
+                <svg
+                  class="w-5 h-5 text-green-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                SEO & Partage
+              </h2>
+
+              <div class="space-y-3.5">
+                <div>
+                  <label class="block text-white/70 text-xs font-medium mb-1.5"
+                    >Titre de la page</label
+                  >
+                  <input
+                    type="text"
+                    x-model="config.seo.title"
+                    class="input-field"
+                    placeholder="Mattia Parrinello | Photographe"
+                  />
+                </div>
+                <div>
+                  <label class="block text-white/70 text-xs font-medium mb-1.5"
+                    >Description</label
+                  >
+                  <textarea
+                    x-model="config.seo.description"
+                    class="input-field resize-none"
+                    rows="2.5"
+                    placeholder="Description pour les moteurs de recherche..."
+                  ></textarea>
+                </div>
+              </div>
+            </section>
+
+            <!-- Appearance Section -->
+            <!-- Appearance Section -->
+            <section class="section-card p-5">
+              <h2 class="text-lg font-bold mb-5 flex items-center gap-2.5">
+                <svg
+                  class="w-5 h-5 text-pink-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+                  />
+                </svg>
+                Apparence
+              </h2>
+
+              <div
+                class="flex items-center justify-between p-3.5 bg-black/30 rounded-xl"
+              >
+                <div>
+                  <p class="font-medium text-sm">Afficher le watermark</p>
+                  <p class="text-white/50 text-xs">
+                    Lien vers votre portfolio en bas de page
+                  </p>
+                </div>
+                <div
+                  class="toggle-switch"
+                  :class="{ 'active': config.appearance?.showWatermark }"
+                  @click="config.appearance.showWatermark = !config.appearance.showWatermark"
+                ></div>
+              </div>
+            </section>
+          </div>
+
+          <!-- Right Column: Preview & QR -->
+          <div class="space-y-5">
+            <!-- Live Preview -->
+            <section class="section-card p-5">
+              <h2 class="text-lg font-bold mb-4 flex items-center gap-2.5">
+                <svg
+                  class="w-5 h-5 text-cyan-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                  />
+                </svg>
+                Aperçu mobile
+              </h2>
+
+              <div class="preview-frame">
+                <div class="preview-screen">
+                  <iframe
+                    :src="'/links?preview=' + Date.now()"
+                    x-ref="previewFrame"
+                    title="Aperçu de la page links"
+                  ></iframe>
+                </div>
+              </div>
+
+              <button
+                @click="refreshPreview()"
+                class="btn-secondary w-full mt-3 flex items-center justify-center gap-1.5"
+              >
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                Actualiser l'aperçu
+              </button>
+            </section>
+
+            <!-- QR Code -->
+            <section class="section-card p-5">
+              <h2 class="text-lg font-bold mb-4 flex items-center gap-2.5">
+                <svg
+                  class="w-5 h-5 text-yellow-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h2M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+                  />
+                </svg>
+                QR Code
+              </h2>
+
+              <div class="qr-section">
+                <img
+                  :src="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(linksUrl)"
+                  alt="QR Code pour /links"
+                  class="mx-auto"
+                />
+                <p class="text-gray-600 text-xs mt-2.5" x-text="linksUrl"></p>
+              </div>
+
+              <a
+                :href="'https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&format=png&data=' + encodeURIComponent(linksUrl)"
+                download="qr-code-links.png"
+                class="btn-secondary w-full mt-3 flex items-center justify-center gap-1.5"
+              >
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+                Télécharger HD
+              </a>
+            </section>
+          </div>
+        </div>
+      </main>
     </div>
-    
+
+    <!-- Add/Edit Link Modal -->
+    <div
+      x-show="showModal"
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      class="modal-overlay"
+      @click.self="closeModal()"
+      x-cloak
+    >
+      <div class="modal-content" @click.stop>
+        <h3
+          class="text-lg font-bold mb-5"
+          x-text="editingLink ? 'Modifier le lien' : 'Ajouter un lien'"
+        ></h3>
+
+        <div class="space-y-3.5">
+          <div>
+            <label class="block text-white/70 text-xs font-medium mb-1.5"
+              >Label du bouton *</label
+            >
+            <input
+              type="text"
+              x-model="modalData.label"
+              class="input-field"
+              placeholder="Voir mon Portfolio"
+            />
+          </div>
+
+          <div>
+            <label class="block text-white/70 text-xs font-medium mb-1.5"
+              >URL *</label
+            >
+            <input
+              type="url"
+              x-model="modalData.url"
+              class="input-field"
+              placeholder="https://..."
+            />
+          </div>
+
+          <div>
+            <label class="block text-white/70 text-xs font-medium mb-1.5"
+              >Icône</label
+            >
+            <div class="icon-grid">
+              <template x-for="iconName in availableIcons" :key="iconName">
+                <div
+                  class="icon-option"
+                  :class="{ 'selected': modalData.icon === iconName }"
+                  @click="modalData.icon = iconName"
+                  x-html="getIconSvg(iconName)"
+                ></div>
+              </template>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-white/70 text-xs font-medium mb-1.5"
+              >Style</label
+            >
+            <select x-model="modalData.style" class="input-field">
+              <option value="default">Standard</option>
+              <option value="primary">Principal (mis en avant)</option>
+            </select>
+          </div>
+
+          <div
+            class="flex items-center justify-between p-3.5 bg-black/30 rounded-xl"
+          >
+            <div>
+              <p class="font-medium text-sm">Activer ce lien</p>
+              <p class="text-white/50 text-xs">Visible sur la page /links</p>
+            </div>
+            <div
+              class="toggle-switch"
+              :class="{ 'active': modalData.enabled }"
+              @click="modalData.enabled = !modalData.enabled"
+            ></div>
+          </div>
+        </div>
+
+        <div class="flex gap-2.5 mt-6">
+          <button @click="closeModal()" class="btn-secondary flex-1">
+            Annuler
+          </button>
+          <button @click="saveLink()" class="btn-primary flex-1">
+            <span x-text="editingLink ? 'Mettre à jour' : 'Ajouter'"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Toast Notifications -->
-    <div x-show="showToast" 
-         x-transition
-         class="toast"
-         x-text="toastMessage"
-         x-cloak>
-    </div>
-    
+    <div
+      x-show="showToast"
+      x-transition
+      class="toast"
+      x-text="toastMessage"
+      x-cloak
+    ></div>
+
     <script>
-        function linksAdmin() {
-            return {
-                isAuthenticated: false,
-                config: {
-                    profile: { name: '', role: '', tagline: '', avatar: { enabled: true, url: '/dist/assets/Avatar.png' } },
-                    links: [],
-                    appearance: { showWatermark: true },
-                    seo: { title: '', description: '' }
-                },
-                showModal: false,
-                editingLink: null,
-                modalData: { label: '', url: '', icon: 'link', style: 'default', enabled: true },
-                draggedItem: null,
-                showToast: false,
-                toastMessage: '',
-                availableIcons: ['camera', 'instagram', 'mail', 'whatsapp', 'twitter', 'youtube', 'tiktok', 'spotify', 'link', 'phone', 'facebook', 'linkedin'],
-                
-                // Event banner state
-                eventStatus: { isActive: false, timeRemaining: null },
-                showEventForm: false,
-                newEvent: { message: '', url: '', icon: 'camera', days: 7 },
-                
-                get linksUrl() {
-                    return window.location.origin + '/links';
-                },
-                
-                get sortedLinks() {
-                    return [...this.config.links].sort((a, b) => (a.order || 0) - (b.order || 0));
-                },
-                
-                async init() {
-                    // Check authentication
-                    try {
-                        const authRes = await fetch('/admin/check-auth', { credentials: 'include' });
-                        this.isAuthenticated = authRes.ok;
-                        
-                        if (this.isAuthenticated) {
-                            await this.loadConfig();
-                            await this.loadEventStatus();
-                        }
-                    } catch (e) {
-                        console.error('Auth check failed:', e);
-                        this.isAuthenticated = false;
-                    }
-                },
-                
-                async loadEventStatus() {
-                    try {
-                        const res = await fetch('/admin/api/links/event', { credentials: 'include' });
-                        if (res.ok) {
-                            this.eventStatus = await res.json();
-                        }
-                    } catch (e) {
-                        console.error('Failed to load event status:', e);
-                    }
-                },
-                
-                async createEvent() {
-                    if (!this.newEvent.message.trim()) {
-                        this.showNotification('Le message est requis');
-                        return;
-                    }
-                    
-                    try {
-                        const res = await fetch('/admin/api/links/event', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            credentials: 'include',
-                            body: JSON.stringify({
-                                message: this.newEvent.message,
-                                url: this.newEvent.url || null,
-                                icon: this.newEvent.icon,
-                                daysUntilExpiration: parseInt(this.newEvent.days)
-                            })
-                        });
-                        
-                        if (res.ok) {
-                            await this.loadConfig();
-                            await this.loadEventStatus();
-                            this.showEventForm = false;
-                            this.newEvent = { message: '', url: '', icon: 'camera', days: 7 };
-                            this.showNotification('Bandeau événement activé !');
-                            this.refreshPreview();
-                        } else {
-                            this.showNotification('Erreur lors de la création');
-                        }
-                    } catch (e) {
-                        console.error('Create event failed:', e);
-                        this.showNotification('Erreur lors de la création');
-                    }
-                },
-                
-                async clearEvent() {
-                    if (!confirm('Supprimer le bandeau événement ?')) return;
-                    
-                    try {
-                        const res = await fetch('/admin/api/links/event', {
-                            method: 'DELETE',
-                            credentials: 'include'
-                        });
-                        
-                        if (res.ok) {
-                            await this.loadConfig();
-                            await this.loadEventStatus();
-                            this.showNotification('Bandeau événement supprimé');
-                            this.refreshPreview();
-                        } else {
-                            this.showNotification('Erreur lors de la suppression');
-                        }
-                    } catch (e) {
-                        console.error('Clear event failed:', e);
-                        this.showNotification('Erreur lors de la suppression');
-                    }
-                },
-                
-                async loadConfig() {
-                    try {
-                        const res = await fetch('/admin/api/links', { credentials: 'include' });
-                        if (res.ok) {
-                            this.config = await res.json();
-                            // Ensure nested objects exist
-                            if (!this.config.profile.avatar) {
-                                this.config.profile.avatar = { enabled: true, url: '/dist/assets/Avatar.png' };
-                            }
-                            if (!this.config.appearance) {
-                                this.config.appearance = { showWatermark: true };
-                            }
-                            if (!this.config.seo) {
-                                this.config.seo = { title: '', description: '' };
-                            }
-                            if (!this.config.event) {
-                                this.config.event = { enabled: false, message: '', url: null, icon: 'camera' };
-                            }
-                        }
-                    } catch (e) {
-                        console.error('Failed to load config:', e);
-                    }
-                },
-                
-                async saveAll() {
-                    try {
-                        const res = await fetch('/admin/api/links', {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            credentials: 'include',
-                            body: JSON.stringify(this.config)
-                        });
-                        
-                        if (res.ok) {
-                            this.showNotification('Configuration sauvegardée !');
-                            this.refreshPreview();
-                        } else {
-                            this.showNotification('Erreur lors de la sauvegarde');
-                        }
-                    } catch (e) {
-                        console.error('Save failed:', e);
-                        this.showNotification('Erreur lors de la sauvegarde');
-                    }
-                },
-                
-                openAddModal() {
-                    this.editingLink = null;
-                    this.modalData = { label: '', url: '', icon: 'link', style: 'default', enabled: true };
-                    this.showModal = true;
-                },
-                
-                openEditModal(link) {
-                    this.editingLink = link;
-                    this.modalData = { ...link };
-                    this.showModal = true;
-                },
-                
-                closeModal() {
-                    this.showModal = false;
-                    this.editingLink = null;
-                },
-                
-                saveLink() {
-                    if (!this.modalData.label || !this.modalData.url) {
-                        this.showNotification('Label et URL requis');
-                        return;
-                    }
-                    
-                    if (this.editingLink) {
-                        // Update existing
-                        const index = this.config.links.findIndex(l => l.id === this.editingLink.id);
-                        if (index !== -1) {
-                            this.config.links[index] = { ...this.config.links[index], ...this.modalData };
-                        }
-                    } else {
-                        // Add new
-                        const maxOrder = this.config.links.reduce((max, l) => Math.max(max, l.order || 0), 0);
-                        const newLink = {
-                            id: 'link_' + Date.now(),
-                            ...this.modalData,
-                            order: maxOrder + 1,
-                            tracking: true
-                        };
-                        this.config.links.push(newLink);
-                    }
-                    
-                    this.closeModal();
-                    this.saveAll();
-                },
-                
-                toggleLink(link) {
-                    link.enabled = !link.enabled;
-                    this.saveAll();
-                },
-                
-                deleteLink(link) {
-                    if (confirm(`Supprimer le lien "${link.label}" ?`)) {
-                        this.config.links = this.config.links.filter(l => l.id !== link.id);
-                        this.saveAll();
-                    }
-                },
-                
-                // Drag & Drop
-                handleDragStart(event, link) {
-                    this.draggedItem = link;
-                    event.target.classList.add('dragging');
-                    event.dataTransfer.effectAllowed = 'move';
-                },
-                
-                handleDragEnd(event) {
-                    event.target.classList.remove('dragging');
-                    document.querySelectorAll('.link-item').forEach(el => el.classList.remove('drag-over'));
-                },
-                
-                handleDragOver(event) {
-                    const target = event.target.closest('.link-item');
-                    if (target && this.draggedItem) {
-                        document.querySelectorAll('.link-item').forEach(el => el.classList.remove('drag-over'));
-                        target.classList.add('drag-over');
-                    }
-                },
-                
-                handleDragLeave(event) {
-                    event.target.closest('.link-item')?.classList.remove('drag-over');
-                },
-                
-                handleDrop(event) {
-                    const target = event.target.closest('.link-item');
-                    if (!target || !this.draggedItem) return;
-                    
-                    const targetId = target.dataset.id;
-                    const draggedId = this.draggedItem.id;
-                    
-                    if (targetId === draggedId) return;
-                    
-                    const draggedIndex = this.config.links.findIndex(l => l.id === draggedId);
-                    const targetIndex = this.config.links.findIndex(l => l.id === targetId);
-                    
-                    // Reorder
-                    const [removed] = this.config.links.splice(draggedIndex, 1);
-                    this.config.links.splice(targetIndex, 0, removed);
-                    
-                    // Update order values
-                    this.config.links.forEach((link, index) => {
-                        link.order = index + 1;
-                    });
-                    
-                    this.saveAll();
-                    this.draggedItem = null;
-                },
-                
-                refreshPreview() {
-                    if (this.$refs.previewFrame) {
-                        this.$refs.previewFrame.src = '/links?preview=' + Date.now();
-                    }
-                },
-                
-                showNotification(message) {
-                    this.toastMessage = message;
-                    this.showToast = true;
-                    setTimeout(() => { this.showToast = false; }, 3000);
-                },
-                
-                getIconSvg(iconName) {
-                    const icons = {
-                        camera: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
-                        instagram: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>`,
-                        mail: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
-                        whatsapp: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`,
-                        twitter: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
-                        youtube: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`,
-                        tiktok: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>`,
-                        spotify: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>`,
-                        link: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
-                        phone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
-                        facebook: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
-                        linkedin: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`
-                    };
-                    return icons[iconName] || icons.link;
+      function linksAdmin() {
+        return {
+          isAuthenticated: false,
+          config: {
+            profile: {
+              name: "",
+              role: "",
+              tagline: "",
+              avatar: { enabled: true, url: "/dist/assets/Avatar.png" },
+            },
+            links: [],
+            appearance: { showWatermark: true },
+            seo: { title: "", description: "" },
+          },
+          showModal: false,
+          editingLink: null,
+          modalData: {
+            label: "",
+            url: "",
+            icon: "link",
+            style: "default",
+            enabled: true,
+          },
+          draggedItem: null,
+          showToast: false,
+          toastMessage: "",
+          availableIcons: [
+            "camera",
+            "instagram",
+            "mail",
+            "whatsapp",
+            "twitter",
+            "youtube",
+            "tiktok",
+            "spotify",
+            "link",
+            "phone",
+            "facebook",
+            "linkedin",
+          ],
+
+          // Event banner state
+          eventStatus: { isActive: false, timeRemaining: null },
+          showEventForm: false,
+          newEvent: { message: "", url: "", icon: "camera", days: 7 },
+
+          get linksUrl() {
+            return window.location.origin + "/links";
+          },
+
+          get sortedLinks() {
+            return [...this.config.links].sort(
+              (a, b) => (a.order || 0) - (b.order || 0),
+            );
+          },
+
+          async init() {
+            // Check authentication
+            try {
+              const authRes = await fetch("/admin/check-auth", {
+                credentials: "include",
+              });
+              this.isAuthenticated = authRes.ok;
+
+              if (this.isAuthenticated) {
+                await this.loadConfig();
+                await this.loadEventStatus();
+              }
+            } catch (e) {
+              console.error("Auth check failed:", e);
+              this.isAuthenticated = false;
+            }
+          },
+
+          async loadEventStatus() {
+            try {
+              const res = await fetch("/admin/api/links/event", {
+                credentials: "include",
+              });
+              if (res.ok) {
+                this.eventStatus = await res.json();
+              }
+            } catch (e) {
+              console.error("Failed to load event status:", e);
+            }
+          },
+
+          async createEvent() {
+            if (!this.newEvent.message.trim()) {
+              this.showNotification("Le message est requis");
+              return;
+            }
+
+            try {
+              const res = await fetch("/admin/api/links/event", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                  message: this.newEvent.message,
+                  url: this.newEvent.url || null,
+                  icon: this.newEvent.icon,
+                  daysUntilExpiration: parseInt(this.newEvent.days),
+                }),
+              });
+
+              if (res.ok) {
+                await this.loadConfig();
+                await this.loadEventStatus();
+                this.showEventForm = false;
+                this.newEvent = {
+                  message: "",
+                  url: "",
+                  icon: "camera",
+                  days: 7,
+                };
+                this.showNotification("Bandeau événement activé !");
+                this.refreshPreview();
+              } else {
+                this.showNotification("Erreur lors de la création");
+              }
+            } catch (e) {
+              console.error("Create event failed:", e);
+              this.showNotification("Erreur lors de la création");
+            }
+          },
+
+          async clearEvent() {
+            if (!confirm("Supprimer le bandeau événement ?")) return;
+
+            try {
+              const res = await fetch("/admin/api/links/event", {
+                method: "DELETE",
+                credentials: "include",
+              });
+
+              if (res.ok) {
+                await this.loadConfig();
+                await this.loadEventStatus();
+                this.showNotification("Bandeau événement supprimé");
+                this.refreshPreview();
+              } else {
+                this.showNotification("Erreur lors de la suppression");
+              }
+            } catch (e) {
+              console.error("Clear event failed:", e);
+              this.showNotification("Erreur lors de la suppression");
+            }
+          },
+
+          async loadConfig() {
+            try {
+              const res = await fetch("/admin/api/links", {
+                credentials: "include",
+              });
+              if (res.ok) {
+                this.config = await res.json();
+                // Ensure nested objects exist
+                if (!this.config.profile.avatar) {
+                  this.config.profile.avatar = {
+                    enabled: true,
+                    url: "/dist/assets/Avatar.png",
+                  };
                 }
+                if (!this.config.appearance) {
+                  this.config.appearance = { showWatermark: true };
+                }
+                if (!this.config.seo) {
+                  this.config.seo = { title: "", description: "" };
+                }
+                if (!this.config.event) {
+                  this.config.event = {
+                    enabled: false,
+                    message: "",
+                    url: null,
+                    icon: "camera",
+                  };
+                }
+              }
+            } catch (e) {
+              console.error("Failed to load config:", e);
+            }
+          },
+
+          async saveAll() {
+            try {
+              const res = await fetch("/admin/api/links", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify(this.config),
+              });
+
+              if (res.ok) {
+                this.showNotification("Configuration sauvegardée !");
+                this.refreshPreview();
+              } else {
+                this.showNotification("Erreur lors de la sauvegarde");
+              }
+            } catch (e) {
+              console.error("Save failed:", e);
+              this.showNotification("Erreur lors de la sauvegarde");
+            }
+          },
+
+          openAddModal() {
+            this.editingLink = null;
+            this.modalData = {
+              label: "",
+              url: "",
+              icon: "link",
+              style: "default",
+              enabled: true,
             };
-        }
+            this.showModal = true;
+          },
+
+          openEditModal(link) {
+            this.editingLink = link;
+            this.modalData = { ...link };
+            this.showModal = true;
+          },
+
+          closeModal() {
+            this.showModal = false;
+            this.editingLink = null;
+          },
+
+          saveLink() {
+            if (!this.modalData.label || !this.modalData.url) {
+              this.showNotification("Label et URL requis");
+              return;
+            }
+
+            if (this.editingLink) {
+              // Update existing
+              const index = this.config.links.findIndex(
+                (l) => l.id === this.editingLink.id,
+              );
+              if (index !== -1) {
+                this.config.links[index] = {
+                  ...this.config.links[index],
+                  ...this.modalData,
+                };
+              }
+            } else {
+              // Add new
+              const maxOrder = this.config.links.reduce(
+                (max, l) => Math.max(max, l.order || 0),
+                0,
+              );
+              const newLink = {
+                id: "link_" + Date.now(),
+                ...this.modalData,
+                order: maxOrder + 1,
+                tracking: true,
+              };
+              this.config.links.push(newLink);
+            }
+
+            this.closeModal();
+            this.saveAll();
+          },
+
+          toggleLink(link) {
+            link.enabled = !link.enabled;
+            this.saveAll();
+          },
+
+          deleteLink(link) {
+            if (confirm(`Supprimer le lien "${link.label}" ?`)) {
+              this.config.links = this.config.links.filter(
+                (l) => l.id !== link.id,
+              );
+              this.saveAll();
+            }
+          },
+
+          // Drag & Drop
+          handleDragStart(event, link) {
+            this.draggedItem = link;
+            event.target.classList.add("dragging");
+            event.dataTransfer.effectAllowed = "move";
+          },
+
+          handleDragEnd(event) {
+            event.target.classList.remove("dragging");
+            document
+              .querySelectorAll(".link-item")
+              .forEach((el) => el.classList.remove("drag-over"));
+          },
+
+          handleDragOver(event) {
+            const target = event.target.closest(".link-item");
+            if (target && this.draggedItem) {
+              document
+                .querySelectorAll(".link-item")
+                .forEach((el) => el.classList.remove("drag-over"));
+              target.classList.add("drag-over");
+            }
+          },
+
+          handleDragLeave(event) {
+            event.target.closest(".link-item")?.classList.remove("drag-over");
+          },
+
+          handleDrop(event) {
+            const target = event.target.closest(".link-item");
+            if (!target || !this.draggedItem) return;
+
+            const targetId = target.dataset.id;
+            const draggedId = this.draggedItem.id;
+
+            if (targetId === draggedId) return;
+
+            const draggedIndex = this.config.links.findIndex(
+              (l) => l.id === draggedId,
+            );
+            const targetIndex = this.config.links.findIndex(
+              (l) => l.id === targetId,
+            );
+
+            // Reorder
+            const [removed] = this.config.links.splice(draggedIndex, 1);
+            this.config.links.splice(targetIndex, 0, removed);
+
+            // Update order values
+            this.config.links.forEach((link, index) => {
+              link.order = index + 1;
+            });
+
+            this.saveAll();
+            this.draggedItem = null;
+          },
+
+          refreshPreview() {
+            if (this.$refs.previewFrame) {
+              this.$refs.previewFrame.src = "/links?preview=" + Date.now();
+            }
+          },
+
+          showNotification(message) {
+            this.toastMessage = message;
+            this.showToast = true;
+            setTimeout(() => {
+              this.showToast = false;
+            }, 3000);
+          },
+
+          getIconSvg(iconName) {
+            const icons = {
+              camera: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
+              instagram: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>`,
+              mail: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
+              whatsapp: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`,
+              twitter: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
+              youtube: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`,
+              tiktok: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>`,
+              spotify: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>`,
+              link: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+              phone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+              facebook: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
+              linkedin: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`,
+            };
+            return icons[iconName] || icons.link;
+          },
+        };
+      }
     </script>
-</body>
+  </body>
 </html>
