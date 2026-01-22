@@ -5,6 +5,7 @@ const serverConfig = require('../config');
 const textUtils = require('../utils/textUtils');
 const campaignService = require('../utils/campaignService');
 const photoService = require('../utils/photoService');
+const linksService = require('../utils/linksService');
 
 const router = express.Router();
 const paths = serverConfig.getPaths();
@@ -193,6 +194,33 @@ router.get('/a-propos/', (req, res) => {
     res.redirect('/a-propos');
 });
 
+// Route pour la page Links (carte de visite digitale / QR code)
+router.get('/links', (req, res) => {
+    console.log('🚀 Route /links appelée - Carte de visite digitale');
+    try {
+        const htmlPath = path.join(paths.pages, 'links.html');
+        let htmlContent = fs.readFileSync(htmlPath, 'utf-8');
+        
+        // Charger la configuration des liens
+        const linksConfig = linksService.loadLinksConfig();
+        
+        // Injecter les données dans le template
+        htmlContent = linksService.injectLinksData(htmlContent, linksConfig, req);
+        
+        // Headers pour optimisation mobile
+        res.setHeader('Cache-Control', 'public, max-age=300'); // 5 min cache
+        res.send(htmlContent);
+    } catch (error) {
+        console.error('❌ Erreur lors du chargement de links.html:', error);
+        res.status(500).send('Erreur lors du chargement de la page');
+    }
+});
+
+// Redirection pour /links/ vers /links
+router.get('/links/', (req, res) => {
+    res.redirect('/links');
+});
+
 // Route pour les mentions légales
 router.get('/mentions-legales', (req, res) => {
     console.log('🚀 Route /mentions-legales appelée');
@@ -242,6 +270,12 @@ router.get('/sitemap.xml', async (req, res) => {
                 lastmod: latestPhotoDate ? latestPhotoDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
                 changefreq: 'weekly',
                 priority: '1.0'
+            },
+            {
+                loc: '/links',
+                lastmod: new Date().toISOString().slice(0, 10),
+                changefreq: 'weekly',
+                priority: '0.9'
             },
             {
                 loc: '/a-propos',

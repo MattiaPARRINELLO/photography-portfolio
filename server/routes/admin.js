@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const serverConfig = require('../config');
 const { requireAdminSession, requireAdminPage } = require('../middleware/auth');
+const linksService = require('../utils/linksService');
 
 const router = express.Router();
 const paths = serverConfig.getPaths();
@@ -116,6 +117,199 @@ router.put('/config', requireAdminSession, (req, res) => {
     } catch (error) {
         console.error('Erreur lors de la sauvegarde de la configuration:', error);
         res.status(500).json({ error: 'Erreur lors de la sauvegarde: ' + error.message });
+    }
+});
+
+// =============================================
+// ROUTES POUR LA GESTION DES LIENS (/links)
+// =============================================
+
+// Route pour la page d'administration des liens
+router.get('/links', (req, res) => {
+    res.sendFile(path.join(paths.adminPages, 'links.html'));
+});
+
+// Redirection pour /admin/links/ vers /admin/links
+router.get('/links/', (req, res) => {
+    res.redirect('/admin/links');
+});
+
+// Route pour vérifier l'authentification (utilisée par la page links.html)
+router.get('/check-auth', (req, res) => {
+    if (req.session.isAdmin) {
+        res.json({ authenticated: true });
+    } else {
+        res.status(401).json({ authenticated: false });
+    }
+});
+
+// API: Récupérer la configuration des liens
+router.get('/api/links', requireAdminSession, (req, res) => {
+    try {
+        const config = linksService.loadLinksConfig();
+        res.json(config);
+    } catch (error) {
+        console.error('Erreur lors de la lecture de links.json:', error);
+        res.status(500).json({ error: 'Erreur lors de la lecture de la configuration des liens' });
+    }
+});
+
+// API: Mettre à jour toute la configuration des liens
+router.put('/api/links', requireAdminSession, (req, res) => {
+    try {
+        const newConfig = req.body;
+        const success = linksService.saveLinksConfig(newConfig);
+        
+        if (success) {
+            res.json({ success: true, message: 'Configuration des liens mise à jour' });
+        } else {
+            res.status(500).json({ error: 'Erreur lors de la sauvegarde' });
+        }
+    } catch (error) {
+        console.error('Erreur lors de la sauvegarde de links.json:', error);
+        res.status(500).json({ error: 'Erreur lors de la sauvegarde: ' + error.message });
+    }
+});
+
+// API: Ajouter un nouveau lien
+router.post('/api/links/add', requireAdminSession, (req, res) => {
+    try {
+        const linkData = req.body;
+        const config = linksService.addLink(linkData);
+        res.json({ success: true, config });
+    } catch (error) {
+        console.error('Erreur lors de l\'ajout du lien:', error);
+        res.status(500).json({ error: 'Erreur lors de l\'ajout du lien' });
+    }
+});
+
+// API: Mettre à jour un lien existant
+router.put('/api/links/:linkId', requireAdminSession, (req, res) => {
+    try {
+        const { linkId } = req.params;
+        const updates = req.body;
+        const config = linksService.updateLink(linkId, updates);
+        
+        if (config) {
+            res.json({ success: true, config });
+        } else {
+            res.status(404).json({ error: 'Lien non trouvé' });
+        }
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du lien:', error);
+        res.status(500).json({ error: 'Erreur lors de la mise à jour du lien' });
+    }
+});
+
+// API: Supprimer un lien
+router.delete('/api/links/:linkId', requireAdminSession, (req, res) => {
+    try {
+        const { linkId } = req.params;
+        const config = linksService.deleteLink(linkId);
+        
+        if (config) {
+            res.json({ success: true, config });
+        } else {
+            res.status(404).json({ error: 'Lien non trouvé' });
+        }
+    } catch (error) {
+        console.error('Erreur lors de la suppression du lien:', error);
+        res.status(500).json({ error: 'Erreur lors de la suppression du lien' });
+    }
+});
+
+// API: Réordonner les liens
+router.post('/api/links/reorder', requireAdminSession, (req, res) => {
+    try {
+        const { orderedIds } = req.body;
+        const config = linksService.reorderLinks(orderedIds);
+        res.json({ success: true, config });
+    } catch (error) {
+        console.error('Erreur lors du réordonnancement des liens:', error);
+        res.status(500).json({ error: 'Erreur lors du réordonnancement' });
+    }
+});
+
+// API: Mettre à jour le profil
+router.put('/api/links/profile', requireAdminSession, (req, res) => {
+    try {
+        const profileData = req.body;
+        const config = linksService.updateProfile(profileData);
+        res.json({ success: true, config });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du profil:', error);
+        res.status(500).json({ error: 'Erreur lors de la mise à jour du profil' });
+    }
+});
+
+// API: Récupérer les icônes disponibles
+router.get('/api/links/icons', requireAdminSession, (req, res) => {
+    try {
+        const icons = linksService.getAvailableIcons();
+        res.json({ icons });
+    } catch (error) {
+        res.status(500).json({ error: 'Erreur lors de la récupération des icônes' });
+    }
+});
+
+// =============================================
+// ROUTES POUR LE BANDEAU ÉVÉNEMENT
+// =============================================
+
+// API: Créer/Mettre à jour le bandeau événement
+router.post('/api/links/event', requireAdminSession, (req, res) => {
+    try {
+        const { message, url, icon, days } = req.body;
+        
+        if (!message || message.trim() === '') {
+            return res.status(400).json({ error: 'Le message est requis' });
+        }
+        
+        const config = linksService.setEventBanner(
+            { message: message.trim(), url: url || '', icon: icon || 'camera' },
+            days || 7
+        );
+        
+        const timeRemaining = linksService.getEventTimeRemaining(config.event);
+        
+        res.json({ 
+            success: true, 
+            event: config.event,
+            timeRemaining
+        });
+    } catch (error) {
+        console.error('Erreur lors de la création du bandeau événement:', error);
+        res.status(500).json({ error: 'Erreur lors de la création du bandeau' });
+    }
+});
+
+// API: Désactiver le bandeau événement
+router.delete('/api/links/event', requireAdminSession, (req, res) => {
+    try {
+        const config = linksService.clearEventBanner();
+        res.json({ success: true, event: config.event });
+    } catch (error) {
+        console.error('Erreur lors de la suppression du bandeau événement:', error);
+        res.status(500).json({ error: 'Erreur lors de la suppression du bandeau' });
+    }
+});
+
+// API: Récupérer le statut du bandeau événement
+router.get('/api/links/event', requireAdminSession, (req, res) => {
+    try {
+        const config = linksService.loadLinksConfig();
+        const event = config.event || { enabled: false };
+        const isActive = linksService.isEventActive(event);
+        const timeRemaining = linksService.getEventTimeRemaining(event);
+        
+        res.json({ 
+            event,
+            isActive,
+            timeRemaining
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération du bandeau événement:', error);
+        res.status(500).json({ error: 'Erreur lors de la récupération du bandeau' });
     }
 });
 

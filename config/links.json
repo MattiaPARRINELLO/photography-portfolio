@@ -1,0 +1,70 @@
+{
+  "profile": {
+    "name": "Mattia Parrinello",
+    "role": "Photographe",
+    "tagline": "Concerts • Lives • Backstage",
+    "avatar": {
+      "enabled": true,
+      "url": "/dist/assets/Avatar.png"
+    }
+  },
+  "event": {
+    "enabled": true,
+    "message": "Photo Jok'air",
+    "url": "https://mprnl.fr",
+    "icon": "camera",
+    "createdAt": "2026-01-22T20:16:50.036Z",
+    "expiresAt": "2026-01-29T20:16:50.036Z"
+  },
+  "links": [
+    {
+      "id": "portfolio",
+      "label": "Voir mon Portfolio",
+      "url": "/",
+      "icon": "camera",
+      "enabled": true,
+      "order": 1,
+      "style": "primary",
+      "tracking": true
+    },
+    {
+      "id": "instagram",
+      "label": "Instagram",
+      "url": "https://instagram.com/mattia_jpeg",
+      "icon": "instagram",
+      "enabled": true,
+      "order": 2,
+      "style": "default",
+      "tracking": true
+    },
+    {
+      "id": "email",
+      "label": "Me contacter",
+      "url": "mailto:contact.mprnl@gmail.com",
+      "icon": "mail",
+      "enabled": true,
+      "order": 3,
+      "style": "default",
+      "tracking": true
+    },
+    {
+      "id": "whatsapp",
+      "label": "WhatsApp",
+      "url": "https://wa.me/33650586251",
+      "icon": "whatsapp",
+      "enabled": true,
+      "order": 4,
+      "style": "default",
+      "tracking": true
+    }
+  ],
+  "appearance": {
+    "theme": "dark",
+    "accentColor": "#667eea",
+    "showWatermark": true
+  },
+  "seo": {
+    "title": "Mattia Parrinello | Photographe Concert & Live",
+    "description": "Photographe spécialisé concerts, lives et backstage. Contactez-moi pour vos événements."
+  }
+}
