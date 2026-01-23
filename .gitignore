@@ -26,6 +26,7 @@ photos/resized/
 config/texts.json
 config/config.json
 config/campaigns.json
+config/links.json
 
 # Uploads temporaires
 temp/
@@ -41,3 +42,4 @@ Thumbs.db
 # Build
 /build
 /dist/*.map
+links.json
