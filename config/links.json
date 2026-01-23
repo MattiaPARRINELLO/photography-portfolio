@@ -9,12 +9,12 @@
     }
   },
   "event": {
-    "enabled": false,
-    "message": "",
-    "url": "",
-    "icon": "camera",
-    "createdAt": null,
-    "expiresAt": null
+    "enabled": true,
+    "message": "dhgflkjsmkl",
+    "url": "https://google.com",
+    "icon": "star",
+    "createdAt": "2026-01-23T20:34:45.303Z",
+    "expiresAt": "2026-01-30T20:34:45.303Z"
   },
   "links": [
     {
