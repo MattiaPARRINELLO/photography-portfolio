@@ -2,7 +2,13 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const serverConfig = require('../config');
-const { requireAdminSession, requireAdminPage } = require('../middleware/auth');
+const {
+    requireAdminSession,
+    requireAdminPage,
+    restoreAdminSessionFromCookie,
+    setAdminAuthCookie,
+    clearAdminAuthCookie
+} = require('../middleware/auth');
 const linksService = require('../utils/linksService');
 
 const router = express.Router();
@@ -62,7 +68,8 @@ router.get('/text-editor/', (req, res) => {
 
 // Route pour vérifier le statut de la session
 router.get('/session-status', (req, res) => {
-    res.json({ isLoggedIn: !!req.session.isAdmin });
+    const isLoggedIn = !!req.session.isAdmin || restoreAdminSessionFromCookie(req);
+    res.json({ isLoggedIn });
 });
 
 // Route de connexion admin
@@ -72,6 +79,7 @@ router.post('/login', (req, res) => {
 
     if (password === ADMIN_PASSWORD) {
         req.session.isAdmin = true;
+        setAdminAuthCookie(res);
         res.json({ success: true, message: 'Connexion réussie' });
     } else {
         res.status(401).json({ error: 'Mot de passe incorrect' });
@@ -80,6 +88,7 @@ router.post('/login', (req, res) => {
 
 // Route de déconnexion admin
 router.post('/logout', (req, res) => {
+    clearAdminAuthCookie(res);
     req.session.destroy((err) => {
         if (err) {
             return res.status(500).json({ error: 'Erreur lors de la déconnexion' });
@@ -90,7 +99,8 @@ router.post('/logout', (req, res) => {
 
 // Route pour vérifier le statut de connexion
 router.get('/status', (req, res) => {
-    res.json({ isLoggedIn: !!req.session.isAdmin });
+    const isLoggedIn = !!req.session.isAdmin || restoreAdminSessionFromCookie(req);
+    res.json({ isLoggedIn });
 });
 
 // Route pour récupérer la configuration
@@ -136,7 +146,7 @@ router.get('/links/', (req, res) => {
 
 // Route pour vérifier l'authentification (utilisée par la page links.html)
 router.get('/check-auth', (req, res) => {
-    if (req.session.isAdmin) {
+    if (req.session.isAdmin || restoreAdminSessionFromCookie(req)) {
         res.json({ authenticated: true });
     } else {
         res.status(401).json({ authenticated: false });
@@ -256,61 +266,42 @@ router.get('/api/links/icons', requireAdminSession, (req, res) => {
 // ROUTES POUR LE BANDEAU ÉVÉNEMENT
 // =============================================
 
-// API: Créer/Mettre à jour le bandeau événement
-router.post('/api/links/event', requireAdminSession, (req, res) => {
+function handleEventBanner(req, res) {
     try {
-        const { message, url, icon, days } = req.body;
+        if (req.method === 'POST') {
+            const { message, url, icon, days, daysUntilExpiration } = req.body || {};
 
-        if (!message || message.trim() === '') {
-            return res.status(400).json({ error: 'Le message est requis' });
+            if (!message || message.trim() === '') {
+                return res.status(400).json({ error: 'Le message est requis' });
+            }
+
+            const durationDays = days ?? daysUntilExpiration ?? 7;
+            const config = linksService.setEventBanner(
+                { message: message.trim(), url: url || '', icon: icon || 'camera' },
+                durationDays
+            );
+
+            const timeRemaining = linksService.getEventTimeRemaining(config.event);
+            return res.json({ success: true, event: config.event, timeRemaining });
         }
 
-        const config = linksService.setEventBanner(
-            { message: message.trim(), url: url || '', icon: icon || 'camera' },
-            days || 7
-        );
+        if (req.method === 'DELETE') {
+            const config = linksService.clearEventBanner();
+            return res.json({ success: true, event: config.event });
+        }
 
-        const timeRemaining = linksService.getEventTimeRemaining(config.event);
-
-        res.json({
-            success: true,
-            event: config.event,
-            timeRemaining
-        });
-    } catch (error) {
-        console.error('Erreur lors de la création du bandeau événement:', error);
-        res.status(500).json({ error: 'Erreur lors de la création du bandeau' });
-    }
-});
-
-// API: Désactiver le bandeau événement
-router.delete('/api/links/event', requireAdminSession, (req, res) => {
-    try {
-        const config = linksService.clearEventBanner();
-        res.json({ success: true, event: config.event });
-    } catch (error) {
-        console.error('Erreur lors de la suppression du bandeau événement:', error);
-        res.status(500).json({ error: 'Erreur lors de la suppression du bandeau' });
-    }
-});
-
-// API: Récupérer le statut du bandeau événement
-router.get('/api/links/event', requireAdminSession, (req, res) => {
-    try {
+        // GET (ou fallback lecture)
         const config = linksService.loadLinksConfig();
         const event = config.event || { enabled: false };
         const isActive = linksService.isEventActive(event);
         const timeRemaining = linksService.getEventTimeRemaining(event);
-
-        res.json({
-            event,
-            isActive,
-            timeRemaining
-        });
+        return res.json({ event, isActive, timeRemaining });
     } catch (error) {
-        console.error('Erreur lors de la récupération du bandeau événement:', error);
-        res.status(500).json({ error: 'Erreur lors de la récupération du bandeau' });
+        console.error('Erreur bandeau événement:', error);
+        return res.status(500).json({ error: 'Erreur bandeau événement' });
     }
-});
+}
+
+router.all(['/api/links/event', '/api/links/event/'], requireAdminSession, handleEventBanner);
 
 module.exports = router;

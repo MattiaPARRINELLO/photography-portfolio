@@ -9,12 +9,12 @@
     }
   },
   "event": {
-    "enabled": true,
-    "message": "Photo Jok'air",
-    "url": "https://mprnl.fr",
+    "enabled": false,
+    "message": "",
+    "url": "",
     "icon": "camera",
-    "createdAt": "2026-01-22T20:16:50.036Z",
-    "expiresAt": "2026-01-29T20:16:50.036Z"
+    "createdAt": null,
+    "expiresAt": null
   },
   "links": [
     {

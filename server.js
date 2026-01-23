@@ -7,6 +7,8 @@ const path = require('path');
 
 // Configuration du serveur
 const serverConfig = require('./server/config');
+const { requireAdminSession } = require('./server/middleware/auth');
+const linksService = require('./server/utils/linksService');
 
 // Utilitaires
 const campaignService = require('./server/utils/campaignService');
@@ -81,6 +83,42 @@ app.locals.campaignService = campaignService;
 // Middleware de tracking utilisateur et campagnes
 app.use(userTrackingMiddleware(userLogger, campaignManager));
 app.use(campaignMiddleware(campaignManager));
+
+// Handler pour le bandeau événement (à définir AVANT les routes pour intercepter les appels)
+function handleEventBanner(req, res) {
+    try {
+        if (req.method === 'POST') {
+            const { message, url, icon, days, daysUntilExpiration } = req.body || {};
+            if (!message || message.trim() === '') {
+                return res.status(400).json({ error: 'Le message est requis' });
+            }
+            const durationDays = days ?? daysUntilExpiration ?? 7;
+            const config = linksService.setEventBanner(
+                { message: message.trim(), url: url || '', icon: icon || 'camera' },
+                durationDays
+            );
+            const timeRemaining = linksService.getEventTimeRemaining(config.event);
+            return res.json({ success: true, event: config.event, timeRemaining });
+        }
+
+        if (req.method === 'DELETE') {
+            const config = linksService.clearEventBanner();
+            return res.json({ success: true, event: config.event });
+        }
+
+        const config = linksService.loadLinksConfig();
+        const event = config.event || { enabled: false };
+        const isActive = linksService.isEventActive(event);
+        const timeRemaining = linksService.getEventTimeRemaining(event);
+        return res.json({ event, isActive, timeRemaining });
+    } catch (error) {
+        console.error('Erreur bandeau événement:', error);
+        return res.status(500).json({ error: 'Erreur bandeau événement' });
+    }
+}
+
+// Routes spécifiques pour l'API événement (AVANT les routers pour priorité)
+app.all(['/api/links/event', '/api/links/event/', '/admin/api/links/event', '/admin/api/links/event/'], requireAdminSession, handleEventBanner);
 
 // Configuration des routes
 app.use('/', pagesRouter);
