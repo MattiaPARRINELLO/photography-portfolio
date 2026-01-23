@@ -42,4 +42,3 @@ Thumbs.db
 # Build
 /build
 /dist/*.map
-links.json
