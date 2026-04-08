@@ -33,7 +33,7 @@ function generateHomeHeroHtml() {
     // SEO: Liste des lieux avec noms comme mots-clés locaux
     const venueNames = venues.map(v => `${v.name} (${v.city})`).join(' · ');
 
-        return `
+    return `
             <div class="home-hero px-5 md:px-0 pt-10 pb-6">
         <!-- SEO: H1 optimisé avec mots-clés principaux -->
         <h1 class="text-3xl md:text-4xl font-bold font-signika mb-4">${pageSeo.h1 || 'Mattia Parrinello - Photographe de Concert à Paris'}</h1>

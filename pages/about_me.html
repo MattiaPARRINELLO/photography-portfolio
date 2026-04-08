@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -10,7 +10,12 @@
     <!-- META_PLACEHOLDER_END -->
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="../dist/assets/Logo_MP.svg" />
-    <link rel="stylesheet" href="../dist/css/output.css" media="print" onload="this.media='all'" />
+    <link
+      rel="stylesheet"
+      href="../dist/css/output.css"
+      media="print"
+      onload="this.media = 'all'"
+    />
     <noscript><link rel="stylesheet" href="../dist/css/output.css" /></noscript>
     <!-- Alpine.js -->
     <script
@@ -36,51 +41,176 @@
     ></script>
     <style>
       /* Subtle animated background used across public pages */
-      .animated-bg{
-        position:fixed;
-        inset:0;
-        z-index:0; /* above page background so blobs are visible */
-        pointer-events:none;
-        overflow:hidden;
-        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+      .animated-bg {
+        position: fixed;
+        inset: 0;
+        z-index: 0; /* above page background so blobs are visible */
+        pointer-events: none;
+        overflow: hidden;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(0, 0, 0, 0.02)
+        );
       }
-      .animated-bg .blob{
-        position:absolute;
-        width:48vmax;
-        height:48vmax;
-        border-radius:50%;
+      .animated-bg .blob {
+        position: absolute;
+        width: 48vmax;
+        height: 48vmax;
+        border-radius: 50%;
         filter: blur(36px);
-        opacity:0.22;
-        transform: translate3d(0,0,0) scale(1);
+        opacity: 0.22;
+        transform: translate3d(0, 0, 0) scale(1);
         will-change: transform, opacity;
         mix-blend-mode: screen;
       }
-      .animated-bg .blob.b1{ left:-12%; top:-20%; background:radial-gradient(circle at 30% 30%, rgba(102,126,234,0.98), rgba(102,126,234,0.22)); }
-      .animated-bg .blob.b2{ right:-14%; bottom:-12%; background:radial-gradient(circle at 70% 70%, rgba(139,69,19,0.96), rgba(139,69,19,0.18)); }
-      .animated-bg .blob.b3{ left:52%; top:62%; transform:translateX(-50%); background:radial-gradient(circle at 50% 50%, rgba(75,0,130,0.95), rgba(75,0,130,0.16)); }
-      .animated-bg .blob.b4{ left:20%; top:60%; background:radial-gradient(circle at 40% 50%, rgba(66,153,225,0.9), rgba(66,153,225,0.12)); opacity:0.14; }
-      .animated-bg .blob.b5{ right:30%; top:10%; background:radial-gradient(circle at 50% 40%, rgba(236,72,153,0.9), rgba(236,72,153,0.12)); opacity:0.12; }
-      .animated-bg .blob.b6{ left:5%; bottom:10%; background:radial-gradient(circle at 20% 80%, rgba(250,204,21,0.88), rgba(250,204,21,0.10)); opacity:0.11; }
-      .animated-bg .blob.b7{ right:5%; top:40%; background:radial-gradient(circle at 60% 30%, rgba(16,185,129,0.9), rgba(16,185,129,0.10)); opacity:0.12; }
+      .animated-bg .blob.b1 {
+        left: -12%;
+        top: -20%;
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(102, 126, 234, 0.98),
+          rgba(102, 126, 234, 0.22)
+        );
+      }
+      .animated-bg .blob.b2 {
+        right: -14%;
+        bottom: -12%;
+        background: radial-gradient(
+          circle at 70% 70%,
+          rgba(139, 69, 19, 0.96),
+          rgba(139, 69, 19, 0.18)
+        );
+      }
+      .animated-bg .blob.b3 {
+        left: 52%;
+        top: 62%;
+        transform: translateX(-50%);
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(75, 0, 130, 0.95),
+          rgba(75, 0, 130, 0.16)
+        );
+      }
+      .animated-bg .blob.b4 {
+        left: 20%;
+        top: 60%;
+        background: radial-gradient(
+          circle at 40% 50%,
+          rgba(66, 153, 225, 0.9),
+          rgba(66, 153, 225, 0.12)
+        );
+        opacity: 0.14;
+      }
+      .animated-bg .blob.b5 {
+        right: 30%;
+        top: 10%;
+        background: radial-gradient(
+          circle at 50% 40%,
+          rgba(236, 72, 153, 0.9),
+          rgba(236, 72, 153, 0.12)
+        );
+        opacity: 0.12;
+      }
+      .animated-bg .blob.b6 {
+        left: 5%;
+        bottom: 10%;
+        background: radial-gradient(
+          circle at 20% 80%,
+          rgba(250, 204, 21, 0.88),
+          rgba(250, 204, 21, 0.1)
+        );
+        opacity: 0.11;
+      }
+      .animated-bg .blob.b7 {
+        right: 5%;
+        top: 40%;
+        background: radial-gradient(
+          circle at 60% 30%,
+          rgba(16, 185, 129, 0.9),
+          rgba(16, 185, 129, 0.1)
+        );
+        opacity: 0.12;
+      }
       /* Light-mode stronger/darker blobs */
       @media (prefers-color-scheme: light) {
-        .animated-bg .blob{ mix-blend-mode: multiply; opacity: 0.36; filter: blur(28px); }
-        .animated-bg .blob.b1{ background:radial-gradient(circle at 30% 30%, rgba(32,78,200,0.95), rgba(32,78,200,0.32)); }
-        .animated-bg .blob.b2{ background:radial-gradient(circle at 70% 70%, rgba(120,50,20,0.96), rgba(120,50,20,0.3)); }
-        .animated-bg .blob.b3{ background:radial-gradient(circle at 50% 50%, rgba(60,10,120,0.95), rgba(60,10,120,0.28)); }
-        .animated-bg .blob.b4{ background:radial-gradient(circle at 40% 50%, rgba(40,110,200,0.92), rgba(40,110,200,0.26)); }
-        .animated-bg .blob.b5{ background:radial-gradient(circle at 50% 40%, rgba(200,40,120,0.92), rgba(200,40,120,0.26)); }
-        .animated-bg .blob.b6{ background:radial-gradient(circle at 20% 80%, rgba(200,150,20,0.9), rgba(200,150,20,0.22)); }
-        .animated-bg .blob.b7{ background:radial-gradient(circle at 60% 30%, rgba(10,140,90,0.9), rgba(10,140,90,0.22)); }
+        .animated-bg .blob {
+          mix-blend-mode: multiply;
+          opacity: 0.36;
+          filter: blur(28px);
+        }
+        .animated-bg .blob.b1 {
+          background: radial-gradient(
+            circle at 30% 30%,
+            rgba(32, 78, 200, 0.95),
+            rgba(32, 78, 200, 0.32)
+          );
+        }
+        .animated-bg .blob.b2 {
+          background: radial-gradient(
+            circle at 70% 70%,
+            rgba(120, 50, 20, 0.96),
+            rgba(120, 50, 20, 0.3)
+          );
+        }
+        .animated-bg .blob.b3 {
+          background: radial-gradient(
+            circle at 50% 50%,
+            rgba(60, 10, 120, 0.95),
+            rgba(60, 10, 120, 0.28)
+          );
+        }
+        .animated-bg .blob.b4 {
+          background: radial-gradient(
+            circle at 40% 50%,
+            rgba(40, 110, 200, 0.92),
+            rgba(40, 110, 200, 0.26)
+          );
+        }
+        .animated-bg .blob.b5 {
+          background: radial-gradient(
+            circle at 50% 40%,
+            rgba(200, 40, 120, 0.92),
+            rgba(200, 40, 120, 0.26)
+          );
+        }
+        .animated-bg .blob.b6 {
+          background: radial-gradient(
+            circle at 20% 80%,
+            rgba(200, 150, 20, 0.9),
+            rgba(200, 150, 20, 0.22)
+          );
+        }
+        .animated-bg .blob.b7 {
+          background: radial-gradient(
+            circle at 60% 30%,
+            rgba(10, 140, 90, 0.9),
+            rgba(10, 140, 90, 0.22)
+          );
+        }
       }
-      @keyframes blobMove{
-        0%{ transform: translate3d(0,0,0) scale(1); }
-        25%{ transform: translate3d(4%, -2%, 0) scale(1.03); }
-        50%{ transform: translate3d(0,4%,0) scale(1); }
-        75%{ transform: translate3d(-3%,-1%,0) scale(0.99); }
-        100%{ transform: translate3d(0,0,0) scale(1); }
+      @keyframes blobMove {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        25% {
+          transform: translate3d(4%, -2%, 0) scale(1.03);
+        }
+        50% {
+          transform: translate3d(0, 4%, 0) scale(1);
+        }
+        75% {
+          transform: translate3d(-3%, -1%, 0) scale(0.99);
+        }
+        100% {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
       }
-      @media (prefers-reduced-motion: reduce){ .animated-bg .blob{ animation: none !important; } }
+      @media (prefers-reduced-motion: reduce) {
+        .animated-bg .blob {
+          animation: none !important;
+        }
+      }
     </style>
   </head>
 
@@ -216,42 +346,61 @@
           </p>
           <!-- SEO: Bio optimisée - mots-clés photographe concert Paris rap -->
           <p class="mb-4">
-            Je suis Mattia Parrinello, <strong>photographe de concert</strong> basé à <strong>Paris</strong>.
-            Mon truc, c’est l’énergie brute des artistes sur scène - le moment où la lumière,
-            le son et l’émotion se percutent. Je capture ce que les spectateurs ressentent
-            mais ne voient pas toujours : l’intensité d’un regard, la sueur sous les projecteurs,
-            le chaos maîtrisé d’un live.
+            Je suis Mattia Parrinello,
+            <strong>photographe de concert</strong> basé à
+            <strong>Paris</strong>. Mon truc, c’est l’énergie brute des artistes
+            sur scène - le moment où la lumière, le son et l’émotion se
+            percutent. Je capture ce que les spectateurs ressentent mais ne
+            voient pas toujours : l’intensité d’un regard, la sueur sous les
+            projecteurs, le chaos maîtrisé d’un live.
           </p>
           <p class="mb-4">
-            Spécialisé dans la <strong>musique rap</strong> et les scènes urbaines, j’ai eu la chance
-            de shooter des artistes comme <strong>Jok’air, Arma Jackson, Wallace Cleaver, Cyrus,
-            Trebiz, Aswell</strong> et <strong>The French Kriss</strong> dans des salles comme
-            <strong>La Cigale, la Boule Noire, La Bellevilloise, La Maroquinerie</strong>
-            ou encore <strong>l’Élispace</strong>. Du showcase intimiste au festival en plein air,
-            chaque événement est une nouvelle histoire à raconter en images.
+            Spécialisé dans la <strong>musique rap</strong> et les scènes
+            urbaines, j’ai eu la chance de shooter des artistes comme
+            <strong
+              >Jok’air, Arma Jackson, Wallace Cleaver, Cyrus, Trebiz,
+              Aswell</strong
+            >
+            et <strong>The French Kriss</strong> dans des salles comme
+            <strong
+              >La Cigale, la Boule Noire, La Bellevilloise, La
+              Maroquinerie</strong
+            >
+            ou encore <strong>l’Élispace</strong>. Du showcase intimiste au
+            festival en plein air, chaque événement est une nouvelle histoire à
+            raconter en images.
           </p>
           <p class="mb-4">
-            Mon approche : être au plus près de l’action, anticiper les moments forts,
-            jouer avec la lumière de scène pour créer des images cinématiques et percutantes.
-            Pas de poses, pas d’artifice - juste l’authenticité du live. Mon style mêle
-            contrastes forts, couleurs vibrantes et une énergie qui transpire de chaque cliché.
+            Mon approche : être au plus près de l’action, anticiper les moments
+            forts, jouer avec la lumière de scène pour créer des images
+            cinématiques et percutantes. Pas de poses, pas d’artifice - juste
+            l’authenticité du live. Mon style mêle contrastes forts, couleurs
+            vibrantes et une énergie qui transpire de chaque cliché.
           </p>
           <p class="mb-4">
-            Je travaille avec des <strong>médias musicaux</strong>, des artistes émergents,
-            des labels et des salles de concert. Basé en <strong>Île-de-France</strong>,
-            je me déplace partout en <strong>France</strong> pour couvrir vos événements -
-            concerts, festivals, showcases, backstage, soirées.
+            Je travaille avec des <strong>médias musicaux</strong>, des artistes
+            émergents, des labels et des salles de concert. Basé en
+            <strong>Île-de-France</strong>, je me déplace partout en
+            <strong>France</strong> pour couvrir vos événements - concerts,
+            festivals, showcases, backstage, soirées.
           </p>
           <p class="mb-4">
-            Vous avez un projet en tête ? Un concert à couvrir ? Un artiste à shooter ?
-            <a href="/contact" class="underline font-bold hover:opacity-80 transition duration-300">Parlons-en.</a>
+            Vous avez un projet en tête ? Un concert à couvrir ? Un artiste à
+            shooter ?
+            <a
+              href="/contact"
+              class="underline font-bold hover:opacity-80 transition duration-300"
+              >Parlons-en.</a
+            >
           </p>
         </section>
       </div>
       <!-- SEO: Section artistes et lieux - renforce les mots-clés et le maillage -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mt-12 mb-8 mx-3">
         <div>
-          <h2 class="text-xl font-bold font-signika mb-3">Artistes photographiés</h2>
+          <h2 class="text-xl font-bold font-signika mb-3">
+            Artistes photographiés
+          </h2>
           <ul class="text-base text-gray-700 dark:text-gray-300 space-y-1">
             <li>Jok’air</li>
             <li>Arma Jackson</li>
@@ -263,7 +412,9 @@
           </ul>
         </div>
         <div>
-          <h2 class="text-xl font-bold font-signika mb-3">Salles & festivals</h2>
+          <h2 class="text-xl font-bold font-signika mb-3">
+            Salles & festivals
+          </h2>
           <ul class="text-base text-gray-700 dark:text-gray-300 space-y-1">
             <li>La Boule Noire - Paris</li>
             <li>La Cigale - Paris</li>
@@ -284,14 +435,19 @@
               1 rue Victor Basch Franconville 95130<br />(+33) 6 50 58 62 51
             </p>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              <a href="/mentions-legales" class="hover:underline">Mentions légales</a>
+              <a href="/mentions-legales" class="hover:underline"
+                >Mentions légales</a
+              >
             </p>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              © Mattia Parrinello – Toutes les photos publiées sur ce site sont protégées. Toute utilisation non autorisée est passible de sanctions.
+              © Mattia Parrinello – Toutes les photos publiées sur ce site sont
+              protégées. Toute utilisation non autorisée est passible de
+              sanctions.
             </p>
             <!-- SEO: Ligne footer avec mots-clés géographiques -->
             <p class="mt-3 text-xs text-gray-400 dark:text-gray-500">
-              Mattia Parrinello - Photographe de concert à Paris · Disponible en Île-de-France et partout en France
+              Mattia Parrinello - Photographe de concert à Paris · Disponible en
+              Île-de-France et partout en France
             </p>
             <div class="flex mx-auto">
               <div
@@ -324,89 +480,192 @@
       </div>
     </footer>
     <script>
-      (function(){
-        const isProduction = !window.location.hostname.match(/localhost|127\.0\.0\.1/);
-        const devLog = isProduction ? function(){} : console.log.bind(console);
-        const devWarn = isProduction ? function(){} : console.warn.bind(console);
-        const devError = isProduction ? function(){} : console.error.bind(console);
+      (function () {
+        const isProduction = !window.location.hostname.match(
+          /localhost|127\.0\.0\.1/,
+        );
+        const devLog = isProduction
+          ? function () {}
+          : console.log.bind(console);
+        const devWarn = isProduction
+          ? function () {}
+          : console.warn.bind(console);
+        const devError = isProduction
+          ? function () {}
+          : console.error.bind(console);
         if (isProduction) {
-          console.log('%c\n' +
-            '═══════════════════════════════════════════════════════════════════\n' +
-            '║                                                                 ║\n' +
-            '║               ⚠️  AVERTISSEMENT DE SÉCURITÉ  ⚠️                ║\n' +
-            '║                                                                 ║\n' +
-            '═══════════════════════════════════════════════════════════════════',
-            'color: #ff3333; font-size: 16px; font-weight: bold; font-family: monospace; line-height: 1.5;'
-          );
-          
-          console.log('%c\n🚫 ACCÈS NON AUTORISÉ À LA CONSOLE DE DÉVELOPPEMENT 🚫\n',
-            'color: #ff6600; font-size: 22px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: linear-gradient(90deg, #330000, #000000); padding: 15px 20px; border-radius: 5px;'
-          );
-          
           console.log(
-            '%c┌────────────────────────────────────────────────────────────┐\n' +
-            '│  Vous tentez d\'accéder aux photos de ce site ?            │\n' +
-            '│                                                            │\n' +
-            '│  ❌ TÉLÉCHARGEMENT INTERDIT                                │\n' +
-            '│  ❌ COPIE INTERDITE                                        │\n' +
-            '│  ❌ UTILISATION NON AUTORISÉE INTERDITE                    │\n' +
-            '└────────────────────────────────────────────────────────────┘',
-            'color: #ffff00; font-size: 15px; font-weight: bold; font-family: monospace; line-height: 1.8; background: #1a1a1a; padding: 20px; border-left: 5px solid #ff0000;'
+            "%c\n" +
+              "═══════════════════════════════════════════════════════════════════\n" +
+              "║                                                                 ║\n" +
+              "║               ⚠️  AVERTISSEMENT DE SÉCURITÉ  ⚠️                ║\n" +
+              "║                                                                 ║\n" +
+              "═══════════════════════════════════════════════════════════════════",
+            "color: #ff3333; font-size: 16px; font-weight: bold; font-family: monospace; line-height: 1.5;",
           );
-          
+
           console.log(
-            '%c\n📸 PROTECTION DU DROIT D\'AUTEUR\n',
-            'color: #00ffff; font-size: 18px; font-weight: bold; text-decoration: underline;'
+            "%c\n🚫 ACCÈS NON AUTORISÉ À LA CONSOLE DE DÉVELOPPEMENT 🚫\n",
+            "color: #ff6600; font-size: 22px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: linear-gradient(90deg, #330000, #000000); padding: 15px 20px; border-radius: 5px;",
           );
-          
+
           console.log(
-            '%c© Mattia Parrinello - Tous droits réservés\n\n' +
-            'Toutes les photographies publiées sur ce site sont protégées par le droit d\'auteur.\n' +
-            'Toute reproduction, représentation, modification, publication, transmission,\n' +
-            'dénaturation, totale ou partielle du site ou de son contenu, par quelque\n' +
-            'procédé que ce soit, sans autorisation écrite préalable est interdite et\n' +
-            'constitue un délit de contrefaçon sanctionné par les articles L.335-2 et\n' +
-            'suivants du Code de la propriété intellectuelle.\n',
-            'color: #ffffff; font-size: 14px; line-height: 1.6; background: #1a1a1a; padding: 15px; border-left: 4px solid #00ff00;'
+            "%c┌────────────────────────────────────────────────────────────┐\n" +
+              "│  Vous tentez d'accéder aux photos de ce site ?            │\n" +
+              "│                                                            │\n" +
+              "│  ❌ TÉLÉCHARGEMENT INTERDIT                                │\n" +
+              "│  ❌ COPIE INTERDITE                                        │\n" +
+              "│  ❌ UTILISATION NON AUTORISÉE INTERDITE                    │\n" +
+              "└────────────────────────────────────────────────────────────┘",
+            "color: #ffff00; font-size: 15px; font-weight: bold; font-family: monospace; line-height: 1.8; background: #1a1a1a; padding: 20px; border-left: 5px solid #ff0000;",
           );
-          
+
           console.log(
-            '%c⚖️  SANCTIONS PÉNALES\n',
-            'color: #ff6666; font-size: 16px; font-weight: bold; text-decoration: underline;'
+            "%c\n📸 PROTECTION DU DROIT D'AUTEUR\n",
+            "color: #00ffff; font-size: 18px; font-weight: bold; text-decoration: underline;",
           );
-          
+
           console.log(
-            '%cLa contrefaçon est punie de :\n' +
-            '• 300 000 € d\'amende\n' +
-            '• 3 ans d\'emprisonnement\n' +
-            '(Articles L.335-2 et suivants du Code de la propriété intellectuelle)\n',
-            'color: #ff9999; font-size: 13px; line-height: 1.8; font-weight: bold; background: #2a0000; padding: 15px; border-left: 4px solid #ff0000;'
+            "%c© Mattia Parrinello - Tous droits réservés\n\n" +
+              "Toutes les photographies publiées sur ce site sont protégées par le droit d'auteur.\n" +
+              "Toute reproduction, représentation, modification, publication, transmission,\n" +
+              "dénaturation, totale ou partielle du site ou de son contenu, par quelque\n" +
+              "procédé que ce soit, sans autorisation écrite préalable est interdite et\n" +
+              "constitue un délit de contrefaçon sanctionné par les articles L.335-2 et\n" +
+              "suivants du Code de la propriété intellectuelle.\n",
+            "color: #ffffff; font-size: 14px; line-height: 1.6; background: #1a1a1a; padding: 15px; border-left: 4px solid #00ff00;",
           );
-          
+
           console.log(
-            '%c📋 Pour toute demande d\'utilisation légitime :\n' +
-            '→ Utilisez le formulaire de contact : ' + window.location.origin + '/contact\n' +
-            '→ Consultez les mentions légales : ' + window.location.origin + '/mentions-legales\n',
-            'color: #90EE90; font-size: 13px; line-height: 1.8; font-style: italic; padding: 10px;'
+            "%c⚖️  SANCTIONS PÉNALES\n",
+            "color: #ff6666; font-size: 16px; font-weight: bold; text-decoration: underline;",
           );
-          
-          console.log('%c\n' +
-            '═══════════════════════════════════════════════════════════════════\n',
-            'color: #ff3333; font-size: 16px; font-weight: bold; font-family: monospace;'
+
+          console.log(
+            "%cLa contrefaçon est punie de :\n" +
+              "• 300 000 € d'amende\n" +
+              "• 3 ans d'emprisonnement\n" +
+              "(Articles L.335-2 et suivants du Code de la propriété intellectuelle)\n",
+            "color: #ff9999; font-size: 13px; line-height: 1.8; font-weight: bold; background: #2a0000; padding: 15px; border-left: 4px solid #ff0000;",
+          );
+
+          console.log(
+            "%c📋 Pour toute demande d'utilisation légitime :\n" +
+              "→ Utilisez le formulaire de contact : " +
+              window.location.origin +
+              "/contact\n" +
+              "→ Consultez les mentions légales : " +
+              window.location.origin +
+              "/mentions-legales\n",
+            "color: #90EE90; font-size: 13px; line-height: 1.8; font-style: italic; padding: 10px;",
+          );
+
+          console.log(
+            "%c\n" +
+              "═══════════════════════════════════════════════════════════════════\n",
+            "color: #ff3333; font-size: 16px; font-weight: bold; font-family: monospace;",
           );
         }
-        function prevent(e){ e.preventDefault(); e.stopPropagation(); }
+        function prevent(e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
         if (isProduction) {
-          document.addEventListener('contextmenu', prevent, true);
-          document.addEventListener('keydown', function(e){ const k = e.key && e.key.toLowerCase(); if (e.key === 'F12') prevent(e); if ((e.ctrlKey || e.metaKey) && e.shiftKey && (k === 'i' || k === 'j' || k === 'c')) prevent(e); if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'u')) prevent(e); }, true);
+          document.addEventListener("contextmenu", prevent, true);
+          document.addEventListener(
+            "keydown",
+            function (e) {
+              const k = e.key && e.key.toLowerCase();
+              if (e.key === "F12") prevent(e);
+              if (
+                (e.ctrlKey || e.metaKey) &&
+                e.shiftKey &&
+                (k === "i" || k === "j" || k === "c")
+              )
+                prevent(e);
+              if ((e.ctrlKey || e.metaKey) && (k === "s" || k === "u"))
+                prevent(e);
+            },
+            true,
+          );
         } else {
-          document.addEventListener('contextmenu', function(e){ if (e.target && e.target.tagName === 'IMG') prevent(e); }, true);
-          document.addEventListener('keydown', function(e){ const k = e.key && e.key.toLowerCase(); if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'u')) prevent(e); }, true);
+          document.addEventListener(
+            "contextmenu",
+            function (e) {
+              if (e.target && e.target.tagName === "IMG") prevent(e);
+            },
+            true,
+          );
+          document.addEventListener(
+            "keydown",
+            function (e) {
+              const k = e.key && e.key.toLowerCase();
+              if ((e.ctrlKey || e.metaKey) && (k === "s" || k === "u"))
+                prevent(e);
+            },
+            true,
+          );
         }
-        document.addEventListener('dragstart', function(e){ if (e.target && e.target.tagName === 'IMG') prevent(e); }, true);
-        document.querySelectorAll('img').forEach(function(img){ try{ img.setAttribute('draggable','false'); img.style.userSelect='none'; img.style.webkitUserDrag='none'; }catch(e){} });
-        document.querySelectorAll('a > img').forEach(function(img){ try{ var a = img.parentElement; if (!a) return; if (getComputedStyle(a).position === 'static') a.style.position = 'relative'; if (a.querySelector('.img-protect-overlay')) return; var ov = document.createElement('span'); ov.className='img-protect-overlay'; ov.style.position='absolute'; ov.style.inset='0'; ov.style.display='block'; ov.style.zIndex='3'; ov.style.background='transparent'; ov.style.cursor='pointer'; ov.addEventListener('click', function(){ a.click(); }); ov.addEventListener('contextmenu', prevent); a.appendChild(ov); }catch(e){} });
-        window.requestHDImage = async function(originalPath) { try { devLog('🔐 Demande URL signée:', originalPath); const response = await fetch('/api/request-hd-access', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imagePath: originalPath }) }); if (!response.ok) { const errorText = await response.text(); devError('❌ Erreur:', response.status, errorText); return originalPath; } const data = await response.json(); if (data.success) { devLog('✅ URL signée:', data.url); return data.url; } throw new Error(data.error || 'Erreur accès HD'); } catch (err) { devError('Erreur requestHDImage:', err); return originalPath; } };
+        document.addEventListener(
+          "dragstart",
+          function (e) {
+            if (e.target && e.target.tagName === "IMG") prevent(e);
+          },
+          true,
+        );
+        document.querySelectorAll("img").forEach(function (img) {
+          try {
+            img.setAttribute("draggable", "false");
+            img.style.userSelect = "none";
+            img.style.webkitUserDrag = "none";
+          } catch (e) {}
+        });
+        document.querySelectorAll("a > img").forEach(function (img) {
+          try {
+            var a = img.parentElement;
+            if (!a) return;
+            if (getComputedStyle(a).position === "static")
+              a.style.position = "relative";
+            if (a.querySelector(".img-protect-overlay")) return;
+            var ov = document.createElement("span");
+            ov.className = "img-protect-overlay";
+            ov.style.position = "absolute";
+            ov.style.inset = "0";
+            ov.style.display = "block";
+            ov.style.zIndex = "3";
+            ov.style.background = "transparent";
+            ov.style.cursor = "pointer";
+            ov.addEventListener("click", function () {
+              a.click();
+            });
+            ov.addEventListener("contextmenu", prevent);
+            a.appendChild(ov);
+          } catch (e) {}
+        });
+        window.requestHDImage = async function (originalPath) {
+          try {
+            devLog("🔐 Demande URL signée:", originalPath);
+            const response = await fetch("/api/request-hd-access", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ imagePath: originalPath }),
+            });
+            if (!response.ok) {
+              const errorText = await response.text();
+              devError("❌ Erreur:", response.status, errorText);
+              return originalPath;
+            }
+            const data = await response.json();
+            if (data.success) {
+              devLog("✅ URL signée:", data.url);
+              return data.url;
+            }
+            throw new Error(data.error || "Erreur accès HD");
+          } catch (err) {
+            devError("Erreur requestHDImage:", err);
+            return originalPath;
+          }
+        };
       })();
     </script>
     <script defer src="/dist/js/fade_in.js"></script>
@@ -416,39 +675,49 @@
     <script defer src="../dist/js/user-tracker.js"></script>
     <script>
       // Animated blobs follow the pointer - subtle parallax + idle float
-      (function(){
-        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        const bg = document.querySelector('.animated-bg');
+      (function () {
+        if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        )
+          return;
+        const bg = document.querySelector(".animated-bg");
         if (!bg) return;
-        const blobs = Array.from(bg.querySelectorAll('.blob'));
+        const blobs = Array.from(bg.querySelectorAll(".blob"));
         if (!blobs.length) return;
 
-        let mx = 0, my = 0; // target normalized (-0.5..0.5)
-        let lx = 0, ly = 0; // last smoothed
+        let mx = 0,
+          my = 0; // target normalized (-0.5..0.5)
+        let lx = 0,
+          ly = 0; // last smoothed
         const ease = 0.08;
         let lastTime = performance.now();
 
-        window.addEventListener('pointermove', (e)=>{
-          mx = (e.clientX / window.innerWidth) - 0.5;
-          my = (e.clientY / window.innerHeight) - 0.5;
-        }, {passive:true});
+        window.addEventListener(
+          "pointermove",
+          (e) => {
+            mx = e.clientX / window.innerWidth - 0.5;
+            my = e.clientY / window.innerHeight - 0.5;
+          },
+          { passive: true },
+        );
 
-        function animate(t){
+        function animate(t) {
           const dt = (t - lastTime) / 1000;
           lastTime = t;
           // smooth
           lx += (mx - lx) * ease;
           ly += (my - ly) * ease;
 
-          blobs.forEach((b,i)=>{
-            const idx = i+1;
+          blobs.forEach((b, i) => {
+            const idx = i + 1;
             const depth = idx / blobs.length; // 0..1
             // base float using time + depth for subtle autonomous motion
-            const floatX = Math.sin(t/2000 + i) * (8 + i*2) * (0.6);
-            const floatY = Math.cos(t/1800 + i) * (6 + i*1.5) * (0.5);
+            const floatX = Math.sin(t / 2000 + i) * (8 + i * 2) * 0.6;
+            const floatY = Math.cos(t / 1800 + i) * (6 + i * 1.5) * 0.5;
             // mouse influence scaled by depth (front blobs move more)
-            const mxPx = lx * 140 * (1 - depth*0.6);
-            const myPx = ly * 80 * (1 - depth*0.6);
+            const mxPx = lx * 140 * (1 - depth * 0.6);
+            const myPx = ly * 80 * (1 - depth * 0.6);
             const scale = 1 - depth * 0.06;
             b.style.transform = `translate3d(${mxPx + floatX}px, ${myPx + floatY}px, 0) scale(${scale})`;
           });

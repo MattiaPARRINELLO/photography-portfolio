@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -10,7 +10,12 @@
     <!-- META_PLACEHOLDER_END -->
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="../dist/assets/Logo_MP.svg" />
-    <link rel="stylesheet" href="../dist/css/output.css" media="print" onload="this.media='all'" />
+    <link
+      rel="stylesheet"
+      href="../dist/css/output.css"
+      media="print"
+      onload="this.media = 'all'"
+    />
     <noscript><link rel="stylesheet" href="../dist/css/output.css" /></noscript>
     <!-- Alpine.js -->
     <script
@@ -32,51 +37,176 @@
     ></script>
     <style>
       /* Subtle animated background used across public pages */
-      .animated-bg{
-        position:fixed;
-        inset:0;
-        z-index:0; /* above page background so blobs are visible */
-        pointer-events:none;
-        overflow:hidden;
-        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+      .animated-bg {
+        position: fixed;
+        inset: 0;
+        z-index: 0; /* above page background so blobs are visible */
+        pointer-events: none;
+        overflow: hidden;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(0, 0, 0, 0.02)
+        );
       }
-      .animated-bg .blob{
-        position:absolute;
-        width:50vmax;
-        height:50vmax;
-        border-radius:50%;
+      .animated-bg .blob {
+        position: absolute;
+        width: 50vmax;
+        height: 50vmax;
+        border-radius: 50%;
         filter: blur(38px);
-        opacity:0.22;
-        transform: translate3d(0,0,0) scale(1);
+        opacity: 0.22;
+        transform: translate3d(0, 0, 0) scale(1);
         will-change: transform, opacity;
         mix-blend-mode: screen;
       }
-      .animated-bg .blob.b1{ left:-12%; top:-20%; background:radial-gradient(circle at 30% 30%, rgba(102,126,234,0.98), rgba(102,126,234,0.22)); }
-      .animated-bg .blob.b2{ right:-14%; bottom:-12%; background:radial-gradient(circle at 70% 70%, rgba(139,69,19,0.96), rgba(139,69,19,0.18)); }
-      .animated-bg .blob.b3{ left:52%; top:62%; transform:translateX(-50%); background:radial-gradient(circle at 50% 50%, rgba(75,0,130,0.95), rgba(75,0,130,0.16)); }
-      .animated-bg .blob.b4{ left:20%; top:60%; background:radial-gradient(circle at 40% 50%, rgba(66,153,225,0.9), rgba(66,153,225,0.12)); opacity:0.14; }
-      .animated-bg .blob.b5{ right:30%; top:10%; background:radial-gradient(circle at 50% 40%, rgba(236,72,153,0.9), rgba(236,72,153,0.12)); opacity:0.12; }
-      .animated-bg .blob.b6{ left:5%; bottom:10%; background:radial-gradient(circle at 20% 80%, rgba(250,204,21,0.88), rgba(250,204,21,0.10)); opacity:0.11; }
-      .animated-bg .blob.b7{ right:5%; top:40%; background:radial-gradient(circle at 60% 30%, rgba(16,185,129,0.9), rgba(16,185,129,0.10)); opacity:0.12; }
+      .animated-bg .blob.b1 {
+        left: -12%;
+        top: -20%;
+        background: radial-gradient(
+          circle at 30% 30%,
+          rgba(102, 126, 234, 0.98),
+          rgba(102, 126, 234, 0.22)
+        );
+      }
+      .animated-bg .blob.b2 {
+        right: -14%;
+        bottom: -12%;
+        background: radial-gradient(
+          circle at 70% 70%,
+          rgba(139, 69, 19, 0.96),
+          rgba(139, 69, 19, 0.18)
+        );
+      }
+      .animated-bg .blob.b3 {
+        left: 52%;
+        top: 62%;
+        transform: translateX(-50%);
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(75, 0, 130, 0.95),
+          rgba(75, 0, 130, 0.16)
+        );
+      }
+      .animated-bg .blob.b4 {
+        left: 20%;
+        top: 60%;
+        background: radial-gradient(
+          circle at 40% 50%,
+          rgba(66, 153, 225, 0.9),
+          rgba(66, 153, 225, 0.12)
+        );
+        opacity: 0.14;
+      }
+      .animated-bg .blob.b5 {
+        right: 30%;
+        top: 10%;
+        background: radial-gradient(
+          circle at 50% 40%,
+          rgba(236, 72, 153, 0.9),
+          rgba(236, 72, 153, 0.12)
+        );
+        opacity: 0.12;
+      }
+      .animated-bg .blob.b6 {
+        left: 5%;
+        bottom: 10%;
+        background: radial-gradient(
+          circle at 20% 80%,
+          rgba(250, 204, 21, 0.88),
+          rgba(250, 204, 21, 0.1)
+        );
+        opacity: 0.11;
+      }
+      .animated-bg .blob.b7 {
+        right: 5%;
+        top: 40%;
+        background: radial-gradient(
+          circle at 60% 30%,
+          rgba(16, 185, 129, 0.9),
+          rgba(16, 185, 129, 0.1)
+        );
+        opacity: 0.12;
+      }
       /* Light-mode stronger/darker blobs */
       @media (prefers-color-scheme: light) {
-        .animated-bg .blob{ mix-blend-mode: multiply; opacity: 0.36; filter: blur(28px); }
-        .animated-bg .blob.b1{ background:radial-gradient(circle at 30% 30%, rgba(32,78,200,0.95), rgba(32,78,200,0.32)); }
-        .animated-bg .blob.b2{ background:radial-gradient(circle at 70% 70%, rgba(120,50,20,0.96), rgba(120,50,20,0.3)); }
-        .animated-bg .blob.b3{ background:radial-gradient(circle at 50% 50%, rgba(60,10,120,0.95), rgba(60,10,120,0.28)); }
-        .animated-bg .blob.b4{ background:radial-gradient(circle at 40% 50%, rgba(40,110,200,0.92), rgba(40,110,200,0.26)); }
-        .animated-bg .blob.b5{ background:radial-gradient(circle at 50% 40%, rgba(200,40,120,0.92), rgba(200,40,120,0.26)); }
-        .animated-bg .blob.b6{ background:radial-gradient(circle at 20% 80%, rgba(200,150,20,0.9), rgba(200,150,20,0.22)); }
-        .animated-bg .blob.b7{ background:radial-gradient(circle at 60% 30%, rgba(10,140,90,0.9), rgba(10,140,90,0.22)); }
+        .animated-bg .blob {
+          mix-blend-mode: multiply;
+          opacity: 0.36;
+          filter: blur(28px);
+        }
+        .animated-bg .blob.b1 {
+          background: radial-gradient(
+            circle at 30% 30%,
+            rgba(32, 78, 200, 0.95),
+            rgba(32, 78, 200, 0.32)
+          );
+        }
+        .animated-bg .blob.b2 {
+          background: radial-gradient(
+            circle at 70% 70%,
+            rgba(120, 50, 20, 0.96),
+            rgba(120, 50, 20, 0.3)
+          );
+        }
+        .animated-bg .blob.b3 {
+          background: radial-gradient(
+            circle at 50% 50%,
+            rgba(60, 10, 120, 0.95),
+            rgba(60, 10, 120, 0.28)
+          );
+        }
+        .animated-bg .blob.b4 {
+          background: radial-gradient(
+            circle at 40% 50%,
+            rgba(40, 110, 200, 0.92),
+            rgba(40, 110, 200, 0.26)
+          );
+        }
+        .animated-bg .blob.b5 {
+          background: radial-gradient(
+            circle at 50% 40%,
+            rgba(200, 40, 120, 0.92),
+            rgba(200, 40, 120, 0.26)
+          );
+        }
+        .animated-bg .blob.b6 {
+          background: radial-gradient(
+            circle at 20% 80%,
+            rgba(200, 150, 20, 0.9),
+            rgba(200, 150, 20, 0.22)
+          );
+        }
+        .animated-bg .blob.b7 {
+          background: radial-gradient(
+            circle at 60% 30%,
+            rgba(10, 140, 90, 0.9),
+            rgba(10, 140, 90, 0.22)
+          );
+        }
       }
-      @keyframes blobMove{
-        0%{ transform: translate3d(0,0,0) scale(1); }
-        25%{ transform: translate3d(5%, -3%, 0) scale(1.04); }
-        50%{ transform: translate3d(0,5%,0) scale(1); }
-        75%{ transform: translate3d(-4%,-2%,0) scale(0.98); }
-        100%{ transform: translate3d(0,0,0) scale(1); }
+      @keyframes blobMove {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        25% {
+          transform: translate3d(5%, -3%, 0) scale(1.04);
+        }
+        50% {
+          transform: translate3d(0, 5%, 0) scale(1);
+        }
+        75% {
+          transform: translate3d(-4%, -2%, 0) scale(0.98);
+        }
+        100% {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
       }
-      @media (prefers-reduced-motion: reduce){ .animated-bg .blob{ animation: none !important; } }
+      @media (prefers-reduced-motion: reduce) {
+        .animated-bg .blob {
+          animation: none !important;
+        }
+      }
     </style>
     <!-- End Matomo Code -->
   </head>
@@ -179,10 +309,28 @@
             <!-- SEO: H1 avec contexte métier -->
             <h1 class="text-4xl pt-10 pb-4"><b>CONTACTEZ-MOI</b></h1>
             <!-- SEO: Texte introductif avec mots-clés et segmentation par cible -->
-            <div class="mb-6 text-gray-700 dark:text-gray-300 text-base leading-relaxed">
-              <p class="mb-3">Vous cherchez un <strong>photographe de concert à Paris</strong> ? Que vous soyez un <strong>média musical</strong>, un <strong>artiste émergent</strong>, un <strong>label</strong>, une <strong>salle de concert</strong> ou un <strong>organisateur de festival</strong> - discutons de votre projet.</p>
-              <p class="mb-3">Je suis disponible pour couvrir vos événements en <strong>Île-de-France</strong> et partout en <strong>France</strong> : concerts, festivals, showcases, backstage, soirées de lancement.</p>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Réponse sous 24h · Devis gratuit · Déplacement sur toute la France</p>
+            <div
+              class="mb-6 text-gray-700 dark:text-gray-300 text-base leading-relaxed"
+            >
+              <p class="mb-3">
+                Vous cherchez un
+                <strong>photographe de concert à Paris</strong> ? Que vous soyez
+                un <strong>média musical</strong>, un
+                <strong>artiste émergent</strong>, un <strong>label</strong>,
+                une <strong>salle de concert</strong> ou un
+                <strong>organisateur de festival</strong> - discutons de votre
+                projet.
+              </p>
+              <p class="mb-3">
+                Je suis disponible pour couvrir vos événements en
+                <strong>Île-de-France</strong> et partout en
+                <strong>France</strong> : concerts, festivals, showcases,
+                backstage, soirées de lancement.
+              </p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                Réponse sous 24h · Devis gratuit · Déplacement sur toute la
+                France
+              </p>
             </div>
 
             <form class="space-y-8" id="contactForm">
@@ -199,19 +347,25 @@
                    3. CSRF TOKEN : Token unique par session pour
                       bloquer les requêtes cross-site malveillantes.
               -->
-              
+
               <!-- HONEYPOT : Champ piège invisible (ne pas remplir) -->
-              <div style="position: absolute; left: -9999px;" aria-hidden="true">
+              <div style="position: absolute; left: -9999px" aria-hidden="true">
                 <label for="website">Ne pas remplir ce champ</label>
-                <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+                <input
+                  type="text"
+                  id="website"
+                  name="website"
+                  tabindex="-1"
+                  autocomplete="off"
+                />
               </div>
-              
+
               <!-- TIMESTAMP : Moment où le formulaire a été chargé -->
               <input type="hidden" id="formLoadTime" name="formLoadTime" />
-              
+
               <!-- CSRF TOKEN : Token anti-CSRF -->
               <input type="hidden" id="csrfToken" name="csrfToken" />
-              
+
               <div>
                 <label
                   for="email"
@@ -334,111 +488,127 @@
                 // ============================================
                 // PROTECTION ANTI-SPAM - INITIALISATION
                 // ============================================
-                
+
                 // 1. Enregistre le moment du chargement du formulaire
                 // Les bots soumettent instantanément, les humains prennent du temps
                 const formLoadTimestamp = Date.now().toString();
-                document.getElementById('formLoadTime').value = formLoadTimestamp;
-                
+                document.getElementById("formLoadTime").value =
+                  formLoadTimestamp;
+
                 // 2. Génère un token CSRF unique pour cette session
                 // Ce token sera vérifié côté serveur
-                const csrfToken = btoa(Date.now() + '-' + Math.random().toString(36).substr(2, 16));
-                document.getElementById('csrfToken').value = csrfToken;
+                const csrfToken = btoa(
+                  Date.now() + "-" + Math.random().toString(36).substr(2, 16),
+                );
+                document.getElementById("csrfToken").value = csrfToken;
                 // Stocke le token dans sessionStorage pour vérification
-                sessionStorage.setItem('contactCsrf', csrfToken);
-                
+                sessionStorage.setItem("contactCsrf", csrfToken);
+
                 // 3. Génère une signature basée sur le timestamp
                 // Cette signature prouve que le JavaScript a été exécuté
                 // (impossible à générer avec curl/Postman sans connaître l'algorithme)
                 async function generateSignature(timestamp) {
-                  const secret = 'mp-contact-form-2024-secret-key';
+                  const secret = "mp-contact-form-2024-secret-key";
                   const data = timestamp + secret;
                   const encoder = new TextEncoder();
                   const dataBuffer = encoder.encode(data);
-                  const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+                  const hashBuffer = await crypto.subtle.digest(
+                    "SHA-256",
+                    dataBuffer,
+                  );
                   const hashArray = Array.from(new Uint8Array(hashBuffer));
-                  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                  const hashHex = hashArray
+                    .map((b) => b.toString(16).padStart(2, "0"))
+                    .join("");
                   return hashHex.substring(0, 16);
                 }
-                
+
                 // Génère et stocke la signature
-                let formSignature = '';
-                generateSignature(formLoadTimestamp).then(sig => {
+                let formSignature = "";
+                generateSignature(formLoadTimestamp).then((sig) => {
                   formSignature = sig;
-                  console.log('📝 Formulaire initialisé avec signature');
+                  console.log("📝 Formulaire initialisé avec signature");
                 });
-                
+
                 document
                   .getElementById("contactForm")
                   .addEventListener("submit", async function (e) {
                     e.preventDefault();
-                    
+
                     // ============================================
                     // VALIDATIONS ANTI-SPAM CÔTÉ CLIENT
                     // ============================================
-                    
+
                     const email = document.getElementById("email").value;
                     const subject = document.getElementById("subject").value;
                     const message = document.getElementById("message").value;
                     const honeypot = document.getElementById("website").value;
-                    const formLoadTime = parseInt(document.getElementById("formLoadTime").value);
+                    const formLoadTime = parseInt(
+                      document.getElementById("formLoadTime").value,
+                    );
                     const token = document.getElementById("csrfToken").value;
                     const status = document.getElementById("formStatus");
-                    
+
                     // VÉRIFICATION 1 : Honeypot (doit être vide)
                     if (honeypot) {
-                      console.warn('🚫 Bot détecté via honeypot');
+                      console.warn("🚫 Bot détecté via honeypot");
                       // Simule un succès pour ne pas alerter le bot
                       status.textContent = "Message envoyé !";
                       status.className = "mt-2 text-sm text-green-500";
                       return;
                     }
-                    
+
                     // VÉRIFICATION 2 : Temps de remplissage (minimum 3 secondes)
                     const fillTime = Date.now() - formLoadTime;
                     if (fillTime < 3000) {
-                      console.warn('🚫 Bot détecté : formulaire rempli trop vite (' + fillTime + 'ms)');
-                      status.textContent = "Veuillez patienter avant de soumettre.";
+                      console.warn(
+                        "🚫 Bot détecté : formulaire rempli trop vite (" +
+                          fillTime +
+                          "ms)",
+                      );
+                      status.textContent =
+                        "Veuillez patienter avant de soumettre.";
                       status.className = "mt-2 text-sm text-yellow-500";
                       return;
                     }
-                    
+
                     // VÉRIFICATION 3 : Token CSRF
-                    if (token !== sessionStorage.getItem('contactCsrf')) {
-                      console.warn('🚫 Token CSRF invalide');
-                      status.textContent = "Session expirée. Veuillez rafraîchir la page.";
+                    if (token !== sessionStorage.getItem("contactCsrf")) {
+                      console.warn("🚫 Token CSRF invalide");
+                      status.textContent =
+                        "Session expirée. Veuillez rafraîchir la page.";
                       status.className = "mt-2 text-sm text-red-500";
                       return;
                     }
-                    
+
                     // VÉRIFICATION 4 : Longueur minimale du message
                     if (message.length < 10) {
                       status.textContent = "Votre message est trop court.";
                       status.className = "mt-2 text-sm text-yellow-500";
                       return;
                     }
-                    
+
                     status.textContent = "Envoi en cours...";
                     status.className = "mt-2 text-sm text-gray-500";
-                    
+
                     try {
                       const res = await fetch("/send-mail", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ 
-                          email, 
-                          subject, 
+                        body: JSON.stringify({
+                          email,
+                          subject,
                           message,
                           // Envoie les données anti-spam au serveur
                           _honeypot: honeypot,
                           _timestamp: formLoadTime,
                           _token: token,
-                          _signature: formSignature  // Signature anti-API abuse
+                          _signature: formSignature, // Signature anti-API abuse
                         }),
                       });
-                      
+
                       const data = await res.json();
-                      
+
                       if (res.ok) {
                         // Animation géante au centre
                         const bigCheck =
@@ -456,26 +626,38 @@
                         this.reset();
                         // Régénère le timestamp, le token et la signature pour le prochain envoi
                         const newTimestamp = Date.now().toString();
-                        document.getElementById('formLoadTime').value = newTimestamp;
-                        const newToken = btoa(Date.now() + '-' + Math.random().toString(36).substr(2, 16));
-                        document.getElementById('csrfToken').value = newToken;
-                        sessionStorage.setItem('contactCsrf', newToken);
-                        generateSignature(newTimestamp).then(sig => { formSignature = sig; });
-                        
+                        document.getElementById("formLoadTime").value =
+                          newTimestamp;
+                        const newToken = btoa(
+                          Date.now() +
+                            "-" +
+                            Math.random().toString(36).substr(2, 16),
+                        );
+                        document.getElementById("csrfToken").value = newToken;
+                        sessionStorage.setItem("contactCsrf", newToken);
+                        generateSignature(newTimestamp).then((sig) => {
+                          formSignature = sig;
+                        });
+
                         setTimeout(() => {
                           bigCheck.style.display = "none";
                           window.location.href = "/";
                         }, 2000);
                       } else if (res.status === 429) {
                         // Rate limit atteint
-                        status.textContent = data.error || "Trop de messages envoyés. Réessayez plus tard.";
+                        status.textContent =
+                          data.error ||
+                          "Trop de messages envoyés. Réessayez plus tard.";
                         status.className = "mt-2 text-sm text-yellow-500";
                       } else {
-                        status.textContent = data.error || "Erreur lors de l'envoi. Veuillez réessayer.";
+                        status.textContent =
+                          data.error ||
+                          "Erreur lors de l'envoi. Veuillez réessayer.";
                         status.className = "mt-2 text-sm text-red-500";
                       }
                     } catch (err) {
-                      status.textContent = "Erreur lors de l'envoi. Veuillez réessayer.";
+                      status.textContent =
+                        "Erreur lors de l'envoi. Veuillez réessayer.";
                       status.className = "mt-2 text-sm text-red-500";
                     }
                   });
@@ -517,14 +699,19 @@
               1 rue Victor Basch Franconville 95130<br />(+33) 6 50 58 62 51
             </p>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              <a href="/mentions-legales" class="hover:underline">Mentions légales</a>
+              <a href="/mentions-legales" class="hover:underline"
+                >Mentions légales</a
+              >
             </p>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              © Mattia Parrinello – Toutes les photos publiées sur ce site sont protégées. Toute utilisation non autorisée est passible de sanctions.
+              © Mattia Parrinello – Toutes les photos publiées sur ce site sont
+              protégées. Toute utilisation non autorisée est passible de
+              sanctions.
             </p>
             <!-- SEO: Ligne footer avec mots-clés géographiques -->
             <p class="mt-3 text-xs text-gray-400 dark:text-gray-500">
-              Mattia Parrinello - Photographe de concert à Paris · Disponible en Île-de-France et partout en France
+              Mattia Parrinello - Photographe de concert à Paris · Disponible en
+              Île-de-France et partout en France
             </p>
             <div class="flex mx-auto">
               <div
@@ -557,89 +744,192 @@
       </div>
     </footer>
     <script>
-      (function(){
-        const isProduction = !window.location.hostname.match(/localhost|127\.0\.0\.1/);
-        const devLog = isProduction ? function(){} : console.log.bind(console);
-        const devWarn = isProduction ? function(){} : console.warn.bind(console);
-        const devError = isProduction ? function(){} : console.error.bind(console);
+      (function () {
+        const isProduction = !window.location.hostname.match(
+          /localhost|127\.0\.0\.1/,
+        );
+        const devLog = isProduction
+          ? function () {}
+          : console.log.bind(console);
+        const devWarn = isProduction
+          ? function () {}
+          : console.warn.bind(console);
+        const devError = isProduction
+          ? function () {}
+          : console.error.bind(console);
         if (isProduction) {
-          console.log('%c\n' +
-            '═══════════════════════════════════════════════════════════════════\n' +
-            '║                                                                 ║\n' +
-            '║               ⚠️  AVERTISSEMENT DE SÉCURITÉ  ⚠️                ║\n' +
-            '║                                                                 ║\n' +
-            '═══════════════════════════════════════════════════════════════════',
-            'color: #ff3333; font-size: 16px; font-weight: bold; font-family: monospace; line-height: 1.5;'
-          );
-          
-          console.log('%c\n🚫 ACCÈS NON AUTORISÉ À LA CONSOLE DE DÉVELOPPEMENT 🚫\n',
-            'color: #ff6600; font-size: 22px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: linear-gradient(90deg, #330000, #000000); padding: 15px 20px; border-radius: 5px;'
-          );
-          
           console.log(
-            '%c┌────────────────────────────────────────────────────────────┐\n' +
-            '│  Vous tentez d\'accéder aux photos de ce site ?            │\n' +
-            '│                                                            │\n' +
-            '│  ❌ TÉLÉCHARGEMENT INTERDIT                                │\n' +
-            '│  ❌ COPIE INTERDITE                                        │\n' +
-            '│  ❌ UTILISATION NON AUTORISÉE INTERDITE                    │\n' +
-            '└────────────────────────────────────────────────────────────┘',
-            'color: #ffff00; font-size: 15px; font-weight: bold; font-family: monospace; line-height: 1.8; background: #1a1a1a; padding: 20px; border-left: 5px solid #ff0000;'
+            "%c\n" +
+              "═══════════════════════════════════════════════════════════════════\n" +
+              "║                                                                 ║\n" +
+              "║               ⚠️  AVERTISSEMENT DE SÉCURITÉ  ⚠️                ║\n" +
+              "║                                                                 ║\n" +
+              "═══════════════════════════════════════════════════════════════════",
+            "color: #ff3333; font-size: 16px; font-weight: bold; font-family: monospace; line-height: 1.5;",
           );
-          
+
           console.log(
-            '%c\n📸 PROTECTION DU DROIT D\'AUTEUR\n',
-            'color: #00ffff; font-size: 18px; font-weight: bold; text-decoration: underline;'
+            "%c\n🚫 ACCÈS NON AUTORISÉ À LA CONSOLE DE DÉVELOPPEMENT 🚫\n",
+            "color: #ff6600; font-size: 22px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: linear-gradient(90deg, #330000, #000000); padding: 15px 20px; border-radius: 5px;",
           );
-          
+
           console.log(
-            '%c© Mattia Parrinello - Tous droits réservés\n\n' +
-            'Toutes les photographies publiées sur ce site sont protégées par le droit d\'auteur.\n' +
-            'Toute reproduction, représentation, modification, publication, transmission,\n' +
-            'dénaturation, totale ou partielle du site ou de son contenu, par quelque\n' +
-            'procédé que ce soit, sans autorisation écrite préalable est interdite et\n' +
-            'constitue un délit de contrefaçon sanctionné par les articles L.335-2 et\n' +
-            'suivants du Code de la propriété intellectuelle.\n',
-            'color: #ffffff; font-size: 14px; line-height: 1.6; background: #1a1a1a; padding: 15px; border-left: 4px solid #00ff00;'
+            "%c┌────────────────────────────────────────────────────────────┐\n" +
+              "│  Vous tentez d'accéder aux photos de ce site ?            │\n" +
+              "│                                                            │\n" +
+              "│  ❌ TÉLÉCHARGEMENT INTERDIT                                │\n" +
+              "│  ❌ COPIE INTERDITE                                        │\n" +
+              "│  ❌ UTILISATION NON AUTORISÉE INTERDITE                    │\n" +
+              "└────────────────────────────────────────────────────────────┘",
+            "color: #ffff00; font-size: 15px; font-weight: bold; font-family: monospace; line-height: 1.8; background: #1a1a1a; padding: 20px; border-left: 5px solid #ff0000;",
           );
-          
+
           console.log(
-            '%c⚖️  SANCTIONS PÉNALES\n',
-            'color: #ff6666; font-size: 16px; font-weight: bold; text-decoration: underline;'
+            "%c\n📸 PROTECTION DU DROIT D'AUTEUR\n",
+            "color: #00ffff; font-size: 18px; font-weight: bold; text-decoration: underline;",
           );
-          
+
           console.log(
-            '%cLa contrefaçon est punie de :\n' +
-            '• 300 000 € d\'amende\n' +
-            '• 3 ans d\'emprisonnement\n' +
-            '(Articles L.335-2 et suivants du Code de la propriété intellectuelle)\n',
-            'color: #ff9999; font-size: 13px; line-height: 1.8; font-weight: bold; background: #2a0000; padding: 15px; border-left: 4px solid #ff0000;'
+            "%c© Mattia Parrinello - Tous droits réservés\n\n" +
+              "Toutes les photographies publiées sur ce site sont protégées par le droit d'auteur.\n" +
+              "Toute reproduction, représentation, modification, publication, transmission,\n" +
+              "dénaturation, totale ou partielle du site ou de son contenu, par quelque\n" +
+              "procédé que ce soit, sans autorisation écrite préalable est interdite et\n" +
+              "constitue un délit de contrefaçon sanctionné par les articles L.335-2 et\n" +
+              "suivants du Code de la propriété intellectuelle.\n",
+            "color: #ffffff; font-size: 14px; line-height: 1.6; background: #1a1a1a; padding: 15px; border-left: 4px solid #00ff00;",
           );
-          
+
           console.log(
-            '%c📋 Pour toute demande d\'utilisation légitime :\n' +
-            '→ Utilisez le formulaire de contact : ' + window.location.origin + '/contact\n' +
-            '→ Consultez les mentions légales : ' + window.location.origin + '/mentions-legales\n',
-            'color: #90EE90; font-size: 13px; line-height: 1.8; font-style: italic; padding: 10px;'
+            "%c⚖️  SANCTIONS PÉNALES\n",
+            "color: #ff6666; font-size: 16px; font-weight: bold; text-decoration: underline;",
           );
-          
-          console.log('%c\n' +
-            '═══════════════════════════════════════════════════════════════════\n',
-            'color: #ff3333; font-size: 16px; font-weight: bold; font-family: monospace;'
+
+          console.log(
+            "%cLa contrefaçon est punie de :\n" +
+              "• 300 000 € d'amende\n" +
+              "• 3 ans d'emprisonnement\n" +
+              "(Articles L.335-2 et suivants du Code de la propriété intellectuelle)\n",
+            "color: #ff9999; font-size: 13px; line-height: 1.8; font-weight: bold; background: #2a0000; padding: 15px; border-left: 4px solid #ff0000;",
+          );
+
+          console.log(
+            "%c📋 Pour toute demande d'utilisation légitime :\n" +
+              "→ Utilisez le formulaire de contact : " +
+              window.location.origin +
+              "/contact\n" +
+              "→ Consultez les mentions légales : " +
+              window.location.origin +
+              "/mentions-legales\n",
+            "color: #90EE90; font-size: 13px; line-height: 1.8; font-style: italic; padding: 10px;",
+          );
+
+          console.log(
+            "%c\n" +
+              "═══════════════════════════════════════════════════════════════════\n",
+            "color: #ff3333; font-size: 16px; font-weight: bold; font-family: monospace;",
           );
         }
-        function prevent(e){ e.preventDefault(); e.stopPropagation(); }
+        function prevent(e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
         if (isProduction) {
-          document.addEventListener('contextmenu', prevent, true);
-          document.addEventListener('keydown', function(e){ const k = e.key && e.key.toLowerCase(); if (e.key === 'F12') prevent(e); if ((e.ctrlKey || e.metaKey) && e.shiftKey && (k === 'i' || k === 'j' || k === 'c')) prevent(e); if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'u')) prevent(e); }, true);
+          document.addEventListener("contextmenu", prevent, true);
+          document.addEventListener(
+            "keydown",
+            function (e) {
+              const k = e.key && e.key.toLowerCase();
+              if (e.key === "F12") prevent(e);
+              if (
+                (e.ctrlKey || e.metaKey) &&
+                e.shiftKey &&
+                (k === "i" || k === "j" || k === "c")
+              )
+                prevent(e);
+              if ((e.ctrlKey || e.metaKey) && (k === "s" || k === "u"))
+                prevent(e);
+            },
+            true,
+          );
         } else {
-          document.addEventListener('contextmenu', function(e){ if (e.target && e.target.tagName === 'IMG') prevent(e); }, true);
-          document.addEventListener('keydown', function(e){ const k = e.key && e.key.toLowerCase(); if ((e.ctrlKey || e.metaKey) && (k === 's' || k === 'u')) prevent(e); }, true);
+          document.addEventListener(
+            "contextmenu",
+            function (e) {
+              if (e.target && e.target.tagName === "IMG") prevent(e);
+            },
+            true,
+          );
+          document.addEventListener(
+            "keydown",
+            function (e) {
+              const k = e.key && e.key.toLowerCase();
+              if ((e.ctrlKey || e.metaKey) && (k === "s" || k === "u"))
+                prevent(e);
+            },
+            true,
+          );
         }
-        document.addEventListener('dragstart', function(e){ if (e.target && e.target.tagName === 'IMG') prevent(e); }, true);
-        document.querySelectorAll('img').forEach(function(img){ try{ img.setAttribute('draggable','false'); img.style.userSelect='none'; img.style.webkitUserDrag='none'; }catch(e){} });
-        document.querySelectorAll('a > img').forEach(function(img){ try{ var a = img.parentElement; if (!a) return; if (getComputedStyle(a).position === 'static') a.style.position = 'relative'; if (a.querySelector('.img-protect-overlay')) return; var ov = document.createElement('span'); ov.className='img-protect-overlay'; ov.style.position='absolute'; ov.style.inset='0'; ov.style.display='block'; ov.style.zIndex='3'; ov.style.background='transparent'; ov.style.cursor='pointer'; ov.addEventListener('click', function(){ a.click(); }); ov.addEventListener('contextmenu', prevent); a.appendChild(ov); }catch(e){} });
-        window.requestHDImage = async function(originalPath) { try { devLog('🔐 Demande URL signée:', originalPath); const response = await fetch('/api/request-hd-access', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imagePath: originalPath }) }); if (!response.ok) { const errorText = await response.text(); devError('❌ Erreur:', response.status, errorText); return originalPath; } const data = await response.json(); if (data.success) { devLog('✅ URL signée:', data.url); return data.url; } throw new Error(data.error || 'Erreur accès HD'); } catch (err) { devError('Erreur requestHDImage:', err); return originalPath; } };
+        document.addEventListener(
+          "dragstart",
+          function (e) {
+            if (e.target && e.target.tagName === "IMG") prevent(e);
+          },
+          true,
+        );
+        document.querySelectorAll("img").forEach(function (img) {
+          try {
+            img.setAttribute("draggable", "false");
+            img.style.userSelect = "none";
+            img.style.webkitUserDrag = "none";
+          } catch (e) {}
+        });
+        document.querySelectorAll("a > img").forEach(function (img) {
+          try {
+            var a = img.parentElement;
+            if (!a) return;
+            if (getComputedStyle(a).position === "static")
+              a.style.position = "relative";
+            if (a.querySelector(".img-protect-overlay")) return;
+            var ov = document.createElement("span");
+            ov.className = "img-protect-overlay";
+            ov.style.position = "absolute";
+            ov.style.inset = "0";
+            ov.style.display = "block";
+            ov.style.zIndex = "3";
+            ov.style.background = "transparent";
+            ov.style.cursor = "pointer";
+            ov.addEventListener("click", function () {
+              a.click();
+            });
+            ov.addEventListener("contextmenu", prevent);
+            a.appendChild(ov);
+          } catch (e) {}
+        });
+        window.requestHDImage = async function (originalPath) {
+          try {
+            devLog("🔐 Demande URL signée:", originalPath);
+            const response = await fetch("/api/request-hd-access", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ imagePath: originalPath }),
+            });
+            if (!response.ok) {
+              const errorText = await response.text();
+              devError("❌ Erreur:", response.status, errorText);
+              return originalPath;
+            }
+            const data = await response.json();
+            if (data.success) {
+              devLog("✅ URL signée:", data.url);
+              return data.url;
+            }
+            throw new Error(data.error || "Erreur accès HD");
+          } catch (err) {
+            devError("Erreur requestHDImage:", err);
+            return originalPath;
+          }
+        };
       })();
     </script>
     <script defer src="/dist/js/fade_in.js"></script>
@@ -649,39 +939,49 @@
     <script defer src="../dist/js/user-tracker.js"></script>
     <script>
       // Animated blobs follow the pointer - subtle parallax + idle float
-      (function(){
-        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        const bg = document.querySelector('.animated-bg');
+      (function () {
+        if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        )
+          return;
+        const bg = document.querySelector(".animated-bg");
         if (!bg) return;
-        const blobs = Array.from(bg.querySelectorAll('.blob'));
+        const blobs = Array.from(bg.querySelectorAll(".blob"));
         if (!blobs.length) return;
 
-        let mx = 0, my = 0; // target normalized (-0.5..0.5)
-        let lx = 0, ly = 0; // last smoothed
+        let mx = 0,
+          my = 0; // target normalized (-0.5..0.5)
+        let lx = 0,
+          ly = 0; // last smoothed
         const ease = 0.08;
         let lastTime = performance.now();
 
-        window.addEventListener('pointermove', (e)=>{
-          mx = (e.clientX / window.innerWidth) - 0.5;
-          my = (e.clientY / window.innerHeight) - 0.5;
-        }, {passive:true});
+        window.addEventListener(
+          "pointermove",
+          (e) => {
+            mx = e.clientX / window.innerWidth - 0.5;
+            my = e.clientY / window.innerHeight - 0.5;
+          },
+          { passive: true },
+        );
 
-        function animate(t){
+        function animate(t) {
           const dt = (t - lastTime) / 1000;
           lastTime = t;
           // smooth
           lx += (mx - lx) * ease;
           ly += (my - ly) * ease;
 
-          blobs.forEach((b,i)=>{
-            const idx = i+1;
+          blobs.forEach((b, i) => {
+            const idx = i + 1;
             const depth = idx / blobs.length; // 0..1
             // base float using time + depth for subtle autonomous motion
-            const floatX = Math.sin(t/2000 + i) * (8 + i*2) * (0.6);
-            const floatY = Math.cos(t/1800 + i) * (6 + i*1.5) * (0.5);
+            const floatX = Math.sin(t / 2000 + i) * (8 + i * 2) * 0.6;
+            const floatY = Math.cos(t / 1800 + i) * (6 + i * 1.5) * 0.5;
             // mouse influence scaled by depth (front blobs move more)
-            const mxPx = lx * 140 * (1 - depth*0.6);
-            const myPx = ly * 80 * (1 - depth*0.6);
+            const mxPx = lx * 140 * (1 - depth * 0.6);
+            const myPx = ly * 80 * (1 - depth * 0.6);
             const scale = 1 - depth * 0.06;
             b.style.transform = `translate3d(${mxPx + floatX}px, ${myPx + floatY}px, 0) scale(${scale})`;
           });

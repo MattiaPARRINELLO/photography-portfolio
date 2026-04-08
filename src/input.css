@@ -12,210 +12,266 @@
 
   .animate-wave {
     animation-name: wave;
-    animation-duration: 2.5s; 
+    animation-duration: 2.5s;
     animation-iteration-count: infinite;
     transform-origin: 70% 70%;
     display: inline-block;
   }
   @keyframes wave {
-    0% { transform: rotate( 0.0deg) }
-   10% { transform: rotate(14.0deg) }
-   20% { transform: rotate(-8.0deg) }
-   30% { transform: rotate(14.0deg) }
-   40% { transform: rotate(-4.0deg) }
-   50% { transform: rotate(10.0deg) }
-   60% { transform: rotate( 0.0deg) }
-  100% { transform: rotate( 0.0deg) }
-}
-
-@layer components {
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.55rem 1rem;
-    border-radius: 0.75rem;
-    border: 0;
-    background: linear-gradient(90deg, rgba(17,24,39,0.95), rgba(39,39,42,0.92));
-    color: #ffffff;
-    font-weight: 600;
-    font-size: 0.95rem;
-    box-shadow: 0 8px 22px rgba(2,6,23,0.28);
-    cursor: pointer;
-    transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+    0% {
+      transform: rotate(0deg);
+    }
+    10% {
+      transform: rotate(14deg);
+    }
+    20% {
+      transform: rotate(-8deg);
+    }
+    30% {
+      transform: rotate(14deg);
+    }
+    40% {
+      transform: rotate(-4deg);
+    }
+    50% {
+      transform: rotate(10deg);
+    }
+    60% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
   }
 
-  .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(2,6,23,0.30);
+  @layer components {
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1rem;
+      border-radius: 0.75rem;
+      border: 0;
+      background: linear-gradient(
+        90deg,
+        rgba(17, 24, 39, 0.95),
+        rgba(39, 39, 42, 0.92)
+      );
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      box-shadow: 0 8px 22px rgba(2, 6, 23, 0.28);
+      cursor: pointer;
+      transition:
+        transform 120ms ease,
+        box-shadow 120ms ease,
+        opacity 120ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(2, 6, 23, 0.3);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 14px rgba(2, 6, 23, 0.2);
+    }
+
+    .btn:focus {
+      outline: 3px solid rgba(59, 130, 246, 0.28);
+      outline-offset: 2px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid rgba(17, 24, 39, 0.08);
+      color: inherit;
+      box-shadow: none;
+    }
+
+    /* Small floating HD button used by the gallery */
+    .hd-request-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.5rem;
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.88);
+      color: #0f172a;
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      box-shadow: 0 8px 20px rgba(2, 6, 23, 0.12);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      cursor: pointer;
+    }
+
+    .dark .hd-request-btn {
+      background: rgba(12, 18, 28, 0.6);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .hd-request-btn svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
   }
 
-  .btn:active {
-    transform: translateY(0);
-    box-shadow: 0 6px 14px rgba(2,6,23,0.20);
+  /* Global element-level button styles to improve existing markup without edits */
+  @layer components {
+    button,
+    input[type="button"],
+    input[type="submit"],
+    a[role="button"],
+    .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.9rem;
+      border-radius: 0.75rem;
+      border: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.98),
+        rgba(245, 245, 245, 0.96)
+      );
+      color: #0f172a;
+      font-weight: 600;
+      font-size: 0.95rem;
+      box-shadow: 0 8px 22px rgba(2, 6, 23, 0.06);
+      cursor: pointer;
+      transition:
+        transform 120ms ease,
+        box-shadow 120ms ease,
+        opacity 120ms ease,
+        background 120ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:hover,
+    input[type="button"]:hover,
+    input[type="submit"]:hover,
+    a[role="button"]:hover,
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 36px rgba(2, 6, 23, 0.1);
+    }
+
+    button:active,
+    input[type="button"]:active,
+    input[type="submit"]:active,
+    a[role="button"]:active,
+    .button:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 14px rgba(2, 6, 23, 0.06);
+    }
+
+    button.primary,
+    .primary {
+      background: linear-gradient(90deg, #0ea5a9, #2653ff);
+      color: #fff;
+    }
+
+    .dark button,
+    .dark input[type="button"],
+    .dark input[type="submit"],
+    .dark a[role="button"] {
+      background: linear-gradient(
+        180deg,
+        rgba(20, 20, 24, 0.9),
+        rgba(10, 10, 12, 0.9)
+      );
+      color: #fff;
+    }
+
+    /* Make small icon-only buttons look neat */
+    button.icon,
+    .icon.button {
+      padding: 0.3rem;
+      border-radius: 0.5rem;
+      width: 2.2rem;
+      height: 2.2rem;
+      justify-content: center;
+    }
   }
 
-  .btn:focus {
-    outline: 3px solid rgba(59,130,246,0.28);
-    outline-offset: 2px;
+  /* CTA-specific styling and placement tweaks */
+  @layer components {
+    .cta-contact {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.1rem;
+      border-radius: 0.85rem;
+      font-size: 1rem;
+      letter-spacing: 0.2px;
+      box-shadow: 0 18px 40px rgba(2, 6, 23, 0.12);
+      transition:
+        transform 160ms cubic-bezier(0.2, 0.9, 0.3, 1),
+        box-shadow 160ms ease,
+        opacity 160ms ease;
+      background: linear-gradient(90deg, #0ea5a9, #2653ff);
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .cta-contact:hover {
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 24px 48px rgba(2, 6, 23, 0.18);
+      opacity: 1;
+    }
+
+    .cta-contact:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 18px rgba(2, 6, 23, 0.1);
+    }
+
+    /* Center CTA on small screens, align start on medium+ to match content flow */
+    .cta-contact {
+      margin-left: auto;
+      margin-right: auto;
+      display: inline-flex;
+    }
+    @media (min-width: 768px) {
+      .cta-contact {
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+
+    /* If a dark theme is active, tweak gradient for contrast */
+    .dark .cta-contact {
+      background: linear-gradient(90deg, #06b6d4, #3b82f6);
+      color: #fff;
+    }
   }
 
-  .btn-ghost {
-    background: transparent;
-    border: 1px solid rgba(17,24,39,0.08);
-    color: inherit;
-    box-shadow: none;
+  /* Ensure hero CTA is clearly separated and stacked above the gallery */
+  @layer components {
+    .home-hero {
+      position: relative;
+      z-index: 10; /* keep hero above background/gallery */
+      padding-bottom: 2.25rem; /* extra breathing room under hero */
+    }
+
+    .home-hero .cta-contact {
+      position: relative;
+      z-index: 20; /* make sure CTA floats above gallery items */
+      margin-bottom: 0.75rem; /* extra spacing to avoid overlap */
+    }
+
+    /* If the gallery still overlaps due to negative margins, push the section below further on mobile */
+    @media (max-width: 767px) {
+      .home-hero {
+        padding-bottom: 3.5rem;
+      }
+      .home-hero .cta-contact {
+        margin-bottom: 1rem;
+      }
+    }
   }
-
-  /* Small floating HD button used by the gallery */
-  .hd-request-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.5rem;
-    border-radius: 0.5rem;
-    background: rgba(255,255,255,0.88);
-    color: #0f172a;
-    border: 1px solid rgba(15,23,42,0.06);
-    box-shadow: 0 8px 20px rgba(2,6,23,0.12);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    cursor: pointer;
-  }
-
-  .dark .hd-request-btn {
-    background: rgba(12,18,28,0.6);
-    color: #fff;
-    border-color: rgba(255,255,255,0.06);
-  }
-
-  .hd-request-btn svg {
-    width: 18px;
-    height: 18px;
-    display: block;
-  }
-
-}
-
-/* Global element-level button styles to improve existing markup without edits */
-@layer components {
-  button,
-  input[type="button"],
-  input[type="submit"],
-  a[role="button"],
-  .button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.9rem;
-    border-radius: 0.75rem;
-    border: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,245,245,0.96));
-    color: #0f172a;
-    font-weight: 600;
-    font-size: 0.95rem;
-    box-shadow: 0 8px 22px rgba(2,6,23,0.06);
-    cursor: pointer;
-    transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease, background 120ms ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  button:hover,
-  input[type="button"]:hover,
-  input[type="submit"]:hover,
-  a[role="button"]:hover,
-  .button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 36px rgba(2,6,23,0.10);
-  }
-
-  button:active,
-  input[type="button"]:active,
-  input[type="submit"]:active,
-  a[role="button"]:active,
-  .button:active {
-    transform: translateY(0);
-    box-shadow: 0 6px 14px rgba(2,6,23,0.06);
-  }
-
-  button.primary,
-  .primary {
-    background: linear-gradient(90deg,#0ea5a9,#2653ff);
-    color: #fff;
-  }
-
-  .dark button,
-  .dark input[type="button"],
-  .dark input[type="submit"],
-  .dark a[role="button"] {
-    background: linear-gradient(180deg, rgba(20,20,24,0.9), rgba(10,10,12,0.9));
-    color: #fff;
-  }
-
-  /* Make small icon-only buttons look neat */
-  button.icon,
-  .icon.button {
-    padding: 0.3rem;
-    border-radius: 0.5rem;
-    width: 2.2rem;
-    height: 2.2rem;
-    justify-content: center;
-  }
-}
-
-/* CTA-specific styling and placement tweaks */
-@layer components {
-  .cta-contact {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.7rem 1.1rem;
-    border-radius: 0.85rem;
-    font-size: 1rem;
-    letter-spacing: 0.2px;
-    box-shadow: 0 18px 40px rgba(2,6,23,0.12);
-    transition: transform 160ms cubic-bezier(.2,.9,.3,1), box-shadow 160ms ease, opacity 160ms ease;
-    background: linear-gradient(90deg,#0ea5a9,#2653ff);
-    color: #fff;
-    text-decoration: none;
-  }
-
-  .cta-contact:hover {
-    transform: translateY(-3px) scale(1.01);
-    box-shadow: 0 24px 48px rgba(2,6,23,0.18);
-    opacity: 1;
-  }
-
-  .cta-contact:active { transform: translateY(0); box-shadow: 0 8px 18px rgba(2,6,23,0.10); }
-
-  /* Center CTA on small screens, align start on medium+ to match content flow */
-  .cta-contact { margin-left: auto; margin-right: auto; display: inline-flex; }
-  @media (min-width: 768px) { .cta-contact { margin-left: 0; margin-right: 0; } }
-
-  /* If a dark theme is active, tweak gradient for contrast */
-  .dark .cta-contact { background: linear-gradient(90deg,#06b6d4,#3b82f6); color: #fff; }
-}
-
-/* Ensure hero CTA is clearly separated and stacked above the gallery */
-@layer components {
-  .home-hero {
-    position: relative;
-    z-index: 10; /* keep hero above background/gallery */
-    padding-bottom: 2.25rem; /* extra breathing room under hero */
-  }
-
-  .home-hero .cta-contact {
-    position: relative;
-    z-index: 20; /* make sure CTA floats above gallery items */
-    margin-bottom: 0.75rem; /* extra spacing to avoid overlap */
-  }
-
-  /* If the gallery still overlaps due to negative margins, push the section below further on mobile */
-  @media (max-width: 767px) {
-    .home-hero { padding-bottom: 3.5rem; }
-    .home-hero .cta-contact { margin-bottom: 1rem; }
-  }
-}
 }

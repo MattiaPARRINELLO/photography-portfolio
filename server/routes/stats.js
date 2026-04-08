@@ -26,12 +26,12 @@ const rateLimitStore = new Map(); // IP -> { count, firstAttempt }
 
 // Nettoie les entrées expirées toutes les heures
 setInterval(() => {
-  const now = Date.now();
-  for (const [ip, data] of rateLimitStore) {
-    if (now - data.firstAttempt > CLEANUP_INTERVAL) {
-      rateLimitStore.delete(ip);
+    const now = Date.now();
+    for (const [ip, data] of rateLimitStore) {
+        if (now - data.firstAttempt > CLEANUP_INTERVAL) {
+            rateLimitStore.delete(ip);
+        }
     }
-  }
 }, CLEANUP_INTERVAL);
 
 // ============================================
@@ -40,10 +40,10 @@ setInterval(() => {
 // Mots souvent utilisés dans les messages spam
 
 const SPAM_KEYWORDS = [
-  'casino', 'viagra', 'crypto', 'bitcoin', 'lottery', 'winner',
-  'click here', 'free money', 'make money fast', 'nigerian prince',
-  'pills', 'weight loss', 'earn extra', 'work from home',
-  'investment opportunity', 'limited time', 'act now', 'urgent'
+    'casino', 'viagra', 'crypto', 'bitcoin', 'lottery', 'winner',
+    'click here', 'free money', 'make money fast', 'nigerian prince',
+    'pills', 'weight loss', 'earn extra', 'work from home',
+    'investment opportunity', 'limited time', 'act now', 'urgent'
 ];
 
 // ============================================
@@ -61,12 +61,12 @@ const API_SECRET = process.env.CONTACT_API_SECRET || 'mp-contact-form-2024-secre
 router.post('/send-mail', async (req, res) => {
     const { email, subject, message, _honeypot, _timestamp, _token, _signature } = req.body;
     const clientIP = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    
-    console.log('📧 Tentative d\'envoi de mail:', { 
-        email, 
-        subject, 
+
+    console.log('📧 Tentative d\'envoi de mail:', {
+        email,
+        subject,
         messageLength: message ? message.length : 0,
-        ip: clientIP 
+        ip: clientIP
     });
 
     // ============================================
@@ -80,12 +80,12 @@ router.post('/send-mail', async (req, res) => {
     const contentType = req.headers['content-type'];
     const origin = req.headers['origin'];
     const referer = req.headers['referer'];
-    
+
     if (!contentType || !contentType.includes('application/json')) {
         console.warn('🚫 API abuse: Content-Type invalide depuis IP:', clientIP);
         return res.status(400).json({ error: 'Requête invalide' });
     }
-    
+
     // VÉRIFICATION B : Origin/Referer
     // Doit venir de notre propre domaine
     const allowedOrigins = [
@@ -95,12 +95,12 @@ router.post('/send-mail', async (req, res) => {
         'https://www.mattiaparrinello.com',
         process.env.SITE_URL
     ].filter(Boolean);
-    
+
     const requestOrigin = origin || referer;
-    const isValidOrigin = requestOrigin && allowedOrigins.some(allowed => 
+    const isValidOrigin = requestOrigin && allowedOrigins.some(allowed =>
         requestOrigin.startsWith(allowed)
     );
-    
+
     if (!isValidOrigin) {
         console.warn('🚫 API abuse: Origin invalide:', requestOrigin, 'depuis IP:', clientIP);
         return res.status(403).json({ error: 'Accès non autorisé' });
@@ -112,16 +112,16 @@ router.post('/send-mail', async (req, res) => {
         console.warn('🚫 API abuse: Timestamp manquant depuis IP:', clientIP);
         return res.status(400).json({ error: 'Requête invalide - données manquantes' });
     }
-    
+
     const timestamp = parseInt(_timestamp);
     const age = Date.now() - timestamp;
-    
+
     // Le formulaire ne peut pas être soumis après 10 minutes
     if (age > 10 * 60 * 1000) {
-        console.warn('🚫 API abuse: Timestamp trop ancien (' + Math.round(age/1000) + 's) depuis IP:', clientIP);
+        console.warn('🚫 API abuse: Timestamp trop ancien (' + Math.round(age / 1000) + 's) depuis IP:', clientIP);
         return res.status(400).json({ error: 'Session expirée. Veuillez rafraîchir la page.' });
     }
-    
+
     // VÉRIFICATION D : Signature de la requête
     // Le client doit envoyer une signature basée sur le timestamp
     // Cela prouve qu'il a exécuté notre JavaScript
@@ -129,7 +129,7 @@ router.post('/send-mail', async (req, res) => {
         console.warn('🚫 API abuse: Signature manquante depuis IP:', clientIP);
         return res.status(400).json({ error: 'Requête invalide - signature manquante' });
     }
-    
+
     // Vérifie la signature (hash simple du timestamp + secret)
     // Le même calcul est fait côté client
     const crypto = require('crypto');
@@ -138,7 +138,7 @@ router.post('/send-mail', async (req, res) => {
         .update(_timestamp + API_SECRET)
         .digest('hex')
         .substring(0, 16);
-    
+
     if (_signature !== expectedSignature) {
         console.warn('🚫 API abuse: Signature invalide depuis IP:', clientIP);
         return res.status(403).json({ error: 'Signature invalide' });
@@ -178,7 +178,7 @@ router.post('/send-mail', async (req, res) => {
     // Limite le nombre d'emails par IP par heure
     const now = Date.now();
     let rateData = rateLimitStore.get(clientIP);
-    
+
     if (rateData) {
         // Vérifie si l'heure est passée
         if (now - rateData.firstAttempt > CLEANUP_INTERVAL) {
@@ -187,11 +187,11 @@ router.post('/send-mail', async (req, res) => {
         } else {
             rateData.count++;
         }
-        
+
         if (rateData.count > MAX_EMAILS_PER_HOUR) {
             console.warn('🚫 Rate limit atteint pour IP:', clientIP, '(' + rateData.count + ' tentatives)');
-            return res.status(429).json({ 
-                error: 'Trop de messages envoyés. Veuillez réessayer dans une heure.' 
+            return res.status(429).json({
+                error: 'Trop de messages envoyés. Veuillez réessayer dans une heure.'
             });
         }
     } else {
@@ -222,11 +222,11 @@ router.post('/send-mail', async (req, res) => {
     const lowerMessage = message.toLowerCase();
     const lowerSubject = subject.toLowerCase();
     const combinedText = lowerMessage + ' ' + lowerSubject;
-    
+
     const spamScore = SPAM_KEYWORDS.reduce((score, keyword) => {
         return score + (combinedText.includes(keyword) ? 1 : 0);
     }, 0);
-    
+
     if (spamScore >= 3) {
         console.warn('🚫 Message détecté comme spam (score: ' + spamScore + ') depuis IP:', clientIP);
         // On accepte quand même mais on marque pour review
