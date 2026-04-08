@@ -130,9 +130,9 @@ app.use('/', contentRouter);
 app.use('/', statsRouter);
 app.use('/api', signedImagesRouter);
 
-// Gestion des erreurs 404
+// SEO: Page 404 HTML propre au lieu de JSON
 app.use((req, res) => {
-    res.status(404).json({ error: 'Page non trouvée' });
+    res.status(404).sendFile(path.join(paths.pages, '404.html'));
 });
 
 // Gestion des erreurs globales

@@ -10,6 +10,52 @@ const linksService = require('../utils/linksService');
 const router = express.Router();
 const paths = serverConfig.getPaths();
 
+// SEO: Charge les données SEO pour l'injection de contenu dynamique
+const seoDataPath = path.join(__dirname, '..', '..', 'config', 'seo.json');
+function loadSeoData() {
+    try {
+        return JSON.parse(fs.readFileSync(seoDataPath, 'utf-8'));
+    } catch (e) {
+        return {};
+    }
+}
+
+// SEO: Génère le bloc hero HTML pour la page d'accueil (H1 + intro + artistes + lieux + CTA)
+function generateHomeHeroHtml() {
+    const seo = loadSeoData();
+    const pageSeo = (seo.pages && seo.pages.home) || {};
+    const artists = seo.artists || [];
+    const venues = seo.venues || [];
+    const introText = seo.intro_text || '';
+
+    // SEO: Liste des artistes avec noms comme mots-clés
+    const artistNames = artists.map(a => a.name).join(' · ');
+    // SEO: Liste des lieux avec noms comme mots-clés locaux
+    const venueNames = venues.map(v => `${v.name} (${v.city})`).join(' · ');
+
+        return `
+            <div class="home-hero px-5 md:px-0 pt-10 pb-6">
+        <!-- SEO: H1 optimisé avec mots-clés principaux -->
+        <h1 class="text-3xl md:text-4xl font-bold font-signika mb-4">${pageSeo.h1 || 'Mattia Parrinello - Photographe de Concert à Paris'}</h1>
+        <!-- SEO: Paragraphe d'introduction riche en mots-clés -->
+        <p class="text-base md:text-lg text-gray-700 dark:text-gray-300 max-w-3xl mb-6 leading-relaxed">${introText}</p>
+        <!-- SEO: Section artistes - mots-clés noms propres -->
+        <div class="mb-4">
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-signika uppercase tracking-wider mb-1">Artistes photographiés</p>
+          <p class="text-sm md:text-base text-gray-600 dark:text-gray-300">${artistNames}</p>
+        </div>
+        <!-- SEO: Section lieux - mots-clés locaux -->
+        <div class="mb-6">
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-signika uppercase tracking-wider mb-1">Salles & festivals</p>
+          <p class="text-sm md:text-base text-gray-600 dark:text-gray-300">${venueNames}</p>
+        </div>
+                <!-- SEO: CTA vers contact -->
+                <div class="mt-6">
+                    <a href="/contact" class="cta-contact primary inline-block px-6 py-3 text-sm font-signika font-bold rounded-lg transition duration-300">Me contacter pour un projet</a>
+                </div>
+      </div>`;
+}
+
 // Helper to generate HTML for a gallery item
 function generateGalleryItemHtml(photo, index) {
     const fileParam = encodeURIComponent(photo.filename);
@@ -35,7 +81,7 @@ function generateGalleryItemHtml(photo, index) {
                      srcset="${srcset}"
                      sizes="${sizes}"
                      data-full="${fullUrl}" 
-                     alt="${photo.filename}" 
+                     alt="Photo de concert par Mattia Parrinello - ${photo.filename.replace(/^\d+_*/, '').replace(/\.[^.]+$/, '').replace(/_/g, ' ')}" 
                      loading="${loading}" 
                      fetchpriority="${fetchPriority}"
                      class="gallery-image rounded-xl shadow-lg ${animClass} transition-all duration-700 transform-gpu" 
@@ -88,6 +134,30 @@ router.get('/', async (req, res) => {
 
         // Injecter les meta tags ET les informations de campagne
         htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, 'Portfolio', campaignInfo);
+
+        // SEO: Injecter le Schema.org JSON-LD
+        const schemaJsonLd = textUtils.generateSchemaJsonLd('Portfolio', req);
+        htmlContent = htmlContent.replace('</head>', `    ${schemaJsonLd}\n  </head>`);
+
+        // SEO: Injecter le bloc hero (H1, intro, artistes, lieux, CTA)
+        const heroHtml = generateHomeHeroHtml();
+        htmlContent = htmlContent.replace('<!-- SEO_HERO_PLACEHOLDER -->', heroHtml);
+
+        // SEO: Injecter le bloc post-galerie (collaborations + CTA secondaire)
+        const seoBottom = loadSeoData();
+        const bottomArtists = (seoBottom.artists || []).map(a => a.name).join(', ');
+        const bottomVenues = (seoBottom.venues || []).map(v => v.name).join(', ');
+        const bottomHtml = `
+    <div class="container mx-auto px-5 md:px-0 py-12">
+    <!-- SEO: Section collaborations - renforce les mots-clés et le maillage -->
+      <section class="max-w-3xl mb-10">
+        <h2 class="text-2xl font-bold font-signika mb-4 text-black dark:text-white">Collaborations & événements</h2>
+        <p class="text-base text-gray-700 dark:text-gray-300 mb-3">J'ai eu la chance de photographier des artistes comme <strong>${bottomArtists}</strong>, dans des salles emblématiques : <strong>${bottomVenues}</strong>.</p>
+        <p class="text-base text-gray-700 dark:text-gray-300 mb-6">Média musical, artiste émergent, label ou salle de concert - je suis disponible pour capturer l'énergie de vos événements partout en France.</p>
+        <a href="/contact" class="cta-contact inline-block px-6 py-3 text-sm font-signika font-bold rounded-lg transition duration-300">Discutons de votre projet</a>
+      </section>
+    </div>`;
+        htmlContent = htmlContent.replace('<!-- SEO_BOTTOM_PLACEHOLDER -->', bottomHtml);
 
         // --- LCP OPTIMIZATION: Server-Side Rendering of first images ---
         try {
@@ -161,6 +231,9 @@ router.get('/contact', (req, res) => {
         const htmlPath = path.join(paths.pages, 'contact.html');
         let htmlContent = fs.readFileSync(htmlPath, 'utf-8');
         htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, 'Contact');
+        // SEO: Injecter le Schema.org JSON-LD
+        const schemaJsonLd = textUtils.generateSchemaJsonLd('Contact', req);
+        htmlContent = htmlContent.replace('</head>', `    ${schemaJsonLd}\n  </head>`);
         res.send(htmlContent);
     } catch (error) {
         console.error('❌ Erreur lors du chargement de contact.html:', error);
@@ -182,6 +255,9 @@ router.get('/a-propos', (req, res) => {
         const htmlPath = path.join(paths.pages, 'about_me.html');
         let htmlContent = fs.readFileSync(htmlPath, 'utf-8');
         htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, 'À propos');
+        // SEO: Injecter le Schema.org JSON-LD
+        const schemaJsonLd = textUtils.generateSchemaJsonLd('À propos', req);
+        htmlContent = htmlContent.replace('</head>', `    ${schemaJsonLd}\n  </head>`);
         res.send(htmlContent);
     } catch (error) {
         console.error('❌ Erreur lors du chargement de about_me.html:', error);

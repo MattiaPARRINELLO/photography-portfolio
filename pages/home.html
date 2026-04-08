@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -10,6 +11,9 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="../dist/assets/Logo_MP.svg" />
     <link rel="stylesheet" href="../dist/css/output.css" />
+    <!-- SEO: Preconnect vers CDNs externes pour performance -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://unpkg.com" crossorigin />
     <!-- Alpine.js -->
     <script
       defer
@@ -268,7 +272,7 @@
                 const sidx = slide && (typeof slide.index !== 'undefined' ? slide.index : (slide && slide.$index));
                 if (!window.__fb_logged_slides.has(sidx)) {
                   window.__fb_logged_slides.add(sidx);
-                  devDebug('Fancybox: reveal called for slide', sidx, ' — dumping slide object once');
+                  devDebug('Fancybox: reveal called for slide', sidx, ' - dumping slide object once');
                   try { console.dir && console.dir(slide); } catch (e) { devDebug('Fancybox: cannot dir slide', e); }
                 }
               } catch (e) {}
@@ -1185,7 +1189,8 @@
     </header>
     <!-- Content -->
     <div class="container mx-auto px-0">
-      <h1 class="text-4xl pt-10 pb-8 font-bold px-5 md:px-0">PORTFOLIO</h1>
+      <!-- SEO: H1 optimisé et introduction - injectés dynamiquement depuis seo.json -->
+      <!-- SEO_HERO_PLACEHOLDER -->
       <section class="text-neutral-700">
         <div class="w-full max-w-full overflow-hidden">
           <div id="gallery" class="gallery-justified"><!-- SERVER_RENDERED_GALLERY --></div>
@@ -1497,6 +1502,8 @@
         </div>
       </section>
     </div>
+    <!-- SEO: Section post-galerie - collaborations et CTA secondaire -->
+    <!-- SEO_BOTTOM_PLACEHOLDER -->
     <!-- Footer -->
     <footer>
       <div class="max-w-screen-xl py-16 mx-auto">
@@ -1511,6 +1518,10 @@
             </p>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
               © Mattia Parrinello – Toutes les photos publiées sur ce site sont protégées. Toute utilisation non autorisée est passible de sanctions.
+            </p>
+            <!-- SEO: Ligne footer avec mots-clés géographiques -->
+            <p class="mt-3 text-xs text-gray-400 dark:text-gray-500">
+              Mattia Parrinello - Photographe de concert à Paris · Disponible en Île-de-France et partout en France
             </p>
             <div class="flex mx-auto">
               <div
@@ -1564,7 +1575,7 @@
     <!-- User Activity Tracker -->
     <script defer src="/dist/js/user-tracker.js"></script>
     <script>
-      // Animated blobs follow the pointer — subtle parallax + idle float
+      // Animated blobs follow the pointer - subtle parallax + idle float
       (function(){
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         const bg = document.querySelector('.animated-bg');

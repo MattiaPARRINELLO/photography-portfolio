@@ -1,4 +1,4 @@
-// Animated blobs follow the pointer — subtle parallax + idle float
+// Animated blobs follow the pointer - subtle parallax + idle float
 (function () {
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 

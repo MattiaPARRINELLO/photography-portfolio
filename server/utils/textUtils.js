@@ -2,6 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const serverConfig = require('../config');
 
+// SEO: Chargement des données SEO centralisées
+const seoDataPath = path.join(__dirname, '..', '..', 'config', 'seo.json');
+
 class TextUtils {
     constructor() {
         this.textsFile = serverConfig.getPaths().texts;
@@ -31,6 +34,31 @@ class TextUtils {
         return {};
     }
 
+    // SEO: Charge les données SEO depuis config/seo.json
+    loadSeoData() {
+        try {
+            if (fs.existsSync(seoDataPath)) {
+                return JSON.parse(fs.readFileSync(seoDataPath, 'utf-8'));
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement de seo.json:', error);
+        }
+        return {};
+    }
+
+    // SEO: Résout la clé de page SEO à partir du pageType
+    _resolvePageKey(pageType) {
+        const mapping = {
+            'Portfolio': 'home',
+            '': 'home',
+            'Contact': 'contact',
+            'À propos': 'about',
+            'Mentions légales': 'mentions',
+            'Links': 'links'
+        };
+        return mapping[pageType] || 'home';
+    }
+
     /**
      * Injecte les meta tags dans le contenu HTML
      * @param {string} htmlContent - Contenu HTML
@@ -43,68 +71,76 @@ class TextUtils {
     injectMetaTags(htmlContent, texts, req, pageType = '', campaignInfo = null) {
         console.log(`🔍 Injection meta tags pour la page: ${pageType || 'Accueil'}`);
 
-        if (!texts.meta) {
-            console.log('❌ Aucune section meta trouvée dans texts.json');
-            return htmlContent;
-        }
+        // SEO: Charger les données SEO pour des meta uniques par page
+        const seo = this.loadSeoData();
+        const pageKey = this._resolvePageKey(pageType);
+        const pageSeo = (seo.pages && seo.pages[pageKey]) || {};
+        const siteSeo = seo.site || {};
 
-        console.log('✅ Section meta trouvée, injection en cours...');
         let injectedHtml = htmlContent;
 
-        // Remplacer les placeholders par les vraies valeurs
-        const title = texts.meta.title + (pageType ? ' - ' + pageType : '');
-        const description = texts.meta.description || 'Portfolio photographique';
+        // SEO: Utiliser les meta SEO optimisés de seo.json (prioritaire sur texts.json)
+        const title = pageSeo.title || (texts.meta && texts.meta.title ? texts.meta.title + (pageType ? ' - ' + pageType : '') : 'Mattia Parrinello');
+        const description = pageSeo.description || (texts.meta && texts.meta.description) || 'Portfolio photographique';
 
         // Remplacement des placeholders
         injectedHtml = injectedHtml.replace('{{DYNAMIC_TITLE}}', title);
         injectedHtml = injectedHtml.replace('{{DYNAMIC_DESCRIPTION}}', description);
 
         console.log(`📝 Title injecté: "${title}"`);
-        console.log(`📝 Description injectée: "${description}"`);
+        console.log(`📝 Description injectée: "${description.substring(0, 60)}..."`);
 
         // Construire les meta tags supplémentaires
         const metaPlaceholderEnd = '    <!-- META_PLACEHOLDER_END -->';
         let additionalMetas = '';
 
-        if (texts.meta.keywords) {
-            additionalMetas += `    <meta name="keywords" content="${texts.meta.keywords}">\n`;
-            console.log(`🏷️ Meta keywords ajoutés: "${texts.meta.keywords}"`);
+        // SEO: Keywords optimisés par page
+        const keywords = pageSeo.keywords || (texts.meta && texts.meta.keywords) || '';
+        if (keywords) {
+            additionalMetas += `    <meta name="keywords" content="${keywords}">\n`;
         }
 
-        if (texts.meta.author) {
-            additionalMetas += `    <meta name="author" content="${texts.meta.author}">\n`;
-            console.log(`👤 Meta author ajouté: "${texts.meta.author}"`);
-        }
+        // SEO: Auteur
+        const author = siteSeo.author || (texts.meta && texts.meta.author) || 'Mattia Parrinello';
+        additionalMetas += `    <meta name="author" content="${author}">\n`;
 
-        // Open Graph tags
-        if (texts.meta.og_title) {
-            additionalMetas += `    <meta property="og:title" content="${texts.meta.og_title}${pageType ? ' - ' + pageType : ''}">\n`;
-            console.log(`📱 Open Graph title ajouté: "${texts.meta.og_title}${pageType ? ' - ' + pageType : ''}"`);
-        }
-
-        if (texts.meta.og_description) {
-            additionalMetas += `    <meta property="og:description" content="${texts.meta.og_description}">\n`;
-            console.log(`📱 Open Graph description ajoutée: "${texts.meta.og_description}"`);
-        }
-
-        // Récupérer les informations de protocole et host une seule fois
-        const protocol = req.protocol || 'http';
-        const host = req.get('host') || 'localhost';
-
-        if (texts.meta.og_image) {
-            const fullImageUrl = `${protocol}://${host}${texts.meta.og_image}`;
-            additionalMetas += `    <meta property="og:image" content="${fullImageUrl}">\n`;
-            console.log(`🖼️ Open Graph image ajoutée: "${fullImageUrl}"`);
-        }
-
-        additionalMetas += `    <meta property="og:type" content="website">\n`;
+        // Récupérer les informations de protocole et host
+        const protocol = req.protocol || 'https';
+        const host = req.get('host') || 'www.photo.mprnl.fr';
         const fullUrl = `${protocol}://${host}${req.originalUrl}`;
-        additionalMetas += `    <meta property="og:url" content="${fullUrl}">\n`;
-        console.log(`🌐 Open Graph type et URL ajoutés: "${fullUrl}"`);
+        const baseUrl = siteSeo.url || `${protocol}://${host}`;
+
+        // SEO: Balise canonical (éviter le contenu dupliqué)
+        const canonicalPath = req.originalUrl.replace(/\/$/, '') || '/';
+        const canonicalUrl = `${baseUrl}${canonicalPath}`;
+        additionalMetas += `    <link rel="canonical" href="${canonicalUrl}">\n`;
+
+        // SEO: Open Graph tags optimisés
+        const ogTitle = pageSeo.og_title || title;
+        const ogDescription = pageSeo.og_description || description;
+        const ogImage = (texts.meta && texts.meta.og_image) ? `${baseUrl}${texts.meta.og_image}` : `${baseUrl}/dist/assets/Avatar.png`;
+
+        additionalMetas += `    <meta property="og:title" content="${ogTitle}">\n`;
+        additionalMetas += `    <meta property="og:description" content="${ogDescription}">\n`;
+        additionalMetas += `    <meta property="og:image" content="${ogImage}">\n`;
+        additionalMetas += `    <meta property="og:type" content="website">\n`;
+        additionalMetas += `    <meta property="og:url" content="${canonicalUrl}">\n`;
+        additionalMetas += `    <meta property="og:locale" content="fr_FR">\n`;
+        additionalMetas += `    <meta property="og:site_name" content="Mattia Parrinello - Photographe de Concert">\n`;
+
+        // SEO: Twitter Cards
+        additionalMetas += `    <meta name="twitter:card" content="summary_large_image">\n`;
+        additionalMetas += `    <meta name="twitter:title" content="${ogTitle}">\n`;
+        additionalMetas += `    <meta name="twitter:description" content="${ogDescription}">\n`;
+        additionalMetas += `    <meta name="twitter:image" content="${ogImage}">\n`;
+
+        // SEO: Geo meta tags pour le référencement local
+        additionalMetas += `    <meta name="geo.region" content="FR-IDF">\n`;
+        additionalMetas += `    <meta name="geo.placename" content="Paris">\n`;
 
         // Vérifier s'il y a des informations de campagne à injecter
         let campaignScript = '';
-        const activeCampaignInfo = campaignInfo || (req.cookies.user_campaign_info ? JSON.parse(req.cookies.user_campaign_info) : null);
+        const activeCampaignInfo = campaignInfo || (req.cookies && req.cookies.user_campaign_info ? JSON.parse(req.cookies.user_campaign_info) : null);
 
         if (activeCampaignInfo) {
             try {
@@ -119,6 +155,178 @@ class TextUtils {
         injectedHtml = injectedHtml.replace(metaPlaceholderEnd, `${additionalMetas}${campaignScript}\n${metaPlaceholderEnd}`);
 
         return injectedHtml;
+    }
+
+    // SEO: Génère le JSON-LD Schema.org pour une page donnée
+    generateSchemaJsonLd(pageType, req) {
+        const seo = this.loadSeoData();
+        const siteSeo = seo.site || {};
+        const baseUrl = siteSeo.url || 'https://www.photo.mprnl.fr';
+        const schemas = [];
+
+        // SEO: Schema WebSite (présent sur toutes les pages)
+        schemas.push({
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            'name': siteSeo.name || 'Mattia Parrinello - Photographe de Concert',
+            'url': baseUrl,
+            'inLanguage': 'fr',
+            'author': {
+                '@type': 'Person',
+                'name': siteSeo.author || 'Mattia Parrinello'
+            }
+        });
+
+        // SEO: Schema ProfessionalService (photographe - présent sur toutes les pages)
+        const professionalService = {
+            '@context': 'https://schema.org',
+            '@type': 'ProfessionalService',
+            'name': 'Mattia Parrinello - Photographe de Concert',
+            'url': baseUrl,
+            'image': `${baseUrl}/dist/assets/Avatar.png`,
+            'description': 'Photographe de concert professionnel basé à Paris, spécialisé dans la captation de concerts, festivals, showcases et backstage. Musique rap et tous genres.',
+            'telephone': siteSeo.phone || '',
+            'address': {
+                '@type': 'PostalAddress',
+                'addressLocality': 'Paris',
+                'addressRegion': 'Île-de-France',
+                'addressCountry': 'FR'
+            },
+            'areaServed': [
+                {
+                    '@type': 'City',
+                    'name': 'Paris'
+                },
+                {
+                    '@type': 'AdministrativeArea',
+                    'name': 'Île-de-France'
+                },
+                {
+                    '@type': 'Country',
+                    'name': 'France'
+                }
+            ],
+            'priceRange': '€€',
+            'sameAs': [
+                siteSeo.social && siteSeo.social.instagram,
+                siteSeo.social && siteSeo.social.tiktok
+            ].filter(Boolean),
+            'knowsAbout': [
+                'Photographie de concert',
+                'Photographie de festival',
+                'Photographie de backstage',
+                'Photographie événementielle musicale',
+                'Photographie de spectacle'
+            ]
+        };
+        schemas.push(professionalService);
+
+        // SEO: Schema Person (photographe)
+        schemas.push({
+            '@context': 'https://schema.org',
+            '@type': 'Person',
+            'name': siteSeo.author || 'Mattia Parrinello',
+            'url': baseUrl,
+            'image': `${baseUrl}/dist/assets/Avatar.png`,
+            'jobTitle': 'Photographe de concert',
+            'worksFor': {
+                '@type': 'Organization',
+                'name': 'Mattia Parrinello Photographie'
+            },
+            'address': {
+                '@type': 'PostalAddress',
+                'addressLocality': 'Paris',
+                'addressRegion': 'Île-de-France',
+                'addressCountry': 'FR'
+            },
+            'sameAs': [
+                siteSeo.social && siteSeo.social.instagram,
+                siteSeo.social && siteSeo.social.tiktok
+            ].filter(Boolean)
+        });
+
+        // SEO: Schema spécifique par page
+        const pageKey = this._resolvePageKey(pageType);
+
+        if (pageKey === 'home') {
+            // ImageGallery pour la page d'accueil
+            schemas.push({
+                '@context': 'https://schema.org',
+                '@type': 'ImageGallery',
+                'name': 'Portfolio - Photos de concert par Mattia Parrinello',
+                'description': 'Galerie de photographies de concerts, festivals et événements musicaux à Paris et en France.',
+                'url': baseUrl,
+                'author': {
+                    '@type': 'Person',
+                    'name': 'Mattia Parrinello'
+                }
+            });
+        }
+
+        if (pageKey === 'contact') {
+            schemas.push({
+                '@context': 'https://schema.org',
+                '@type': 'ContactPage',
+                'name': 'Contacter Mattia Parrinello - Photographe de Concert',
+                'url': `${baseUrl}/contact`,
+                'mainEntity': {
+                    '@type': 'Person',
+                    'name': 'Mattia Parrinello',
+                    'telephone': siteSeo.phone || '',
+                    'contactType': 'Photographe de concert'
+                }
+            });
+        }
+
+        if (pageKey === 'about') {
+            schemas.push({
+                '@context': 'https://schema.org',
+                '@type': 'AboutPage',
+                'name': 'À propos de Mattia Parrinello - Photographe de Concert',
+                'url': `${baseUrl}/a-propos`,
+                'mainEntity': {
+                    '@type': 'Person',
+                    'name': 'Mattia Parrinello'
+                }
+            });
+        }
+
+        // SEO: BreadcrumbList
+        const breadcrumbs = this._generateBreadcrumbs(pageKey, baseUrl);
+        if (breadcrumbs) {
+            schemas.push(breadcrumbs);
+        }
+
+        return schemas.map(s => `<script type="application/ld+json">${JSON.stringify(s)}</script>`).join('\n    ');
+    }
+
+    // SEO: Génère le breadcrumb Schema.org
+    _generateBreadcrumbs(pageKey, baseUrl) {
+        const items = [{ name: 'Accueil', url: baseUrl }];
+
+        const pageNames = {
+            'about': { name: 'À propos', url: `${baseUrl}/a-propos` },
+            'contact': { name: 'Contact', url: `${baseUrl}/contact` },
+            'mentions': { name: 'Mentions légales', url: `${baseUrl}/mentions-legales` },
+            'links': { name: 'Liens', url: `${baseUrl}/links` }
+        };
+
+        if (pageKey !== 'home' && pageNames[pageKey]) {
+            items.push(pageNames[pageKey]);
+        }
+
+        if (items.length < 2) return null;
+
+        return {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            'itemListElement': items.map((item, i) => ({
+                '@type': 'ListItem',
+                'position': i + 1,
+                'name': item.name,
+                'item': item.url
+            }))
+        };
     }
 }
 

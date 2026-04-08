@@ -19,6 +19,58 @@
   border-color: #e5e7eb;
   /* 2 */
 }
+/* === Custom overrides: improve hero CTA visibility & placement === */
+.home-hero{position:relative;z-index:20;padding-bottom:2.5rem}
+.home-hero .cta-contact{
+  position:relative;
+  z-index:30;
+  margin:0 0 1rem 0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0.65rem 1rem;
+  border-radius:0.75rem;
+  font-size:0.98rem;
+  font-weight:600;
+  letter-spacing:0.12px;
+  /* subtle warm background, low saturation for an elegant look */
+  background:linear-gradient(180deg, rgba(255,250,245,0.95), rgba(255,245,238,0.95));
+  color:#0f172a;
+  border:1px solid rgba(16,24,40,0.06);
+  box-shadow:0 6px 18px rgba(2,6,23,0.08);
+  backdrop-filter:blur(4px);
+  text-decoration:none;
+  transition:transform .14s cubic-bezier(.2,.9,.3,1),box-shadow .14s ease,opacity .12s ease,background .14s ease;
+}
+.home-hero .cta-contact:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 30px rgba(2,6,23,0.10);
+  background:linear-gradient(180deg, rgba(255,251,244,1), rgba(255,247,238,1));
+  opacity:1;
+}
+.home-hero .cta-contact:active{
+  transform:translateY(0);
+  box-shadow:0 6px 14px rgba(2,6,23,0.06);
+}
+.dark .home-hero .cta-contact{
+  background:rgba(255,255,255,0.04);
+  color:#fff;
+  border-color:rgba(255,255,255,0.06);
+  box-shadow:0 8px 20px rgba(2,6,23,0.12);
+}
+.home-hero .cta-contact:hover{transform:translateY(-3px);box-shadow:0 26px 54px rgba(2,6,23,0.2);opacity:1}
+.home-hero .cta-contact:active{transform:translateY(0);box-shadow:0 8px 20px rgba(2,6,23,0.1)}
+/* Center CTA on small screens, align to content on wider screens */
+.home-hero .cta-contact{margin-left:auto;margin-right:auto}
+@media(min-width:768px){.home-hero .cta-contact{margin-left:0;margin-right:0}}
+
+/* Make general link buttons more legible when classes are not present */
+a[role="button"],a.button,button, input[type="button"], input[type="submit"]{transition:all .12s ease}
+
+/* Ensure floating gallery controls don't cover hero CTA */
+.gallery-item{position:relative;z-index:5}
+
+/* End of custom overrides */
 
 ::before,
 ::after {

@@ -12,15 +12,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JoaoFranco03/photography-portfolio.git"
+    "url": "git+https://github.com/MattiaPARRNELLO/photography-portfolio.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/JoaoFranco03/photography-portfolio/issues"
+    "url": "https://github.com/MattiaPARRNELLO/photography-portfolio/issues"
   },
-  "homepage": "https://github.com/JoaoFranco03/photography-portfolio#readme",
+  "homepage": "https://github.com/MattiaPARRNELLO/photography-portfolio#readme",
   "dependencies": {
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
@@ -33,5 +33,11 @@
     "nodemon": "^3.1.10",
     "sharp": "^0.34.3",
     "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.2",
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.2"
   }
 }
