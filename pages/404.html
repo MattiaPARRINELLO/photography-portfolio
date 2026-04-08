@@ -1,167 +1,35 @@
 <!doctype html>
 <html lang="fr">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Page introuvable - Mattia Parrinello, Photographe de Concert</title>
-    <meta
-      name="description"
-      content="Cette page n'existe pas. Retournez au portfolio de Mattia Parrinello, photographe de concert à Paris."
-    />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>404 — Page introuvable</title>
     <meta name="robots" content="noindex, follow" />
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/dist/assets/Logo_MP.svg" />
-    <link rel="stylesheet" href="/dist/css/output.css" />
-    <!-- Start - Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin="anonymous"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Signika:wght@400;700&display=swap"
-      rel="stylesheet"
-      media="print"
-      onload="this.media = 'all'"
-    />
-    <noscript>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Signika:wght@400;700&display=swap"
-        rel="stylesheet"
-      />
-    </noscript>
-    <!-- End - Fonts -->
     <style>
-      .animated-bg {
-        position: fixed;
-        inset: 0;
-        z-index: 0;
-        pointer-events: none;
-        overflow: hidden;
-        background: linear-gradient(
-          180deg,
-          rgba(0, 0, 0, 0.02),
-          rgba(0, 0, 0, 0.04)
-        );
-      }
-      .animated-bg .blob {
-        position: absolute;
-        width: 50vmax;
-        height: 50vmax;
-        border-radius: 50%;
-        filter: blur(36px);
-        opacity: 0.22;
-        transform: translate3d(0, 0, 0) scale(1);
-        will-change: transform, opacity;
-        mix-blend-mode: screen;
-      }
-      .animated-bg .blob.b1 {
-        left: -12%;
-        top: -20%;
-        background: radial-gradient(
-          circle at 30% 30%,
-          rgba(102, 126, 234, 0.98),
-          rgba(102, 126, 234, 0.22)
-        );
-      }
-      .animated-bg .blob.b2 {
-        right: -14%;
-        bottom: -12%;
-        background: radial-gradient(
-          circle at 70% 70%,
-          rgba(139, 69, 19, 0.96),
-          rgba(139, 69, 19, 0.18)
-        );
-      }
-      .animated-bg .blob.b3 {
-        left: 52%;
-        top: 62%;
-        transform: translateX(-50%);
-        background: radial-gradient(
-          circle at 50% 50%,
-          rgba(75, 0, 130, 0.95),
-          rgba(75, 0, 130, 0.16)
-        );
-      }
-      @media (prefers-color-scheme: light) {
-        .animated-bg .blob {
-          mix-blend-mode: multiply;
-          opacity: 0.36;
-          filter: blur(28px);
-        }
-        .animated-bg .blob.b1 {
-          background: radial-gradient(
-            circle at 30% 30%,
-            rgba(32, 78, 200, 0.95),
-            rgba(32, 78, 200, 0.32)
-          );
-        }
-        .animated-bg .blob.b2 {
-          background: radial-gradient(
-            circle at 70% 70%,
-            rgba(120, 50, 20, 0.96),
-            rgba(120, 50, 20, 0.3)
-          );
-        }
-        .animated-bg .blob.b3 {
-          background: radial-gradient(
-            circle at 50% 50%,
-            rgba(60, 10, 120, 0.95),
-            rgba(60, 10, 120, 0.28)
-          );
-        }
-      }
+      :root{--bg:#ffffff;--fg:#111111}
+      @media(prefers-color-scheme:dark){:root{--bg:#0b0b0b;--fg:#f7f7f7}}
+      html,body{height:100%;margin:0}
+      body{background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;display:flex;align-items:center;justify-content:center}
+      .wrap{padding:24px;text-align:center;max-width:720px}
+      .code{font-weight:700;font-size:clamp(3rem,10vw,6rem);margin:0}
+      h1{margin:.4rem 0 .6rem;font-size:clamp(1.1rem,3vw,1.6rem);font-weight:600}
+      p{margin:0;color:rgba(17,17,17,0.72)}
+      @media(prefers-color-scheme:dark){p{color:rgba(247,247,247,0.72)}}
+      .actions{margin-top:18px;display:flex;gap:10px;justify-content:center}
+      a{padding:8px 14px;border-radius:999px;text-decoration:none;font-weight:600;border:1px solid currentColor;color:inherit}
+      .primary{background:var(--fg);color:var(--bg);border-color:transparent}
+      .secondary{background:transparent}
     </style>
   </head>
-
-  <body
-    class="dark:bg-black bg-white min-h-screen text-black dark:text-white px-5 md:px-20 flex flex-col"
-  >
-    <div class="animated-bg" aria-hidden="true">
-      <div class="blob b1"></div>
-      <div class="blob b2"></div>
-      <div class="blob b3"></div>
-    </div>
-    <!-- Navbar -->
-    <header class="flex w-full overflow-hidden pt-10 pb-1">
-      <nav role="navigation" class="w-full">
-        <div class="container mx-auto flex flex-wrap items-center">
-          <div class="mr-4 md:mr-8">
-            <a href="/" class="text-2xl font-signika font-bold"
-              >MATTIA PARRINELLO</a
-            >
-          </div>
-          <div class="ml-auto flex items-center space-x-5">
-            <a href="/" class="font-signika text-lg">PORTFOLIO</a>
-            <a href="/a-propos" class="font-signika text-lg">À PROPOS</a>
-            <a href="/contact" class="font-signika text-lg">CONTACT</a>
-          </div>
-        </div>
-      </nav>
-    </header>
-    <!-- Content -->
-    <main class="flex-grow flex items-center justify-center relative z-10">
-      <div class="text-center">
-        <p class="text-8xl font-bold font-signika mb-4">404</p>
-        <h1 class="text-2xl md:text-3xl font-bold mb-4">Page introuvable</h1>
-        <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-          Cette page n'existe pas ou a été déplacée. Retournez explorer le
-          portfolio.
-        </p>
-        <a
-          href="/"
-          class="inline-block px-6 py-3 text-sm font-signika font-bold bg-black dark:bg-white text-white dark:text-black rounded-lg transition duration-300 hover:opacity-80"
-          >Voir le portfolio</a
-        >
+  <body>
+    <div class="wrap">
+      <p class="code">404</p>
+      <h1>Page introuvable</h1>
+      <p>Le lien demandé ne mène nulle part. Retournez au portfolio ou contacte-moi.</p>
+      <div class="actions">
+        <a class="primary" href="/">Portfolio</a>
+        <a class="secondary" href="/contact">Contact</a>
       </div>
-    </main>
-    <!-- Footer -->
-    <footer class="py-8 text-center">
-      <p class="text-xs text-gray-400 dark:text-gray-500">
-        Mattia Parrinello - Photographe de concert à Paris · Disponible en
-        Île-de-France et partout en France
-      </p>
-    </footer>
+    </div>
   </body>
 </html>
