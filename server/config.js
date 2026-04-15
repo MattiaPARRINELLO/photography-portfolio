@@ -33,11 +33,45 @@ class ServerConfig {
     }
 
     loadConfig() {
-        try {
-            this.config = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'config', 'config.json'), 'utf-8'));
-        } catch (error) {
-            console.error('Erreur lors du chargement de la configuration:', error);
-            // Configuration par défaut
+        // Loading precedence:
+        // 1. CONFIG_FILE env var (absolute path)
+        // 2. config/config.json (tracked base)
+        // 3. config/config.local.json (local overrides, ignored by git)
+        // 4. config/config.json.example (fallback)
+        const tryLoad = (p) => {
+            try {
+                if (fs.existsSync(p)) {
+                    return JSON.parse(fs.readFileSync(p, 'utf-8'));
+                }
+            } catch (e) {
+                console.warn('Could not parse config file', p, e && e.message);
+            }
+            return null;
+        };
+
+        let cfg = null;
+        if (process.env.CONFIG_FILE) {
+            cfg = tryLoad(process.env.CONFIG_FILE);
+            if (cfg) {
+                this.config = cfg;
+                return;
+            }
+        }
+
+        // Load base tracked config first
+        cfg = tryLoad(path.join(__dirname, '..', 'config', 'config.json')) || tryLoad(path.join(__dirname, '..', 'config', 'config.json.example'));
+
+        // Load local overrides (non-tracked) and shallow-merge
+        const local = tryLoad(path.join(__dirname, '..', 'config', 'config.local.json')) || tryLoad(path.join(__dirname, '..', 'config', 'config.local.json.example'));
+        if (cfg && local) {
+            // shallow merge - local overrides base
+            this.config = Object.assign({}, cfg, local);
+        } else if (cfg) {
+            this.config = cfg;
+        } else if (local) {
+            this.config = local;
+        } else {
+            console.warn('Aucune configuration trouvée, utilisation des valeurs par défaut');
             this.config = {
                 thumbnails: {
                     width: 600,
