@@ -267,6 +267,35 @@
           </div>
 
           <div>
+            <label class="block text-sm font-medium mb-2"
+              >Liens artiste (optionnel)</label
+            >
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <input
+                type="url"
+                id="g-artist-instagram"
+                name="artistInstagram"
+                class="form-input w-full rounded-lg px-3 py-2"
+                placeholder="https://instagram.com/artiste"
+              />
+              <input
+                type="url"
+                id="g-artist-deezer"
+                name="artistDeezer"
+                class="form-input w-full rounded-lg px-3 py-2"
+                placeholder="https://deezer.com/..."
+              />
+              <input
+                type="url"
+                id="g-artist-spotify"
+                name="artistSpotify"
+                class="form-input w-full rounded-lg px-3 py-2"
+                placeholder="https://open.spotify.com/..."
+              />
+            </div>
+          </div>
+
+          <div>
             <div class="flex items-center justify-between mb-2">
               <label class="block text-sm font-medium">
                 Photos de la galerie
@@ -359,6 +388,10 @@
       const venueInput = document.getElementById("g-venue");
       const dateInput = document.getElementById("g-date");
       const descInput = document.getElementById("g-description");
+      const artistInstagramInput =
+        document.getElementById("g-artist-instagram");
+      const artistDeezerInput = document.getElementById("g-artist-deezer");
+      const artistSpotifyInput = document.getElementById("g-artist-spotify");
       const pubInput = document.getElementById("g-published");
       const submitLabel = document.getElementById("submit-label");
       const formTitle = document.getElementById("form-title");
@@ -630,6 +663,12 @@
           venueInput.value = g.venue || "";
           dateInput.value = g.date || "";
           descInput.value = g.description || "";
+          artistInstagramInput.value =
+            (g.artistLinks && g.artistLinks.instagram) || "";
+          artistDeezerInput.value =
+            (g.artistLinks && g.artistLinks.deezer) || "";
+          artistSpotifyInput.value =
+            (g.artistLinks && g.artistLinks.spotify) || "";
           pubInput.checked = g.published !== false;
           selectedPhotos = Array.isArray(g.photos) ? g.photos.slice() : [];
           coverFilename = g.cover || selectedPhotos[0] || null;
@@ -698,6 +737,9 @@
         formData.set("venue", venueInput.value || "");
         formData.set("date", dateInput.value || "");
         formData.set("description", descInput.value || "");
+        formData.set("artistInstagram", artistInstagramInput.value || "");
+        formData.set("artistDeezer", artistDeezerInput.value || "");
+        formData.set("artistSpotify", artistSpotifyInput.value || "");
         formData.set("published", pubInput.checked ? "true" : "false");
         formData.set("photos", JSON.stringify(selectedPhotos));
         normalizeCoverSelection();

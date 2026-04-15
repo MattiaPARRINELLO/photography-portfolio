@@ -46,6 +46,42 @@ function generateId() {
     return 'g_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 }
 
+function sanitizeExternalUrl(value) {
+    const raw = (value || '').toString().trim();
+    if (!raw) return '';
+
+    if (/^https?:\/\//i.test(raw)) {
+        return raw;
+    }
+
+    // Accept domain-like values and prepend https for admin convenience
+    if (/^[\w.-]+\.[a-z]{2,}([/?#].*)?$/i.test(raw)) {
+        return `https://${raw}`;
+    }
+
+    return '';
+}
+
+function normalizeArtistLinks(input = {}) {
+    const src = input || {};
+    const instagram = sanitizeExternalUrl(src.instagram || src.insta || src.artistInstagram);
+    const deezer = sanitizeExternalUrl(src.deezer || src.artistDeezer);
+    const spotify = sanitizeExternalUrl(src.spotify || src.artistSpotify);
+
+    const links = {};
+    if (instagram) links.instagram = instagram;
+    if (deezer) links.deezer = deezer;
+    if (spotify) links.spotify = spotify;
+    return links;
+}
+
+function mergeArtistLinks(current = {}, updates = {}) {
+    return normalizeArtistLinks({
+        ...(current || {}),
+        ...(updates || {})
+    });
+}
+
 function listGalleries() {
     const data = loadGalleries();
     return data.galleries.slice().sort((a, b) => {
@@ -79,6 +115,7 @@ function createGallery(input) {
         description: (input.description || '').trim(),
         cover: input.cover || (Array.isArray(input.photos) && input.photos[0]) || null,
         photos: Array.isArray(input.photos) ? input.photos.filter(Boolean) : [],
+        artistLinks: normalizeArtistLinks(input.artistLinks || input),
         published: input.published !== false,
         // When true, photos in this gallery should not appear in the site's main photo listing
         excludeFromMain: !!input.excludeFromMain,
@@ -106,6 +143,9 @@ function updateGallery(id, updates) {
     if (updates.description !== undefined) merged.description = updates.description.trim();
     if (updates.cover !== undefined) merged.cover = updates.cover;
     if (Array.isArray(updates.photos)) merged.photos = updates.photos.filter(Boolean);
+    if (updates.artistLinks !== undefined || updates.artistInstagram !== undefined || updates.artistDeezer !== undefined || updates.artistSpotify !== undefined) {
+        merged.artistLinks = mergeArtistLinks(current.artistLinks, updates.artistLinks || updates);
+    }
     if (updates.published !== undefined) merged.published = !!updates.published;
     if (updates.excludeFromMain !== undefined) merged.excludeFromMain = !!updates.excludeFromMain;
     if (updates.slug !== undefined && updates.slug.trim()) {

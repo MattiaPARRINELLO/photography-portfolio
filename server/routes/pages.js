@@ -383,6 +383,58 @@ function formatGalleryDate(iso) {
     } catch (e) { return ''; }
 }
 
+function safeExternalUrl(url) {
+    const raw = (url || '').toString().trim();
+    if (!raw) return '';
+    return /^https?:\/\//i.test(raw) ? raw : '';
+}
+
+function artistPlatformIcon(platform) {
+    if (platform === 'instagram') {
+        return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" class="artist-platform-svg"><rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg>`;
+    }
+    if (platform === 'deezer') {
+        return `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="artist-platform-svg"><rect x="3" y="15" width="3" height="6" rx="0.6"></rect><rect x="7" y="13" width="3" height="8" rx="0.6"></rect><rect x="11" y="11" width="3" height="10" rx="0.6"></rect><rect x="15" y="9" width="3" height="12" rx="0.6"></rect><rect x="19" y="7" width="2" height="14" rx="0.5"></rect></svg>`;
+    }
+    return `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="artist-platform-svg"><path d="M12 1.75a10.25 10.25 0 1 0 0 20.5 10.25 10.25 0 0 0 0-20.5zm4.73 14.77a.73.73 0 0 1-1 .24c-2.73-1.67-6.17-2.05-10.22-1.11a.73.73 0 0 1-.33-1.42c4.43-1.03 8.23-.6 11.31 1.29.35.2.45.66.24 1zm1.42-3.24a.9.9 0 0 1-1.24.3c-3.13-1.91-7.9-2.46-11.6-1.33a.9.9 0 1 1-.52-1.73c4.11-1.25 9.28-.65 13.05 1.64a.9.9 0 0 1 .31 1.12zm.12-3.34c-3.75-2.23-9.98-2.43-13.56-1.32a1.08 1.08 0 0 1-.64-2.07c4.11-1.28 10.95-1.03 15.31 1.56a1.08 1.08 0 1 1-1.11 1.83z"></path></svg>`;
+}
+
+function renderArtistLinksSection(gallery) {
+    const artist = (gallery.artist || '').trim();
+    const links = gallery.artistLinks || {};
+    const instagram = safeExternalUrl(links.instagram);
+    const deezer = safeExternalUrl(links.deezer);
+    const spotify = safeExternalUrl(links.spotify);
+
+    const chips = [];
+    if (instagram) {
+        chips.push(`<a href="${escapeAttr(instagram)}" target="_blank" rel="noopener noreferrer nofollow" aria-label="Instagram de ${escapeAttr(artist)}" class="artist-link-chip" data-platform="instagram"><span class="artist-link-icon" aria-hidden="true">${artistPlatformIcon('instagram')}</span><span class="artist-link-label">Instagram</span></a>`);
+    }
+    if (deezer) {
+        chips.push(`<a href="${escapeAttr(deezer)}" target="_blank" rel="noopener noreferrer nofollow" aria-label="Deezer de ${escapeAttr(artist)}" class="artist-link-chip" data-platform="deezer"><span class="artist-link-icon" aria-hidden="true">${artistPlatformIcon('deezer')}</span><span class="artist-link-label">Deezer</span></a>`);
+    }
+    if (spotify) {
+        chips.push(`<a href="${escapeAttr(spotify)}" target="_blank" rel="noopener noreferrer nofollow" aria-label="Spotify de ${escapeAttr(artist)}" class="artist-link-chip" data-platform="spotify"><span class="artist-link-icon" aria-hidden="true">${artistPlatformIcon('spotify')}</span><span class="artist-link-label">Spotify</span></a>`);
+    }
+
+    if (!artist || chips.length === 0) {
+        return '';
+    }
+
+    return `<section class="artist-links-panel" aria-label="Liens officiels de ${escapeAttr(artist)}">
+            <div class="artist-links-head">
+                <p class="artist-links-kicker">Liens officiels</p>
+                <h2 class="artist-links-title">Retrouver ${escapeAttr(artist)}</h2>
+            </div>
+            <div class="artist-link-grid">${chips.join('')}</div>
+    </section>`;
+}
+
+function buildArtistsSeoIndexHtml(galleries) {
+    // Removed artist index output — keep galleries list clean
+    return '';
+}
+
 function renderGalleryCard(g) {
     const cover = g.cover
         ? `<img class="cover" src="/photos/resize?file=${encodeURIComponent(g.cover)}&amp;w=800" alt="${escapeAttr(g.title)} - photo par Mattia Parrinello" loading="lazy" />`
@@ -421,6 +473,48 @@ router.get('/galeries', async (req, res) => {
         htmlContent = htmlContent.replace('</head>', `    ${schemaJsonLd}\n  </head>`);
 
         const galleries = galleryService.listGalleries().filter(g => g.published !== false);
+
+        // SEO: Enrichir title/description/keywords avec les artistes effectivement présents
+        const artistNames = Array.from(new Set(galleries.map((g) => (g.artist || '').trim()).filter(Boolean)));
+        if (artistNames.length > 0) {
+            const topArtists = artistNames.slice(0, 3);
+            const seoTitle = `Galeries concerts ${topArtists.join(', ')} - Photos live | Mattia Parrinello`;
+            const seoDescription = `Galeries photo concerts de ${artistNames.slice(0, 10).join(', ')}. Photos live, festivals et showcases par Mattia Parrinello, photographe de concert à Paris.`;
+            const keywordParts = [
+                ...artistNames.slice(0, 20).map((a) => `photos ${a}`),
+                'galerie concert',
+                'photos live',
+                'photographe concert paris'
+            ];
+
+            htmlContent = htmlContent.replace(/<title>[^<]*<\/title>/i, `<title>${escapeAttr(seoTitle)}</title>`);
+            htmlContent = htmlContent.replace(/<meta name="description" content="[^"]*"\s*\/?\s*>/i, `<meta name="description" content="${escapeAttr(seoDescription)}" />`);
+
+            const itemListSchema = {
+                '@context': 'https://schema.org',
+                '@type': 'ItemList',
+                name: 'Galeries de concerts par artiste',
+                numberOfItems: galleries.length,
+                itemListElement: galleries.slice(0, 120).map((g, idx) => ({
+                    '@type': 'ListItem',
+                    position: idx + 1,
+                    name: g.artist ? `${g.artist} - ${g.title}` : g.title,
+                    url: `https://www.photo.mprnl.fr/galeries/${encodeURIComponent(g.slug)}`
+                }))
+            };
+
+            const collectionSchema = {
+                '@context': 'https://schema.org',
+                '@type': 'CollectionPage',
+                name: 'Galeries de concerts',
+                url: 'https://www.photo.mprnl.fr/galeries',
+                about: artistNames.slice(0, 40).map((name) => ({ '@type': 'MusicGroup', name }))
+            };
+
+            const seoHead = `\n    <meta name="keywords" content="${escapeAttr(keywordParts.join(', '))}" />\n    <script type="application/ld+json">${JSON.stringify(itemListSchema)}</script>\n    <script type="application/ld+json">${JSON.stringify(collectionSchema)}</script>`;
+            htmlContent = htmlContent.replace('</head>', `${seoHead}\n  </head>`);
+        }
+
         let listHtml;
         if (galleries.length === 0) {
             listHtml = `
@@ -431,7 +525,9 @@ router.get('/galeries', async (req, res) => {
         } else {
             listHtml = `<div class="galleries-grid">${galleries.map(renderGalleryCard).join('')}</div>`;
         }
-        htmlContent = htmlContent.replace('<!-- GALLERIES_LIST_PLACEHOLDER -->', listHtml);
+
+        const artistsSeoIndexHtml = buildArtistsSeoIndexHtml(galleries);
+        htmlContent = htmlContent.replace('<!-- GALLERIES_LIST_PLACEHOLDER -->', `${listHtml}${artistsSeoIndexHtml}`);
 
         try { setCache(cacheKey, htmlContent, 2 * 60 * 1000); } catch (e) { }
 
@@ -457,11 +553,16 @@ router.get('/galeries/:slug', async (req, res) => {
         const htmlPath = path.join(paths.pages, 'gallery.html');
         let htmlContent = await fsp.readFile(htmlPath, 'utf-8');
 
-        // Meta tags dynamiques spécifiques à la galerie
-        const metaTitle = `${gallery.title} - Mattia Parrinello`;
-        const metaDescParts = [gallery.artist, gallery.venue, formatGalleryDate(gallery.date)].filter(Boolean);
+        // Meta tags dynamiques spécifiques à la galerie (optimisés pour la recherche artiste)
+        const artistName = (gallery.artist || '').trim();
+        const metaTitle = artistName
+            ? `Photos de ${artistName} en concert - ${gallery.title} | Mattia Parrinello`
+            : `${gallery.title} - Mattia Parrinello`;
+        const metaDescParts = [artistName, gallery.venue, formatGalleryDate(gallery.date)].filter(Boolean);
         const metaDesc = gallery.description
-            || `Galerie photo concert : ${gallery.title}${metaDescParts.length ? ' - ' + metaDescParts.join(' · ') : ''}. Photographié par Mattia Parrinello, photographe de concert à Paris.`;
+            || (artistName
+                ? `Galerie photo de ${artistName} en concert${metaDescParts.length ? ' - ' + metaDescParts.join(' · ') : ''}. Photos live par Mattia Parrinello, photographe de concert à Paris.`
+                : `Galerie photo concert : ${gallery.title}${metaDescParts.length ? ' - ' + metaDescParts.join(' · ') : ''}. Photographié par Mattia Parrinello, photographe de concert à Paris.`);
 
         htmlContent = htmlContent.replace('{{DYNAMIC_TITLE}}', escapeAttr(metaTitle));
         htmlContent = htmlContent.replace('{{DYNAMIC_DESCRIPTION}}', escapeAttr(metaDesc));
@@ -472,8 +573,19 @@ router.get('/galeries/:slug', async (req, res) => {
             ? `https://www.photo.mprnl.fr/photos/resize?file=${encodeURIComponent(gallery.cover)}&w=1200`
             : 'https://www.photo.mprnl.fr/dist/assets/Logo_MP.svg';
 
+        const artistLinks = gallery.artistLinks || {};
+        const artistSameAs = [
+            safeExternalUrl(artistLinks.instagram),
+            safeExternalUrl(artistLinks.deezer),
+            safeExternalUrl(artistLinks.spotify)
+        ].filter(Boolean);
+        const keywords = artistName
+            ? `photos ${artistName}, ${artistName} concert, galerie ${artistName}, photographe concert Paris`
+            : 'galerie photo concert, photos live, photographe concert Paris';
+
         const extraHead = `
     <link rel="canonical" href="${canonical}" />
+    <meta name="keywords" content="${escapeAttr(keywords)}" />
     <meta property="og:type" content="article" />
     <meta property="og:title" content="${escapeAttr(metaTitle)}" />
     <meta property="og:description" content="${escapeAttr(metaDesc)}" />
@@ -482,7 +594,8 @@ router.get('/galeries/:slug', async (req, res) => {
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeAttr(metaTitle)}" />
     <meta name="twitter:description" content="${escapeAttr(metaDesc)}" />
-    <meta name="twitter:image" content="${ogImage}" />`;
+    <meta name="twitter:image" content="${ogImage}" />
+    ${artistName ? `<meta property="article:tag" content="${escapeAttr(artistName)}" />` : ''}`;
 
         // Schema.org ImageGallery
         const schema = {
@@ -493,6 +606,7 @@ router.get('/galeries/:slug', async (req, res) => {
             url: canonical,
             ...(gallery.date ? { datePublished: gallery.date } : {}),
             ...(gallery.venue ? { contentLocation: { '@type': 'Place', name: gallery.venue } } : {}),
+            ...(artistName ? { about: { '@type': 'MusicGroup', name: artistName, ...(artistSameAs.length ? { sameAs: artistSameAs } : {}) } } : {}),
             author: {
                 '@type': 'Person',
                 name: 'Mattia Parrinello',
@@ -505,7 +619,17 @@ router.get('/galeries/:slug', async (req, res) => {
                 creator: { '@type': 'Person', name: 'Mattia Parrinello' }
             }))
         };
-        const schemaScript = `<script type="application/ld+json">${JSON.stringify(schema)}</script>`;
+
+        const schemaNodes = [schema];
+        if (artistName) {
+            schemaNodes.push({
+                '@context': 'https://schema.org',
+                '@type': 'MusicGroup',
+                name: artistName,
+                ...(artistSameAs.length ? { sameAs: artistSameAs } : {})
+            });
+        }
+        const schemaScript = schemaNodes.map((node) => `<script type="application/ld+json">${JSON.stringify(node)}</script>`).join('\n    ');
 
         htmlContent = htmlContent.replace('</head>', `${extraHead}\n    ${schemaScript}\n  </head>`);
 
@@ -525,10 +649,14 @@ router.get('/galeries/:slug', async (req, res) => {
       </section>`;
         htmlContent = htmlContent.replace('<!-- GALLERY_HERO_PLACEHOLDER -->', heroHtml);
 
-        const descHtml = gallery.description
-            ? `<section class="max-w-3xl mb-10"><p class="text-base md:text-lg text-gray-700 dark:text-gray-300 leading-relaxed">${escapeAttr(gallery.description)}</p></section>`
+        const descriptionSection = gallery.description
+            ? `<section class="gallery-description-panel"><p class="gallery-description-text">${escapeAttr(gallery.description)}</p></section>`
             : '';
-        htmlContent = htmlContent.replace('<!-- GALLERY_DESCRIPTION_PLACEHOLDER -->', descHtml);
+        const artistLinksSection = renderArtistLinksSection(gallery);
+        const introHtml = (descriptionSection || artistLinksSection)
+            ? `<section class="gallery-intro-grid">${descriptionSection}${artistLinksSection}</section>`
+            : '';
+        htmlContent = htmlContent.replace('<!-- GALLERY_DESCRIPTION_PLACEHOLDER -->', introHtml);
 
         // Photos (masonry via CSS columns + Fancybox)
         const photosHtml = (gallery.photos || []).map((filename, i) => {
@@ -541,7 +669,7 @@ router.get('/galeries/:slug', async (req, res) => {
             return `<a href="${full}" data-fancybox="gallery"><img src="${thumb}" srcset="${srcset}" sizes="(max-width:768px) 50vw, (max-width:1440px) 33vw, 25vw" alt="${escapeAttr(alt)}" loading="${loading}" /></a>`;
         }).join('');
         const masonryHtml = photosHtml
-            ? `<section class="masonry">${photosHtml}</section>`
+            ? `<div class="gallery-photos-shell"><div class="gallery-divider-grid" aria-hidden="true"></div><section class="masonry">${photosHtml}</section></div>`
             : '<p class="text-center text-gray-500 py-8">Aucune photo dans cette galerie.</p>';
         htmlContent = htmlContent.replace('<!-- GALLERY_PHOTOS_PLACEHOLDER -->', masonryHtml);
 

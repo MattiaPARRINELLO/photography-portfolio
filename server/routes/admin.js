@@ -76,6 +76,51 @@ function buildGalleryInputFromRequest(req) {
     const description = firstNonEmpty(body.description, payload.description);
     const cover = firstNonEmpty(body.cover, payload.cover);
 
+    // Artist links can arrive as flat fields or a serialized artistLinks object
+    let artistLinksPayload = {};
+    if (typeof body.artistLinks === 'string') {
+        try {
+            artistLinksPayload = JSON.parse(body.artistLinks) || {};
+        } catch (_err) {
+            artistLinksPayload = {};
+        }
+    } else if (body.artistLinks && typeof body.artistLinks === 'object') {
+        artistLinksPayload = body.artistLinks;
+    }
+
+    const hasArtistLinksInput =
+        body.artistLinks !== undefined
+        || payload.artistLinks !== undefined
+        || body.artistInstagram !== undefined
+        || payload.artistInstagram !== undefined
+        || body.artistDeezer !== undefined
+        || payload.artistDeezer !== undefined
+        || body.artistSpotify !== undefined
+        || payload.artistSpotify !== undefined;
+
+    const artistLinks = hasArtistLinksInput
+        ? {
+            instagram: firstNonEmpty(
+                body.artistInstagram,
+                payload.artistInstagram,
+                artistLinksPayload.instagram,
+                payload.artistLinks && payload.artistLinks.instagram
+            ),
+            deezer: firstNonEmpty(
+                body.artistDeezer,
+                payload.artistDeezer,
+                artistLinksPayload.deezer,
+                payload.artistLinks && payload.artistLinks.deezer
+            ),
+            spotify: firstNonEmpty(
+                body.artistSpotify,
+                payload.artistSpotify,
+                artistLinksPayload.spotify,
+                payload.artistLinks && payload.artistLinks.spotify
+            )
+        }
+        : undefined;
+
     const photosFromBody = parsePhotosField(body.photos || payload.photos);
     const photosFromUpload = (req.files || []).map(f => f.filename).filter(Boolean);
     const photos = [...photosFromBody, ...photosFromUpload];
@@ -88,6 +133,7 @@ function buildGalleryInputFromRequest(req) {
         description,
         cover,
         photos,
+        ...(artistLinks !== undefined ? { artistLinks } : {}),
         published: parseBoolean(body.published ?? payload.published, true),
         excludeFromMain: parseBoolean(body.excludeFromMain ?? payload.excludeFromMain, false)
     };
