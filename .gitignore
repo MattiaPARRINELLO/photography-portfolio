@@ -27,6 +27,7 @@ config/texts.json
 config/config.json
 config/campaigns.json
 config/links.json
+config/*.json
 # Local override configs (untracked)
 config/*.local.json
 config/*.secret.json
