@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
@@ -908,7 +908,7 @@
       const dateSelector = document.getElementById("date-selector");
       const refreshBtn = document.getElementById("refresh-btn");
       const togglePhotoStatsBtn = document.getElementById(
-        "toggle-photo-stats-btn"
+        "toggle-photo-stats-btn",
       );
       const cleanupBtn = document.getElementById("cleanup-btn");
       const statsSection = document.getElementById("stats-section");
@@ -928,16 +928,16 @@
       // Éléments DOM pour la section photos
       const photoStatsSection = document.getElementById("photo-stats-section");
       const refreshPhotoStatsBtn = document.getElementById(
-        "refresh-photo-stats-btn"
+        "refresh-photo-stats-btn",
       );
       const resetPhotoStatsBtn = document.getElementById(
-        "reset-photo-stats-btn"
+        "reset-photo-stats-btn",
       );
       const totalPhotos = document.getElementById("total-photos");
       const totalPhotoClicks = document.getElementById("total-photo-clicks");
       const avgClicksPerPhoto = document.getElementById("avg-clicks-per-photo");
       const photoStatsContainer = document.getElementById(
-        "photo-stats-container"
+        "photo-stats-container",
       );
       const noPhotoStats = document.getElementById("no-photo-stats");
 
@@ -1100,7 +1100,7 @@
                 log.userId
               }, campagne: ${
                 campaignInfo.campaignName || campaignInfo.campaignId
-              }`
+              }`,
             );
           }
 
@@ -1112,7 +1112,7 @@
                 log.userId
               }, campagne: ${
                 campaignInfo.campaignName || campaignInfo.campaignId
-              }`
+              }`,
             );
           }
 
@@ -1127,7 +1127,7 @@
                 timestamp: log.timestamp,
               };
               console.log(
-                `✅ Source 3 (campaign_visit) - userId: ${log.userId}, campagne: ${campaignInfo.campaignName}`
+                `✅ Source 3 (campaign_visit) - userId: ${log.userId}, campagne: ${campaignInfo.campaignName}`,
               );
             }
           }
@@ -1138,17 +1138,17 @@
             console.log(
               `💾 Association sauvée: ${log.userId} -> ${
                 campaignInfo.campaignName || campaignInfo.campaignId
-              }`
+              }`,
             );
           }
         });
 
         console.log(
-          `📊 Mappage campagne construit: ${userCampaignMap.size} utilisateurs avec campagne`
+          `📊 Mappage campagne construit: ${userCampaignMap.size} utilisateurs avec campagne`,
         );
         console.log(
           "🗺️ Mappage complet:",
-          Array.from(userCampaignMap.entries())
+          Array.from(userCampaignMap.entries()),
         );
       }
 
@@ -1164,10 +1164,10 @@
         document.getElementById("unique-users").textContent = userStats.length;
         document.getElementById("total-actions").textContent = userStats.reduce(
           (sum, user) => sum + user.totalActions,
-          0
+          0,
         );
         document.getElementById("page-views").textContent = currentLogs.filter(
-          (log) => log.action === "page_visit"
+          (log) => log.action === "page_visit",
         ).length;
         document.getElementById("photo-clicks").textContent =
           currentLogs.filter((log) => log.action.includes("photo")).length;
@@ -1191,14 +1191,14 @@
 
         // Afficher les sources de trafic détaillées
         const trafficSourcesDetail = document.getElementById(
-          "traffic-sources-detail"
+          "traffic-sources-detail",
         );
         if (totalTrafficSources > 0) {
           trafficSourcesDetail.innerHTML = "";
 
           // Trier par nombre d'occurrences
           const sortedSources = Object.entries(trafficSources).sort(
-            ([, a], [, b]) => b - a
+            ([, a], [, b]) => b - a,
           );
 
           sortedSources.forEach(([source, count]) => {
@@ -1237,7 +1237,7 @@
             "flex justify-between items-center py-2 px-4 bg-white/5 rounded-lg";
           actionDiv.innerHTML = `
                     <span class="text-white font-medium">${getActionDisplayName(
-                      action
+                      action,
                     )}</span>
                     <span class="text-blue-400 font-bold">${count}</span>
                 `;
@@ -1311,9 +1311,9 @@
                 (log) =>
                   log.details &&
                   log.details.trafficSource &&
-                  log.details.trafficSource.utm_campaign
+                  log.details.trafficSource.utm_campaign,
               )
-              .map((log) => log.details.trafficSource.utm_campaign)
+              .map((log) => log.details.trafficSource.utm_campaign),
           ),
         ];
 
@@ -1396,7 +1396,7 @@
         });
 
         console.log(
-          `Logs filtrés: ${filteredLogs.length}/${currentLogs.length}`
+          `Logs filtrés: ${filteredLogs.length}/${currentLogs.length}`,
         );
 
         displayLogs(filteredLogs);
@@ -1415,14 +1415,14 @@
 
         // Trier par timestamp décroissant
         const sortedLogs = [...logs].sort(
-          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
         );
 
         sortedLogs.forEach((log) => {
           const logDiv = document.createElement("div");
           logDiv.className = `log-entry-enhanced timeline-item action-${log.action.replace(
             "_",
-            "-"
+            "-",
           )}`;
 
           const time = new Date(log.timestamp).toLocaleTimeString("fr-FR");
@@ -1445,11 +1445,11 @@
                   <div class="flex items-center gap-2 mb-1">
                     <span class="text-blue-400 font-mono text-sm">${time}</span>
                     <span class="log-action-badge ${actionBadgeClass}">${getActionDisplayName(
-            log.action
-          )}</span>
+                      log.action,
+                    )}</span>
                   </div>
                   <div class="text-white/60 text-xs">User: ${log.userId.slice(
-                    -8
+                    -8,
                   )}</div>
                 </div>
               </div>
@@ -1538,14 +1538,14 @@
         if (log.details && log.details.campaignInfo) {
           campaignInfo = log.details.campaignInfo;
           console.log(
-            `🎯 Campagne directe trouvée pour ${log.userId}: ${campaignInfo.campaignName}`
+            `🎯 Campagne directe trouvée pour ${log.userId}: ${campaignInfo.campaignName}`,
           );
         } else {
           // Si pas d'info de campagne directe, chercher dans le mappage utilisateur
           campaignInfo = getUserCampaignInfo(log.userId);
           if (campaignInfo) {
             console.log(
-              `🎯 Campagne depuis mappage pour ${log.userId}: ${campaignInfo.campaignName}`
+              `🎯 Campagne depuis mappage pour ${log.userId}: ${campaignInfo.campaignName}`,
             );
           } else {
             console.log(`❌ Aucune campagne trouvée pour ${log.userId}`);
@@ -1679,8 +1679,8 @@
             log.details.scrollPercent > 75
               ? "text-green-400"
               : log.details.scrollPercent > 50
-              ? "text-yellow-400"
-              : "text-blue-400";
+                ? "text-yellow-400"
+                : "text-blue-400";
           details.push(`
             <div class="detail-chip">
               <span>📊</span>
@@ -1766,7 +1766,7 @@
               <div class="detail-chip">
                 <span>👁️</span>
                 <span>Visibilité: ${Math.round(
-                  log.details.viewportPosition * 100
+                  log.details.viewportPosition * 100,
                 )}%</span>
               </div>
             `);
@@ -1793,7 +1793,7 @@
         if (log.details && log.details.text) {
           const text = log.details.text.substring(0, 50);
           details.push(
-            `💬 "${text}${log.details.text.length > 50 ? "..." : ""}"`
+            `💬 "${text}${log.details.text.length > 50 ? "..." : ""}"`,
           );
         }
 
@@ -1863,7 +1863,7 @@
       async function cleanupLogs() {
         if (
           !confirm(
-            "Êtes-vous sûr de vouloir supprimer les logs de plus de 7 jours ? Cette action est irréversible."
+            "Êtes-vous sûr de vouloir supprimer les logs de plus de 7 jours ? Cette action est irréversible.",
           )
         ) {
           return;
@@ -1883,7 +1883,7 @@
 
           if (!response.ok) {
             throw new Error(
-              `Erreur ${response.status}: ${response.statusText}`
+              `Erreur ${response.status}: ${response.statusText}`,
             );
           }
 
@@ -1987,27 +1987,27 @@
               <span class="photo-rank">#${index + 1}</span>
               <div class="photo-thumbnail-container">
                 <img src="/photos/resize?file=${encodeURIComponent(photo.filename)}&w=320" alt="${
-            photo.filename
-          }" class="photo-thumbnail" onerror="this.src='/photos/${encodeURIComponent(
-            photo.filename
-          )}'" onclick="openPhotoModal('/photos/${encodeURIComponent(photo.filename)}', '${
-            photo.filename
-          }')">
+                  photo.filename
+                }" class="photo-thumbnail" onerror="this.src='/photos/${encodeURIComponent(
+                  photo.filename,
+                )}'" onclick="openPhotoModal('/photos/${encodeURIComponent(photo.filename)}', '${
+                  photo.filename
+                }')">
               </div>
               <div class="photo-details">
                 <span class="photo-name" title="${photo.filename}">${
-            photo.filename
-          }</span>
+                  photo.filename
+                }</span>
                 <span class="photo-path">📁 /photos/${photo.filename}</span>
               </div>
             </div>
             <div class="photo-stats">
               <span class="click-count">${photo.totalClicks} clics</span>
               <span class="first-click">Premier: ${new Date(
-                photo.firstClick
+                photo.firstClick,
               ).toLocaleDateString("fr-FR")}</span>
               <span class="last-click">Dernier: ${new Date(
-                photo.lastClick
+                photo.lastClick,
               ).toLocaleDateString("fr-FR")}</span>
             </div>
           `;
@@ -2018,7 +2018,7 @@
       async function resetPhotoStats() {
         if (
           !confirm(
-            "Êtes-vous sûr de vouloir réinitialiser toutes les statistiques de photos ? Cette action est irréversible."
+            "Êtes-vous sûr de vouloir réinitialiser toutes les statistiques de photos ? Cette action est irréversible.",
           )
         ) {
           return;
@@ -2054,7 +2054,7 @@
           togglePhotoStatsBtn.textContent = "📊 Masquer Stats";
           togglePhotoStatsBtn.classList.remove(
             "bg-purple-600",
-            "hover:bg-purple-700"
+            "hover:bg-purple-700",
           );
           togglePhotoStatsBtn.classList.add("bg-red-600", "hover:bg-red-700");
         } else {
@@ -2062,11 +2062,11 @@
           togglePhotoStatsBtn.textContent = "📊 Stats Photos";
           togglePhotoStatsBtn.classList.remove(
             "bg-red-600",
-            "hover:bg-red-700"
+            "hover:bg-red-700",
           );
           togglePhotoStatsBtn.classList.add(
             "bg-purple-600",
-            "hover:bg-purple-700"
+            "hover:bg-purple-700",
           );
         }
       }
@@ -2081,7 +2081,7 @@
       togglePhotoStatsBtn.textContent = "📊 Masquer Stats";
       togglePhotoStatsBtn.classList.remove(
         "bg-purple-600",
-        "hover:bg-purple-700"
+        "hover:bg-purple-700",
       );
       togglePhotoStatsBtn.classList.add("bg-red-600", "hover:bg-red-700");
 
