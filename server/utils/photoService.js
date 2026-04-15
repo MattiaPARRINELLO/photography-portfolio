@@ -55,25 +55,25 @@ async function getPhotosList() {
         fs.readdir(paths.photos, async (err, files) => {
             if (err) return reject(err);
 
-                    const images = files.filter(f => f.match(/\.(jpg|jpeg|png|webp)$/i));
+            const images = files.filter(f => f.match(/\.(jpg|jpeg|png|webp)$/i));
 
-                    // Exclude photos that belong to galleries marked as excludeFromMain
-                    try {
-                        const galleries = galleryService.loadGalleries().galleries || [];
-                        const excluded = new Set();
-                        galleries.forEach(g => {
-                            if (g.excludeFromMain && Array.isArray(g.photos)) {
-                                g.photos.forEach(p => { if (p) excluded.add(p); });
-                            }
-                        });
-                        // filter images array to remove excluded filenames
-                        for (let i = images.length - 1; i >= 0; i--) {
-                            if (excluded.has(images[i])) images.splice(i, 1);
-                        }
-                    } catch (e) {
-                        // if gallery loading fails, fall back to showing all images
-                        console.warn('Could not load galleries to compute excluded photos:', e && e.message);
+            // Exclude photos that belong to galleries marked as excludeFromMain
+            try {
+                const galleries = galleryService.loadGalleries().galleries || [];
+                const excluded = new Set();
+                galleries.forEach(g => {
+                    if (g.excludeFromMain && Array.isArray(g.photos)) {
+                        g.photos.forEach(p => { if (p) excluded.add(p); });
                     }
+                });
+                // filter images array to remove excluded filenames
+                for (let i = images.length - 1; i >= 0; i--) {
+                    if (excluded.has(images[i])) images.splice(i, 1);
+                }
+            } catch (e) {
+                // if gallery loading fails, fall back to showing all images
+                console.warn('Could not load galleries to compute excluded photos:', e && e.message);
+            }
             const withDates = await Promise.all(images.map(async (f) => {
                 try {
                     const url = '/photos/' + f;

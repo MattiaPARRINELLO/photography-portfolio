@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -11,9 +11,18 @@
     />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      * { font-family: "Signika", sans-serif; }
+      * {
+        font-family: "Signika", sans-serif;
+      }
       body {
-        background: linear-gradient(135deg, #000 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #000 100%);
+        background: linear-gradient(
+          135deg,
+          #000 0%,
+          #1a1a2e 25%,
+          #16213e 50%,
+          #0f3460 75%,
+          #000 100%
+        );
         min-height: 100vh;
         color: white;
       }
@@ -34,7 +43,9 @@
         outline: none;
         box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
       }
-      .form-input::placeholder { color: rgba(255, 255, 255, 0.5); }
+      .form-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
 
       .photo-picker {
         display: grid;
@@ -56,7 +67,12 @@
         border: 2px solid transparent;
         transition: all 0.2s ease;
       }
-      .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .photo-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
       .photo-thumb.selected {
         border-color: #3b82f6;
         transform: scale(0.96);
@@ -89,8 +105,13 @@
         z-index: 2;
         cursor: pointer;
       }
-      .photo-thumb.selected .cover-star { display: flex; }
-      .photo-thumb.is-cover .cover-star { color: #fbbf24; background: rgba(0, 0, 0, 0.9); }
+      .photo-thumb.selected .cover-star {
+        display: flex;
+      }
+      .photo-thumb.is-cover .cover-star {
+        color: #fbbf24;
+        background: rgba(0, 0, 0, 0.9);
+      }
 
       .gallery-card {
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -121,14 +142,21 @@
         transition: all 0.3s ease;
         z-index: 100;
       }
-      .toast.show { transform: translateY(0); opacity: 1; }
-      .toast.error { background: rgba(239, 68, 68, 0.95); }
+      .toast.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      .toast.error {
+        background: rgba(239, 68, 68, 0.95);
+      }
 
       .upload-progress {
         display: none;
         margin-top: 0.5rem;
       }
-      .upload-progress.active { display: block; }
+      .upload-progress.active {
+        display: block;
+      }
       .upload-progress-track {
         width: 100%;
         height: 10px;
@@ -150,7 +178,9 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center py-6">
           <div>
-            <h1 class="text-3xl font-bold text-white">📸 Galeries par artiste</h1>
+            <h1 class="text-3xl font-bold text-white">
+              📸 Galeries par artiste
+            </h1>
             <p class="text-white/60 mt-1">
               Créez des galeries thématiques et associez-leur vos photos
             </p>
@@ -158,7 +188,8 @@
           <a
             href="/admin"
             class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-          >← Retour Admin</a>
+            >← Retour Admin</a
+          >
         </div>
       </div>
     </header>
@@ -174,7 +205,9 @@
             id="cancel-edit-btn"
             type="button"
             class="hidden px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-700 rounded-lg"
-          >Annuler l'édition</button>
+          >
+            Annuler l'édition
+          </button>
         </div>
 
         <form id="gallery-form" class="space-y-4">
@@ -237,33 +270,59 @@
             <div class="flex items-center justify-between mb-2">
               <label class="block text-sm font-medium">
                 Photos de la galerie
-                <span id="selected-count" class="ml-2 text-white/60 text-xs">0 sélectionnée(s)</span>
+                <span id="selected-count" class="ml-2 text-white/60 text-xs"
+                  >0 sélectionnée(s)</span
+                >
               </label>
               <div class="text-xs text-white/50">
                 Clic = sélectionner · Clic sur ⭐ = couverture
               </div>
             </div>
             <div class="mb-2">
-              <input id="upload-input" name="uploadedPhotos" type="file" multiple accept="image/*" class="form-input p-2 rounded-md" />
+              <input
+                id="upload-input"
+                name="uploadedPhotos"
+                type="file"
+                multiple
+                accept="image/*"
+                class="form-input p-2 rounded-md"
+              />
               <div id="upload-list" class="text-xs text-white/60 mt-2"></div>
-              <div id="upload-progress" class="upload-progress" aria-live="polite">
-                <div class="flex items-center justify-between text-xs text-white/70 mb-1">
+              <div
+                id="upload-progress"
+                class="upload-progress"
+                aria-live="polite"
+              >
+                <div
+                  class="flex items-center justify-between text-xs text-white/70 mb-1"
+                >
                   <span id="upload-progress-label">Upload des photos...</span>
                   <span id="upload-progress-percent">0%</span>
                 </div>
                 <div class="upload-progress-track">
-                  <div id="upload-progress-bar" class="upload-progress-bar"></div>
+                  <div
+                    id="upload-progress-bar"
+                    class="upload-progress-bar"
+                  ></div>
                 </div>
               </div>
             </div>
             <div id="photo-picker" class="photo-picker">
-              <div class="col-span-full text-center py-8 text-white/50">Chargement des photos...</div>
+              <div class="col-span-full text-center py-8 text-white/50">
+                Chargement des photos...
+              </div>
             </div>
           </div>
 
           <div class="flex items-center justify-between pt-2">
             <label class="flex items-center gap-2 text-sm">
-              <input type="checkbox" id="g-published" name="published" checked class="w-4 h-4" />
+              <input
+                type="checkbox"
+                id="g-published"
+                name="published"
+                checked
+                class="w-4 h-4"
+              />
               Publiée (visible sur le site)
             </label>
             <button
@@ -293,27 +352,31 @@
     <div id="toast" class="toast"></div>
 
     <script>
-      const form = document.getElementById('gallery-form');
-      const idInput = document.getElementById('gallery-id');
-      const titleInput = document.getElementById('g-title');
-      const artistInput = document.getElementById('g-artist');
-      const venueInput = document.getElementById('g-venue');
-      const dateInput = document.getElementById('g-date');
-      const descInput = document.getElementById('g-description');
-      const pubInput = document.getElementById('g-published');
-      const submitLabel = document.getElementById('submit-label');
-      const formTitle = document.getElementById('form-title');
-      const cancelBtn = document.getElementById('cancel-edit-btn');
-      const picker = document.getElementById('photo-picker');
-      const uploadInput = document.getElementById('upload-input');
-      const uploadList = document.getElementById('upload-list');
-      const uploadProgress = document.getElementById('upload-progress');
-      const uploadProgressBar = document.getElementById('upload-progress-bar');
-      const uploadProgressPercent = document.getElementById('upload-progress-percent');
-      const uploadProgressLabel = document.getElementById('upload-progress-label');
-      const listEl = document.getElementById('galleries-list');
-      const selectedCountEl = document.getElementById('selected-count');
-      const toastEl = document.getElementById('toast');
+      const form = document.getElementById("gallery-form");
+      const idInput = document.getElementById("gallery-id");
+      const titleInput = document.getElementById("g-title");
+      const artistInput = document.getElementById("g-artist");
+      const venueInput = document.getElementById("g-venue");
+      const dateInput = document.getElementById("g-date");
+      const descInput = document.getElementById("g-description");
+      const pubInput = document.getElementById("g-published");
+      const submitLabel = document.getElementById("submit-label");
+      const formTitle = document.getElementById("form-title");
+      const cancelBtn = document.getElementById("cancel-edit-btn");
+      const picker = document.getElementById("photo-picker");
+      const uploadInput = document.getElementById("upload-input");
+      const uploadList = document.getElementById("upload-list");
+      const uploadProgress = document.getElementById("upload-progress");
+      const uploadProgressBar = document.getElementById("upload-progress-bar");
+      const uploadProgressPercent = document.getElementById(
+        "upload-progress-percent",
+      );
+      const uploadProgressLabel = document.getElementById(
+        "upload-progress-label",
+      );
+      const listEl = document.getElementById("galleries-list");
+      const selectedCountEl = document.getElementById("selected-count");
+      const toastEl = document.getElementById("toast");
       const submitBtn = form.querySelector('button[type="submit"]');
 
       let allPhotos = [];
@@ -321,10 +384,12 @@
       let coverFilename = null;
       let editingId = null;
 
-      function toast(msg, type = 'success') {
+      function toast(msg, type = "success") {
         toastEl.textContent = msg;
-        toastEl.className = 'toast show' + (type === 'error' ? ' error' : '');
-        setTimeout(() => { toastEl.className = 'toast' + (type === 'error' ? ' error' : ''); }, 2500);
+        toastEl.className = "toast show" + (type === "error" ? " error" : "");
+        setTimeout(() => {
+          toastEl.className = "toast" + (type === "error" ? " error" : "");
+        }, 2500);
       }
 
       function normalizeCoverSelection() {
@@ -339,23 +404,23 @@
 
       function setUploadProgress(percent, label = null) {
         const safe = Math.max(0, Math.min(100, Number(percent) || 0));
-        uploadProgress.classList.add('active');
+        uploadProgress.classList.add("active");
         uploadProgressBar.style.width = `${safe}%`;
         uploadProgressPercent.textContent = `${safe}%`;
         if (label) uploadProgressLabel.textContent = label;
       }
 
       function resetUploadProgress() {
-        uploadProgress.classList.remove('active');
-        uploadProgressBar.style.width = '0%';
-        uploadProgressPercent.textContent = '0%';
-        uploadProgressLabel.textContent = 'Upload des photos...';
+        uploadProgress.classList.remove("active");
+        uploadProgressBar.style.width = "0%";
+        uploadProgressPercent.textContent = "0%";
+        uploadProgressLabel.textContent = "Upload des photos...";
       }
 
       function setSubmittingState(isSubmitting) {
         submitBtn.disabled = isSubmitting;
-        submitBtn.classList.toggle('opacity-60', isSubmitting);
-        submitBtn.classList.toggle('cursor-not-allowed', isSubmitting);
+        submitBtn.classList.toggle("opacity-60", isSubmitting);
+        submitBtn.classList.toggle("cursor-not-allowed", isSubmitting);
         cancelBtn.disabled = isSubmitting;
       }
 
@@ -363,10 +428,10 @@
         return new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.open(method, url, true);
-          xhr.responseType = 'json';
+          xhr.responseType = "json";
 
           xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable && typeof onProgress === 'function') {
+            if (event.lengthComputable && typeof onProgress === "function") {
               const percent = Math.round((event.loaded / event.total) * 100);
               onProgress(percent);
             }
@@ -376,7 +441,7 @@
             let data = xhr.response;
             if (!data) {
               try {
-                data = JSON.parse(xhr.responseText || '{}');
+                data = JSON.parse(xhr.responseText || "{}");
               } catch (_e) {
                 data = {};
               }
@@ -387,66 +452,79 @@
               return;
             }
 
-            reject(new Error((data && data.error) || 'Erreur lors de l\'upload'));
+            reject(
+              new Error((data && data.error) || "Erreur lors de l'upload"),
+            );
           };
 
-          xhr.onerror = () => reject(new Error('Erreur réseau pendant l\'upload'));
+          xhr.onerror = () =>
+            reject(new Error("Erreur réseau pendant l'upload"));
           xhr.send(formData);
         });
       }
 
       async function checkAuth() {
         try {
-          const r = await fetch('/admin/status');
+          const r = await fetch("/admin/status");
           const d = await r.json();
-          if (!d.isLoggedIn) { window.location.href = '/admin'; return false; }
+          if (!d.isLoggedIn) {
+            window.location.href = "/admin";
+            return false;
+          }
           return true;
-        } catch (e) { window.location.href = '/admin'; return false; }
+        } catch (e) {
+          window.location.href = "/admin";
+          return false;
+        }
       }
 
       async function loadPhotos() {
         try {
-          const r = await fetch('/photos-list');
+          const r = await fetch("/photos-list");
           allPhotos = await r.json();
           renderPicker();
         } catch (e) {
-          picker.innerHTML = '<div class="col-span-full text-center py-8 text-red-400">Erreur de chargement des photos</div>';
+          picker.innerHTML =
+            '<div class="col-span-full text-center py-8 text-red-400">Erreur de chargement des photos</div>';
         }
       }
 
-      uploadInput?.addEventListener('change', () => {
+      uploadInput?.addEventListener("change", () => {
         const files = Array.from(uploadInput.files || []);
         if (files.length === 0) {
-          uploadList.textContent = '';
+          uploadList.textContent = "";
           return;
         }
-        uploadList.textContent = files.map(f => f.name).join(', ');
+        uploadList.textContent = files.map((f) => f.name).join(", ");
       });
 
       function renderPicker() {
         normalizeCoverSelection();
 
         if (allPhotos.length === 0) {
-          picker.innerHTML = '<div class="col-span-full text-center py-8 text-white/50">Aucune photo disponible. Uploadez des photos depuis l\'admin.</div>';
+          picker.innerHTML =
+            '<div class="col-span-full text-center py-8 text-white/50">Aucune photo disponible. Uploadez des photos depuis l\'admin.</div>';
           return;
         }
-        picker.innerHTML = allPhotos.map(p => {
-          const isSel = selectedPhotos.includes(p.filename);
-          const isCover = coverFilename === p.filename;
-          const orderIdx = selectedPhotos.indexOf(p.filename);
-          const thumb = `/photos/resize?file=${encodeURIComponent(p.filename)}&w=240`;
-          return `
-            <div class="photo-thumb${isSel ? ' selected' : ''}${isCover ? ' is-cover' : ''}" data-file="${p.filename}">
+        picker.innerHTML = allPhotos
+          .map((p) => {
+            const isSel = selectedPhotos.includes(p.filename);
+            const isCover = coverFilename === p.filename;
+            const orderIdx = selectedPhotos.indexOf(p.filename);
+            const thumb = `/photos/resize?file=${encodeURIComponent(p.filename)}&w=240`;
+            return `
+            <div class="photo-thumb${isSel ? " selected" : ""}${isCover ? " is-cover" : ""}" data-file="${p.filename}">
               <img src="${thumb}" alt="" loading="lazy" />
-              ${isSel ? `<span class="badge">${orderIdx + 1}</span>` : ''}
+              ${isSel ? `<span class="badge">${orderIdx + 1}</span>` : ""}
               <span class="cover-star" title="Définir comme couverture">★</span>
             </div>`;
-        }).join('');
+          })
+          .join("");
 
-        picker.querySelectorAll('.photo-thumb').forEach(el => {
+        picker.querySelectorAll(".photo-thumb").forEach((el) => {
           const file = el.dataset.file;
-          el.addEventListener('click', (e) => {
-            const coverTrigger = e.target.closest('.cover-star');
+          el.addEventListener("click", (e) => {
+            const coverTrigger = e.target.closest(".cover-star");
             if (coverTrigger) {
               e.stopPropagation();
               if (!selectedPhotos.includes(file)) selectedPhotos.push(file);
@@ -471,26 +549,31 @@
 
       async function loadGalleries() {
         try {
-          const r = await fetch('/admin/api/galleries');
-          if (!r.ok) throw new Error('fetch');
+          const r = await fetch("/admin/api/galleries");
+          if (!r.ok) throw new Error("fetch");
           const d = await r.json();
           renderGalleries(d.galleries || []);
         } catch (e) {
-          listEl.innerHTML = '<div class="text-center py-8 text-red-400">Erreur de chargement</div>';
+          listEl.innerHTML =
+            '<div class="text-center py-8 text-red-400">Erreur de chargement</div>';
         }
       }
 
       function renderGalleries(galleries) {
         if (galleries.length === 0) {
-          listEl.innerHTML = '<div class="text-center py-8 text-white/60">Aucune galerie pour le moment</div>';
+          listEl.innerHTML =
+            '<div class="text-center py-8 text-white/60">Aucune galerie pour le moment</div>';
           return;
         }
-        listEl.innerHTML = galleries.map(g => {
-          const cover = g.cover
-            ? `<img src="/photos/resize?file=${encodeURIComponent(g.cover)}&w=240" alt="" />`
-            : '<div class="w-[120px] h-[90px] bg-white/10 rounded-lg flex items-center justify-center text-white/40">—</div>';
-          const meta = [g.artist, g.venue, g.date].filter(Boolean).join(' · ');
-          return `
+        listEl.innerHTML = galleries
+          .map((g) => {
+            const cover = g.cover
+              ? `<img src="/photos/resize?file=${encodeURIComponent(g.cover)}&w=240" alt="" />`
+              : '<div class="w-[120px] h-[90px] bg-white/10 rounded-lg flex items-center justify-center text-white/40">—</div>';
+            const meta = [g.artist, g.venue, g.date]
+              .filter(Boolean)
+              .join(" · ");
+            return `
             <div class="gallery-card rounded-lg p-4 flex items-center gap-4" data-id="${g.id}">
               ${cover}
               <div class="flex-1 min-w-0">
@@ -498,7 +581,7 @@
                   <h4 class="font-bold text-white truncate">${escapeHtml(g.title)}</h4>
                   ${g.published ? '<span class="text-xs px-2 py-0.5 bg-green-600 rounded-full">publiée</span>' : '<span class="text-xs px-2 py-0.5 bg-gray-600 rounded-full">brouillon</span>'}
                 </div>
-                <p class="text-sm text-white/60 truncate">${escapeHtml(meta) || '—'}</p>
+                <p class="text-sm text-white/60 truncate">${escapeHtml(meta) || "—"}</p>
                 <p class="text-xs text-white/40 mt-1">${g.photos.length} photo(s) · /galeries/${g.slug}</p>
               </div>
               <div class="flex items-center gap-2">
@@ -507,126 +590,155 @@
                 <button type="button" class="delete-btn px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm">🗑️</button>
               </div>
             </div>`;
-        }).join('');
+          })
+          .join("");
 
-        listEl.querySelectorAll('.gallery-card').forEach(card => {
+        listEl.querySelectorAll(".gallery-card").forEach((card) => {
           const id = card.dataset.id;
-          card.querySelector('.edit-btn').addEventListener('click', () => startEdit(id));
-          card.querySelector('.delete-btn').addEventListener('click', () => deleteGallery(id));
+          card
+            .querySelector(".edit-btn")
+            .addEventListener("click", () => startEdit(id));
+          card
+            .querySelector(".delete-btn")
+            .addEventListener("click", () => deleteGallery(id));
         });
       }
 
       function escapeHtml(s) {
-        return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        return (s || "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
       }
 
       async function startEdit(id) {
         try {
-          const r = await fetch('/admin/api/galleries/' + id);
+          const r = await fetch("/admin/api/galleries/" + id);
           const d = await r.json();
           const g = d.gallery;
           editingId = g.id;
           idInput.value = g.id;
-          titleInput.value = g.title || '';
-          artistInput.value = g.artist || '';
-          venueInput.value = g.venue || '';
-          dateInput.value = g.date || '';
-          descInput.value = g.description || '';
+          titleInput.value = g.title || "";
+          artistInput.value = g.artist || "";
+          venueInput.value = g.venue || "";
+          dateInput.value = g.date || "";
+          descInput.value = g.description || "";
           pubInput.checked = g.published !== false;
           selectedPhotos = Array.isArray(g.photos) ? g.photos.slice() : [];
           coverFilename = g.cover || selectedPhotos[0] || null;
           normalizeCoverSelection();
           renderPicker();
-          formTitle.textContent = '✏️ Modifier la galerie';
-          submitLabel.textContent = '💾 Enregistrer les modifications';
-          cancelBtn.classList.remove('hidden');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } catch (e) { toast('Erreur de chargement', 'error'); }
+          formTitle.textContent = "✏️ Modifier la galerie";
+          submitLabel.textContent = "💾 Enregistrer les modifications";
+          cancelBtn.classList.remove("hidden");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } catch (e) {
+          toast("Erreur de chargement", "error");
+        }
       }
 
       function resetForm() {
         editingId = null;
         form.reset();
-        idInput.value = '';
+        idInput.value = "";
         pubInput.checked = true;
         selectedPhotos = [];
         coverFilename = null;
-        if (uploadInput) uploadInput.value = '';
-        if (uploadList) uploadList.textContent = '';
+        if (uploadInput) uploadInput.value = "";
+        if (uploadList) uploadList.textContent = "";
         resetUploadProgress();
         renderPicker();
-        formTitle.textContent = '✨ Nouvelle galerie';
-        submitLabel.textContent = '🚀 Créer la galerie';
-        cancelBtn.classList.add('hidden');
+        formTitle.textContent = "✨ Nouvelle galerie";
+        submitLabel.textContent = "🚀 Créer la galerie";
+        cancelBtn.classList.add("hidden");
       }
 
       async function deleteGallery(id) {
-        if (!confirm('Supprimer cette galerie ? (les photos ne seront pas supprimées)')) return;
+        if (
+          !confirm(
+            "Supprimer cette galerie ? (les photos ne seront pas supprimées)",
+          )
+        )
+          return;
         try {
-          const r = await fetch('/admin/api/galleries/' + id, { method: 'DELETE' });
-          if (!r.ok) throw new Error('delete');
-          toast('Galerie supprimée');
+          const r = await fetch("/admin/api/galleries/" + id, {
+            method: "DELETE",
+          });
+          if (!r.ok) throw new Error("delete");
+          toast("Galerie supprimée");
           if (editingId === id) resetForm();
           loadGalleries();
-        } catch (e) { toast('Erreur de suppression', 'error'); }
+        } catch (e) {
+          toast("Erreur de suppression", "error");
+        }
       }
 
-      form.addEventListener('submit', async (e) => {
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
         // Ensure at least one source of photos: selected or uploaded
         const hasSelected = selectedPhotos.length > 0;
-        const hasUploads = (uploadInput && uploadInput.files && uploadInput.files.length > 0);
+        const hasUploads =
+          uploadInput && uploadInput.files && uploadInput.files.length > 0;
         if (!hasSelected && !hasUploads) {
-          toast('Sélectionnez au moins une photo ou uploadez-en', 'error');
+          toast("Sélectionnez au moins une photo ou uploadez-en", "error");
           return;
         }
 
         const formData = new FormData(form);
         // Normalize critical fields and always send selected photos ordering
-        formData.set('title', (titleInput.value || '').trim());
-        formData.set('artist', artistInput.value || '');
-        formData.set('venue', venueInput.value || '');
-        formData.set('date', dateInput.value || '');
-        formData.set('description', descInput.value || '');
-        formData.set('published', pubInput.checked ? 'true' : 'false');
-        formData.set('photos', JSON.stringify(selectedPhotos));
+        formData.set("title", (titleInput.value || "").trim());
+        formData.set("artist", artistInput.value || "");
+        formData.set("venue", venueInput.value || "");
+        formData.set("date", dateInput.value || "");
+        formData.set("description", descInput.value || "");
+        formData.set("published", pubInput.checked ? "true" : "false");
+        formData.set("photos", JSON.stringify(selectedPhotos));
         normalizeCoverSelection();
-        formData.set('cover', coverFilename || '');
+        formData.set("cover", coverFilename || "");
 
         try {
-          const url = editingId ? '/admin/api/galleries/' + editingId : '/admin/api/galleries';
-          const method = editingId ? 'PUT' : 'POST';
+          const url = editingId
+            ? "/admin/api/galleries/" + editingId
+            : "/admin/api/galleries";
+          const method = editingId ? "PUT" : "POST";
 
           setSubmittingState(true);
           if (hasUploads) {
-            setUploadProgress(0, 'Upload des photos...');
+            setUploadProgress(0, "Upload des photos...");
           } else {
-            setUploadProgress(10, 'Enregistrement...');
+            setUploadProgress(10, "Enregistrement...");
           }
 
           await sendMultipartWithProgress(url, method, formData, (percent) => {
             if (hasUploads) {
-              setUploadProgress(percent, 'Upload des photos...');
+              setUploadProgress(percent, "Upload des photos...");
             }
           });
 
-          setUploadProgress(100, 'Finalisation...');
-          toast(editingId ? 'Galerie mise à jour' : 'Galerie créée');
+          setUploadProgress(100, "Finalisation...");
+          toast(editingId ? "Galerie mise à jour" : "Galerie créée");
           // refresh photos list to include newly uploaded images
           await loadPhotos();
           resetForm();
           loadGalleries();
         } catch (err) {
-          toast(err.message || 'Erreur', 'error');
+          toast(err.message || "Erreur", "error");
         } finally {
           setSubmittingState(false);
           setTimeout(() => resetUploadProgress(), 800);
         }
       });
 
-      cancelBtn.addEventListener('click', resetForm);
+      cancelBtn.addEventListener("click", resetForm);
 
-      document.addEventListener('DOMContentLoaded', async () => {
+      document.addEventListener("DOMContentLoaded", async () => {
         if (await checkAuth()) {
           await loadPhotos();
           await loadGalleries();

@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, paths.photos),
     filename: (req, file, cb) => {
         const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '-');
-        const name = `${Date.now()}-${Math.random().toString(36).slice(2,8)}-${safeName}`;
+        const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
         cb(null, name);
     }
 });
