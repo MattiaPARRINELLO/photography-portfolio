@@ -141,19 +141,19 @@ router.get('/', async (req, res) => {
 
         // INLINE CSS OPTIMIZATION
         try {
-                const cssPath = path.join(paths.root, 'dist/css/output.css');
-                try {
-                    if (fs.existsSync(cssPath)) {
-                        const cssContent = await fsp.readFile(cssPath, 'utf-8');
-                        htmlContent = htmlContent.replace(
-                            '<link rel="stylesheet" href="../dist/css/output.css" />',
-                            `<style>${cssContent}</style>`
-                        );
-                        console.log('🎨 CSS inlined successfully');
-                    }
-                } catch (e) {
-                    console.error('CSS Inline Error (async):', e);
+            const cssPath = path.join(paths.root, 'dist/css/output.css');
+            try {
+                if (fs.existsSync(cssPath)) {
+                    const cssContent = await fsp.readFile(cssPath, 'utf-8');
+                    htmlContent = htmlContent.replace(
+                        '<link rel="stylesheet" href="../dist/css/output.css" />',
+                        `<style>${cssContent}</style>`
+                    );
+                    console.log('🎨 CSS inlined successfully');
                 }
+            } catch (e) {
+                console.error('CSS Inline Error (async):', e);
+            }
         } catch (e) {
             console.error('CSS Inline Error:', e);
         }
@@ -272,7 +272,7 @@ router.get('/contact', async (req, res) => {
         htmlContent = htmlContent.replace('</head>', `    ${schemaJsonLd}\n  </head>`);
 
         // Cache contact page for 5 minutes
-        try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) {}
+        try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) { }
 
         res.send(htmlContent);
     } catch (error) {
@@ -303,7 +303,7 @@ router.get('/a-propos', async (req, res) => {
         const schemaJsonLd = textUtils.generateSchemaJsonLd('À propos', req);
         htmlContent = htmlContent.replace('</head>', `    ${schemaJsonLd}\n  </head>`);
 
-        try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) {}
+        try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) { }
 
         res.send(htmlContent);
     } catch (error) {
@@ -433,7 +433,7 @@ router.get('/galeries', async (req, res) => {
         }
         htmlContent = htmlContent.replace('<!-- GALLERIES_LIST_PLACEHOLDER -->', listHtml);
 
-        try { setCache(cacheKey, htmlContent, 2 * 60 * 1000); } catch (e) {}
+        try { setCache(cacheKey, htmlContent, 2 * 60 * 1000); } catch (e) { }
 
         res.send(htmlContent);
     } catch (error) {
@@ -545,7 +545,7 @@ router.get('/galeries/:slug', async (req, res) => {
             : '<p class="text-center text-gray-500 py-8">Aucune photo dans cette galerie.</p>';
         htmlContent = htmlContent.replace('<!-- GALLERY_PHOTOS_PLACEHOLDER -->', masonryHtml);
 
-        try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) {}
+        try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) { }
         res.send(htmlContent);
     } catch (error) {
         console.error('❌ Erreur /galeries/:slug :', error);
