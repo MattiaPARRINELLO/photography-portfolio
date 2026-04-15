@@ -4,6 +4,7 @@ const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const path = require('path');
+const fs = require('fs');
 
 // Configuration du serveur
 const serverConfig = require('./server/config');
@@ -64,6 +65,58 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Sert les fichiers statiques, mais exclut le dossier /admin pour éviter les conflits
+// Middleware: servir les versions pré-compressées si elles existent (.br/.gz)
+app.use((req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+    // Only handle obvious asset extensions
+    const assetExt = req.path.split('.').pop();
+    const serveExts = ['js', 'css', 'png', 'jpg', 'jpeg', 'webp', 'avif', 'svg', 'json', 'html'];
+    if (!serveExts.includes(assetExt)) return next();
+
+    const acceptEnc = req.headers['accept-encoding'] || '';
+    const tryBrotli = acceptEnc.includes('br');
+    const tryGzip = acceptEnc.includes('gzip');
+
+    const fileOnDisk = path.join(paths.root, decodeURIComponent(req.path));
+    // If requested path is a directory or doesn't have an extension, skip
+    if (req.path.endsWith('/')) return next();
+
+    // Prefer brotli
+    if (tryBrotli) {
+        const brPath = fileOnDisk + '.br';
+        if (fs.existsSync(brPath)) {
+            res.setHeader('Content-Encoding', 'br');
+            if (/\.js$/.test(req.path)) res.setHeader('Content-Type', 'application/javascript');
+            else if (/\.css$/.test(req.path)) res.setHeader('Content-Type', 'text/css');
+            else if (/\.svg$/.test(req.path)) res.setHeader('Content-Type', 'image/svg+xml');
+            else if (/\.json$/.test(req.path)) res.setHeader('Content-Type', 'application/json');
+            else if (/\.html$/.test(req.path)) res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            else if (/\.(png|jpe?g|webp|avif)$/.test(req.path)) res.setHeader('Content-Type', 'image/*');
+            res.setHeader('Vary', 'Accept-Encoding');
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            return res.sendFile(brPath);
+        }
+    }
+
+    if (tryGzip) {
+        const gzPath = fileOnDisk + '.gz';
+        if (fs.existsSync(gzPath)) {
+            res.setHeader('Content-Encoding', 'gzip');
+            if (/\.js$/.test(req.path)) res.setHeader('Content-Type', 'application/javascript');
+            else if (/\.css$/.test(req.path)) res.setHeader('Content-Type', 'text/css');
+            else if (/\.svg$/.test(req.path)) res.setHeader('Content-Type', 'image/svg+xml');
+            else if (/\.json$/.test(req.path)) res.setHeader('Content-Type', 'application/json');
+            else if (/\.html$/.test(req.path)) res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            else if (/\.(png|jpe?g|webp|avif)$/.test(req.path)) res.setHeader('Content-Type', 'image/*');
+            res.setHeader('Vary', 'Accept-Encoding');
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            return res.sendFile(gzPath);
+        }
+    }
+
+    return next();
+});
+
 app.use(express.static(paths.root, {
     index: false, // Désactiver l'index automatique
     // Laisser l'option maxAge vide et définir des en-têtes par type

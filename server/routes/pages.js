@@ -1,5 +1,6 @@
 const express = require('express');
 const fs = require('fs');
+const fsp = fs.promises;
 const path = require('path');
 const serverConfig = require('../config');
 const textUtils = require('../utils/textUtils');
@@ -10,6 +11,21 @@ const galleryService = require('../utils/galleryService');
 
 const router = express.Router();
 const paths = serverConfig.getPaths();
+
+// Simple in-memory page cache to avoid expensive rendering on each request
+const pageCache = new Map();
+function getCached(key) {
+    const entry = pageCache.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiresAt) {
+        pageCache.delete(key);
+        return null;
+    }
+    return entry.value;
+}
+function setCache(key, value, ttlMs) {
+    pageCache.set(key, { value, expiresAt: Date.now() + ttlMs });
+}
 
 // SEO: Charge les données SEO pour l'injection de contenu dynamique
 const seoDataPath = path.join(__dirname, '..', '..', 'config', 'seo.json');
@@ -111,24 +127,33 @@ router.get('/', async (req, res) => {
             console.log(`🎯 Campagne détectée via URL: ${campaignRef}`);
         }
 
+        // Try cache (cache key ignores common tracking params)
+        const cacheKey = 'page:home';
+        const cached = getCached(cacheKey);
+        if (cached) return res.send(cached);
+
         const texts = textUtils.loadTexts();
         console.log('📖 Textes chargés pour /');
 
         const htmlPath = path.join(paths.pages, 'home.html');
-        let htmlContent = fs.readFileSync(htmlPath, 'utf-8');
+        let htmlContent = await fsp.readFile(htmlPath, 'utf-8');
         console.log('📄 HTML lu, taille:', htmlContent.length, 'caractères');
 
         // INLINE CSS OPTIMIZATION
         try {
-            const cssPath = path.join(paths.root, 'dist/css/output.css');
-            if (fs.existsSync(cssPath)) {
-                const cssContent = fs.readFileSync(cssPath, 'utf-8');
-                htmlContent = htmlContent.replace(
-                    '<link rel="stylesheet" href="../dist/css/output.css" />',
-                    `<style>${cssContent}</style>`
-                );
-                console.log('🎨 CSS inlined successfully');
-            }
+                const cssPath = path.join(paths.root, 'dist/css/output.css');
+                try {
+                    if (fs.existsSync(cssPath)) {
+                        const cssContent = await fsp.readFile(cssPath, 'utf-8');
+                        htmlContent = htmlContent.replace(
+                            '<link rel="stylesheet" href="../dist/css/output.css" />',
+                            `<style>${cssContent}</style>`
+                        );
+                        console.log('🎨 CSS inlined successfully');
+                    }
+                } catch (e) {
+                    console.error('CSS Inline Error (async):', e);
+                }
         } catch (e) {
             console.error('CSS Inline Error:', e);
         }
@@ -182,6 +207,9 @@ router.get('/', async (req, res) => {
             }
 
             console.log('⚡ SSR: 4 images injected + full data payload');
+
+            // Cache rendered homepage for a short TTL to reduce CPU on bursts
+            try { setCache(cacheKey, htmlContent, 60 * 1000); } catch (e) { /* ignore */ }
         } catch (e) {
             console.error('SSR Error:', e);
             // Fallback: remove placeholder
@@ -210,11 +238,14 @@ router.get('/', async (req, res) => {
 });
 
 // Route pour servir texts.json publiquement
-router.get('/texts.json', (req, res) => {
+router.get('/texts.json', async (req, res) => {
     try {
         let texts = {};
-        if (fs.existsSync(paths.texts)) {
-            texts = JSON.parse(fs.readFileSync(paths.texts, 'utf-8'));
+        try {
+            const txt = await fsp.readFile(paths.texts, 'utf-8');
+            texts = JSON.parse(txt);
+        } catch (e) {
+            texts = {};
         }
         res.json(texts);
     } catch (error) {
@@ -224,17 +255,25 @@ router.get('/texts.json', (req, res) => {
 });
 
 // Route pour la page Contact
-router.get('/contact', (req, res) => {
+router.get('/contact', async (req, res) => {
     console.log('🚀 Route /contact appelée');
     try {
+        const cacheKey = 'page:contact';
+        const cached = getCached(cacheKey);
+        if (cached) return res.send(cached);
+
         const texts = textUtils.loadTexts();
         console.log('📖 Textes chargés pour /contact');
         const htmlPath = path.join(paths.pages, 'contact.html');
-        let htmlContent = fs.readFileSync(htmlPath, 'utf-8');
+        let htmlContent = await fsp.readFile(htmlPath, 'utf-8');
         htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, 'Contact');
         // SEO: Injecter le Schema.org JSON-LD
         const schemaJsonLd = textUtils.generateSchemaJsonLd('Contact', req);
         htmlContent = htmlContent.replace('</head>', `    ${schemaJsonLd}\n  </head>`);
+
+        // Cache contact page for 5 minutes
+        try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) {}
+
         res.send(htmlContent);
     } catch (error) {
         console.error('❌ Erreur lors du chargement de contact.html:', error);
@@ -248,17 +287,24 @@ router.get('/contact/', (req, res) => {
 });
 
 // Route pour la page À propos
-router.get('/a-propos', (req, res) => {
+router.get('/a-propos', async (req, res) => {
     console.log('🚀 Route /a-propos appelée');
     try {
+        const cacheKey = 'page:about';
+        const cached = getCached(cacheKey);
+        if (cached) return res.send(cached);
+
         const texts = textUtils.loadTexts();
         console.log('📖 Textes chargés pour /a-propos');
         const htmlPath = path.join(paths.pages, 'about_me.html');
-        let htmlContent = fs.readFileSync(htmlPath, 'utf-8');
+        let htmlContent = await fsp.readFile(htmlPath, 'utf-8');
         htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, 'À propos');
         // SEO: Injecter le Schema.org JSON-LD
         const schemaJsonLd = textUtils.generateSchemaJsonLd('À propos', req);
         htmlContent = htmlContent.replace('</head>', `    ${schemaJsonLd}\n  </head>`);
+
+        try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) {}
+
         res.send(htmlContent);
     } catch (error) {
         console.error('❌ Erreur lors du chargement de about_me.html:', error);
@@ -359,11 +405,15 @@ function renderGalleryCard(g) {
       </a>`;
 }
 
-router.get('/galeries', (req, res) => {
+router.get('/galeries', async (req, res) => {
     try {
+        const cacheKey = 'page:galleries';
+        const cached = getCached(cacheKey);
+        if (cached) return res.send(cached);
+
         const texts = textUtils.loadTexts();
         const htmlPath = path.join(paths.pages, 'galleries.html');
-        let htmlContent = fs.readFileSync(htmlPath, 'utf-8');
+        let htmlContent = await fsp.readFile(htmlPath, 'utf-8');
 
         htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, 'Galeries');
 
@@ -383,6 +433,8 @@ router.get('/galeries', (req, res) => {
         }
         htmlContent = htmlContent.replace('<!-- GALLERIES_LIST_PLACEHOLDER -->', listHtml);
 
+        try { setCache(cacheKey, htmlContent, 2 * 60 * 1000); } catch (e) {}
+
         res.send(htmlContent);
     } catch (error) {
         console.error('❌ Erreur /galeries:', error);
@@ -391,15 +443,19 @@ router.get('/galeries', (req, res) => {
 });
 router.get('/galeries/', (req, res) => res.redirect('/galeries'));
 
-router.get('/galeries/:slug', (req, res) => {
+router.get('/galeries/:slug', async (req, res) => {
     try {
         const gallery = galleryService.getGalleryBySlug(req.params.slug);
         if (!gallery || gallery.published === false) {
             return res.status(404).sendFile(path.join(paths.pages, '404.html'));
         }
 
+        const cacheKey = `page:gallery:${gallery.slug}`;
+        const cached = getCached(cacheKey);
+        if (cached) return res.send(cached);
+
         const htmlPath = path.join(paths.pages, 'gallery.html');
-        let htmlContent = fs.readFileSync(htmlPath, 'utf-8');
+        let htmlContent = await fsp.readFile(htmlPath, 'utf-8');
 
         // Meta tags dynamiques spécifiques à la galerie
         const metaTitle = `${gallery.title} - Mattia Parrinello`;
@@ -489,6 +545,7 @@ router.get('/galeries/:slug', (req, res) => {
             : '<p class="text-center text-gray-500 py-8">Aucune photo dans cette galerie.</p>';
         htmlContent = htmlContent.replace('<!-- GALLERY_PHOTOS_PLACEHOLDER -->', masonryHtml);
 
+        try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) {}
         res.send(htmlContent);
     } catch (error) {
         console.error('❌ Erreur /galeries/:slug :', error);
