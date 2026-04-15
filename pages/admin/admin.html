@@ -816,7 +816,7 @@
                     const item = document.createElement('div');
                     item.className = 'photo-item';
                     item.innerHTML = `
-                        <img src="../../photos/thumbnails/${photo.filename}" alt="${photo.filename}" onerror="this.src='../../photos/${photo.filename}'">
+                        <img src="/photos/resize?file=${encodeURIComponent(photo.filename)}&w=320" alt="${photo.filename}" onerror="this.src='/photos/${encodeURIComponent(photo.filename)}'">
                         <div class="photo-info">
                             <p class="font-medium truncate">${photo.filename}</p>
                             <p class="text-gray-500">${formatFileSize(photo.size)}</p>

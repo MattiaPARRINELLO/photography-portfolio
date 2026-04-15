@@ -78,7 +78,7 @@ async function getPhotosList() {
                 try {
                     const url = '/photos/' + f;
                     const filename = f;
-                    const thumbnailUrl = `/photos/thumbnails/${f.replace(/\.[^.]+$/, '.webp')}`;
+                    const thumbnailUrl = `/photos/resize?file=${encodeURIComponent(f)}&w=320`;
                     const filePath = path.join(paths.photos, f);
 
                     // Essayer de lire les métadonnées EXIF

@@ -1986,11 +1986,11 @@
             <div class="photo-info">
               <span class="photo-rank">#${index + 1}</span>
               <div class="photo-thumbnail-container">
-                <img src="/photos/thumbnails/${photo.filename}" alt="${
+                <img src="/photos/resize?file=${encodeURIComponent(photo.filename)}&w=320" alt="${
             photo.filename
-          }" class="photo-thumbnail" onerror="this.src='/photos/${
+          }" class="photo-thumbnail" onerror="this.src='/photos/${encodeURIComponent(
             photo.filename
-          }'" onclick="openPhotoModal('/photos/${photo.filename}', '${
+          )}'" onclick="openPhotoModal('/photos/${encodeURIComponent(photo.filename)}', '${
             photo.filename
           }')">
               </div>
