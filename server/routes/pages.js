@@ -66,9 +66,9 @@ function generateHomeHeroHtml() {
           <p class="text-sm text-gray-500 dark:text-gray-400 font-signika uppercase tracking-wider mb-1">Salles & festivals</p>
           <p class="text-sm md:text-base text-gray-600 dark:text-gray-300">${venueNames}</p>
         </div>
-                <!-- SEO: CTA vers contact -->
-                <div class="mt-6">
-                    <a href="/contact" class="cta-contact primary inline-block px-6 py-3 text-sm font-signika font-bold rounded-lg transition duration-300">Me contacter pour un projet</a>
+                <!-- SEO: CTA vers contact + galerie -->
+                <div class="mt-6 flex items-center gap-10">
+                    <a href="/galeries" class="cta-contact primary inline-block px-6 py-3 text-sm font-signika font-bold rounded-lg transition duration-300">Voir mes projets</a>
                 </div>
       </div>`;
 }

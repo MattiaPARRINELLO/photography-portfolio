@@ -95,6 +95,69 @@
   }
 }
 
+/* Secondary CTA Button - Gallery */
+.home-hero .cta-gallery {
+  position: relative;
+  z-index: 30;
+  margin: 0 0 1rem 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: 0.12px;
+  background: transparent;
+  color: #0f172a;
+  border: 1px solid #fff;
+  box-shadow: none;
+  backdrop-filter: blur(4px);
+  text-decoration: none;
+  transition:
+    transform 0.14s cubic-bezier(0.2, 0.9, 0.3, 1),
+    box-shadow 0.14s ease,
+    opacity 0.12s ease,
+    background 0.14s ease;
+}
+.home-hero .cta-gallery:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(2, 6, 23, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+.home-hero .cta-gallery:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(2, 6, 23, 0.06);
+}
+.dark .home-hero .cta-gallery {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: none;
+}
+.dark .home-hero .cta-gallery:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 26px 54px rgba(2, 6, 23, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+.dark .home-hero .cta-gallery:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.1);
+}
+/* Center CTA on small screens, align to content on wider screens */
+.home-hero .cta-gallery {
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (min-width: 768px) {
+  .home-hero .cta-gallery {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
 /* Make general link buttons more legible when classes are not present */
 a[role="button"],
 a.button,

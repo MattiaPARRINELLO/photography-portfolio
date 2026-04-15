@@ -85,9 +85,16 @@ function mergeArtistLinks(current = {}, updates = {}) {
 function listGalleries() {
     const data = loadGalleries();
     return data.galleries.slice().sort((a, b) => {
-        const da = a.date || a.createdAt || '';
-        const db = b.date || b.createdAt || '';
-        return db.localeCompare(da);
+        const da = (a.date || '').trim();
+        const db = (b.date || '').trim();
+
+        // Tri strictement basé sur la date de concert (plus récent -> plus ancien)
+        if (da && db && da !== db) return db.localeCompare(da);
+        if (da && !db) return -1;
+        if (!da && db) return 1;
+
+        // Ordre stable si les dates sont identiques ou absentes
+        return (a.title || '').localeCompare(b.title || '');
     });
 }
 
