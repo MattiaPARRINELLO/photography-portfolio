@@ -54,7 +54,8 @@ class TextUtils {
             'Contact': 'contact',
             'À propos': 'about',
             'Mentions légales': 'mentions',
-            'Links': 'links'
+            'Links': 'links',
+            'Galeries': 'galleries'
         };
         return mapping[pageType] || 'home';
     }
@@ -308,7 +309,8 @@ class TextUtils {
             'about': { name: 'À propos', url: `${baseUrl}/a-propos` },
             'contact': { name: 'Contact', url: `${baseUrl}/contact` },
             'mentions': { name: 'Mentions légales', url: `${baseUrl}/mentions-legales` },
-            'links': { name: 'Liens', url: `${baseUrl}/links` }
+            'links': { name: 'Liens', url: `${baseUrl}/links` },
+            'galleries': { name: 'Galeries', url: `${baseUrl}/galeries` }
         };
 
         if (pageKey !== 'home' && pageNames[pageKey]) {

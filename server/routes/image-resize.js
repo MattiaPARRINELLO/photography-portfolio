@@ -1,6 +1,7 @@
-const express = require('express');
 const fs = require('fs');
+const fsp = fs.promises;
 const path = require('path');
+const express = require('express');
 const sharp = require('sharp');
 const serverConfig = require('../config');
 
@@ -16,8 +17,12 @@ function safeJoinPhotos(filename) {
 }
 
 // Ensure cache directory exists
-function ensureDir(dir) {
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+async function ensureDir(dir) {
+    try {
+        await fsp.mkdir(dir, { recursive: true });
+    } catch (e) {
+        // ignore
+    }
 }
 
 // GET /photos/resize?file=FILENAME&w=320&fmt=webp&q=80
@@ -36,7 +41,6 @@ router.get('/resize', async (req, res) => {
         const chosenWidth = allowedWidths.includes(width) ? width : width;
 
         const originalPath = safeJoinPhotos(file);
-        if (!fs.existsSync(originalPath)) return res.status(404).send('File not found');
 
         // Decide output format: prefer webp when supported or when requested
         const accept = req.get('Accept') || '';
@@ -49,24 +53,35 @@ router.get('/resize', async (req, res) => {
         // Build cache path: photos/resized/<fmt>/<width>/<basename>.<fmt>
         const base = path.basename(file).replace(/\.[^.]+$/, '');
         const cacheDir = path.join(paths.photos, 'resized', fmt, String(chosenWidth));
-        ensureDir(cacheDir);
         const cacheName = `${base}.${fmt === 'jpg' ? 'jpeg' : fmt}`;
         const cachePath = path.join(cacheDir, cacheName);
 
-        // If cache exists and up-to-date (mtime >= original mtime), stream it
-        if (fs.existsSync(cachePath)) {
-            const cacheStat = fs.statSync(cachePath);
-            const origStat = fs.statSync(originalPath);
-            if (cacheStat.mtimeMs >= origStat.mtimeMs) {
-                res.setHeader('Content-Type', `image/${fmt === 'jpeg' ? 'jpeg' : fmt}`);
-                // Cache for 1 year (31536000 seconds) as these are immutable generated files
-                res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-                res.setHeader('Vary', 'Accept');
-                return fs.createReadStream(cachePath).pipe(res);
-            }
+        await ensureDir(cacheDir);
+
+        // If cache exists and up-to-date (mtime >= original mtime), send it (non-bloquant)
+        let cacheStat = null;
+        try { cacheStat = await fsp.stat(cachePath); } catch (e) { cacheStat = null; }
+        let origStat = null;
+        try { origStat = await fsp.stat(originalPath); } catch (e) { origStat = null; }
+
+        // If original missing but cache exists, serve cache. If both missing, 404.
+        if (!origStat && cacheStat) {
+            res.setHeader('Content-Type', `image/${fmt === 'jpeg' ? 'jpeg' : fmt}`);
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            res.setHeader('Vary', 'Accept');
+            return res.sendFile(cachePath);
+        }
+        if (!origStat) return res.status(404).send('File not found');
+
+        // If cache is up-to-date, serve it
+        if (cacheStat && cacheStat.mtimeMs >= origStat.mtimeMs) {
+            res.setHeader('Content-Type', `image/${fmt === 'jpeg' ? 'jpeg' : fmt}`);
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            res.setHeader('Vary', 'Accept');
+            return res.sendFile(cachePath);
         }
 
-        // Otherwise generate resized image and write to cache
+        // Otherwise generate resized image and write to cache (async safe ops)
         const transformer = sharp(originalPath).resize({
             width: chosenWidth,
             withoutEnlargement: true,
@@ -83,8 +98,8 @@ router.get('/resize', async (req, res) => {
         }
 
         const buffer = await pipeline.toBuffer();
-        // Save cache (best-effort)
-        try { fs.writeFileSync(cachePath, buffer); } catch (e) { console.warn('Failed to write cache', e.message); }
+        // Save cache in background (best-effort, non-blocking)
+        fsp.writeFile(cachePath, buffer).catch((e) => { console.warn('Failed to write cache', e.message); });
 
         res.setHeader('Content-Type', `image/${fmt === 'jpeg' ? 'jpeg' : fmt}`);
         // Cache for 1 year (31536000 seconds)

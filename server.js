@@ -66,11 +66,34 @@ app.use(cookieParser());
 // Sert les fichiers statiques, mais exclut le dossier /admin pour éviter les conflits
 app.use(express.static(paths.root, {
     index: false, // Désactiver l'index automatique
-    setHeaders: (res, path) => {
+    // Laisser l'option maxAge vide et définir des en-têtes par type
+    setHeaders: (res, filePath) => {
         // Bloquer l'accès au dossier admin/ en statique
-        if (path.includes('/admin/')) {
+        if (filePath.includes('/admin/')) {
             res.setHeader('Cache-Control', 'no-store');
+            return;
         }
+
+        // HTML: ne pas mettre en cache durablement
+        if (/\.html?$/.test(filePath)) {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            return;
+        }
+
+        // JS / CSS: assets versionnés immutables
+        if (/\.(js|css)$/.test(filePath)) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            return;
+        }
+
+        // Images & fonts: immutables si stockés dans des dossiers générés
+        if (/\.(png|jpe?g|webp|avif|svg|gif|ico|ttf|woff2?)$/.test(filePath)) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            return;
+        }
+
+        // Par défaut: cache court
+        res.setHeader('Cache-Control', 'public, max-age=86400');
     }
 }));
 

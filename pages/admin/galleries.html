@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Gestion des Galeries - Admin</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Signika:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      * { font-family: "Signika", sans-serif; }
+      body {
+        background: linear-gradient(135deg, #000 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #000 100%);
+        min-height: 100vh;
+        color: white;
+      }
+      .glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+      .form-input {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+      .form-input:focus {
+        border-color: #3b82f6;
+        background: rgba(255, 255, 255, 0.15);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+      }
+      .form-input::placeholder { color: rgba(255, 255, 255, 0.5); }
+
+      .photo-picker {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 0.75rem;
+        max-height: 460px;
+        overflow-y: auto;
+        padding: 0.75rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .photo-thumb {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+      }
+      .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .photo-thumb.selected {
+        border-color: #3b82f6;
+        transform: scale(0.96);
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+      }
+      .photo-thumb .badge {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        background: #3b82f6;
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 999px;
+      }
+      .photo-thumb .cover-star {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        background: rgba(0, 0, 0, 0.7);
+        color: #fbbf24;
+        font-size: 14px;
+        width: 22px;
+        height: 22px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+      }
+      .photo-thumb.selected .cover-star { display: flex; }
+      .photo-thumb.is-cover .cover-star { color: #fbbf24; background: rgba(0, 0, 0, 0.9); }
+
+      .gallery-card {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.2s ease;
+      }
+      .gallery-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(59, 130, 246, 0.3);
+      }
+      .gallery-card img {
+        width: 120px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+      }
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        padding: 12px 18px;
+        border-radius: 12px;
+        background: rgba(16, 185, 129, 0.95);
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 100;
+      }
+      .toast.show { transform: translateY(0); opacity: 1; }
+      .toast.error { background: rgba(239, 68, 68, 0.95); }
+    </style>
+  </head>
+  <body>
+    <header class="glass">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-6">
+          <div>
+            <h1 class="text-3xl font-bold text-white">📸 Galeries par artiste</h1>
+            <p class="text-white/60 mt-1">
+              Créez des galeries thématiques et associez-leur vos photos
+            </p>
+          </div>
+          <a
+            href="/admin"
+            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+          >← Retour Admin</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <!-- Formulaire de création / édition -->
+      <section class="glass rounded-xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold text-white" id="form-title">
+            ✨ Nouvelle galerie
+          </h2>
+          <button
+            id="cancel-edit-btn"
+            type="button"
+            class="hidden px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-700 rounded-lg"
+          >Annuler l'édition</button>
+        </div>
+
+        <form id="gallery-form" class="space-y-4">
+          <input type="hidden" id="gallery-id" />
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">Titre *</label>
+              <input
+                type="text"
+                id="g-title"
+                required
+                class="form-input w-full rounded-lg px-3 py-2"
+                placeholder="Jok'air à La Cigale"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Artiste</label>
+              <input
+                type="text"
+                id="g-artist"
+                class="form-input w-full rounded-lg px-3 py-2"
+                placeholder="Jok'air"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Lieu / salle</label>
+              <input
+                type="text"
+                id="g-venue"
+                class="form-input w-full rounded-lg px-3 py-2"
+                placeholder="La Cigale, Paris"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Date</label>
+              <input
+                type="date"
+                id="g-date"
+                class="form-input w-full rounded-lg px-3 py-2"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2">Description</label>
+            <textarea
+              id="g-description"
+              class="form-input w-full rounded-lg px-3 py-2 h-20 resize-none"
+              placeholder="Quelques mots sur le concert, l'ambiance, le contexte..."
+            ></textarea>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-sm font-medium">
+                Photos de la galerie
+                <span id="selected-count" class="ml-2 text-white/60 text-xs">0 sélectionnée(s)</span>
+              </label>
+              <div class="text-xs text-white/50">
+                Clic = sélectionner · Clic sur ⭐ = couverture
+              </div>
+            </div>
+            <div id="photo-picker" class="photo-picker">
+              <div class="col-span-full text-center py-8 text-white/50">Chargement des photos...</div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-2">
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" id="g-published" checked class="w-4 h-4" />
+              Publiée (visible sur le site)
+            </label>
+            <button
+              type="submit"
+              class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+            >
+              <span id="submit-label">🚀 Créer la galerie</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Liste des galeries -->
+      <section class="glass rounded-xl">
+        <div class="p-6 border-b border-white/10">
+          <h3 class="text-lg font-bold">📋 Galeries existantes</h3>
+          <p class="text-white/60 text-sm">
+            Cliquez sur une galerie pour la modifier
+          </p>
+        </div>
+        <div id="galleries-list" class="p-6 space-y-3">
+          <div class="text-center py-8 text-white/60">Chargement...</div>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+      const form = document.getElementById('gallery-form');
+      const idInput = document.getElementById('gallery-id');
+      const titleInput = document.getElementById('g-title');
+      const artistInput = document.getElementById('g-artist');
+      const venueInput = document.getElementById('g-venue');
+      const dateInput = document.getElementById('g-date');
+      const descInput = document.getElementById('g-description');
+      const pubInput = document.getElementById('g-published');
+      const submitLabel = document.getElementById('submit-label');
+      const formTitle = document.getElementById('form-title');
+      const cancelBtn = document.getElementById('cancel-edit-btn');
+      const picker = document.getElementById('photo-picker');
+      const listEl = document.getElementById('galleries-list');
+      const selectedCountEl = document.getElementById('selected-count');
+      const toastEl = document.getElementById('toast');
+
+      let allPhotos = [];
+      let selectedPhotos = [];
+      let coverFilename = null;
+      let editingId = null;
+
+      function toast(msg, type = 'success') {
+        toastEl.textContent = msg;
+        toastEl.className = 'toast show' + (type === 'error' ? ' error' : '');
+        setTimeout(() => { toastEl.className = 'toast' + (type === 'error' ? ' error' : ''); }, 2500);
+      }
+
+      async function checkAuth() {
+        try {
+          const r = await fetch('/admin/status');
+          const d = await r.json();
+          if (!d.isLoggedIn) { window.location.href = '/admin'; return false; }
+          return true;
+        } catch (e) { window.location.href = '/admin'; return false; }
+      }
+
+      async function loadPhotos() {
+        try {
+          const r = await fetch('/photos-list');
+          allPhotos = await r.json();
+          renderPicker();
+        } catch (e) {
+          picker.innerHTML = '<div class="col-span-full text-center py-8 text-red-400">Erreur de chargement des photos</div>';
+        }
+      }
+
+      function renderPicker() {
+        if (allPhotos.length === 0) {
+          picker.innerHTML = '<div class="col-span-full text-center py-8 text-white/50">Aucune photo disponible. Uploadez des photos depuis l\'admin.</div>';
+          return;
+        }
+        picker.innerHTML = allPhotos.map(p => {
+          const isSel = selectedPhotos.includes(p.filename);
+          const isCover = coverFilename === p.filename;
+          const orderIdx = selectedPhotos.indexOf(p.filename);
+          const thumb = `/photos/resize?file=${encodeURIComponent(p.filename)}&w=240`;
+          return `
+            <div class="photo-thumb${isSel ? ' selected' : ''}${isCover ? ' is-cover' : ''}" data-file="${p.filename}">
+              <img src="${thumb}" alt="" loading="lazy" />
+              ${isSel ? `<span class="badge">${orderIdx + 1}</span>` : ''}
+              <span class="cover-star" title="Définir comme couverture">★</span>
+            </div>`;
+        }).join('');
+
+        picker.querySelectorAll('.photo-thumb').forEach(el => {
+          const file = el.dataset.file;
+          el.addEventListener('click', (e) => {
+            if (e.target.classList.contains('cover-star')) {
+              e.stopPropagation();
+              if (!selectedPhotos.includes(file)) selectedPhotos.push(file);
+              coverFilename = file;
+              renderPicker();
+              return;
+            }
+            const idx = selectedPhotos.indexOf(file);
+            if (idx === -1) {
+              selectedPhotos.push(file);
+              if (!coverFilename) coverFilename = file;
+            } else {
+              selectedPhotos.splice(idx, 1);
+              if (coverFilename === file) coverFilename = selectedPhotos[0] || null;
+            }
+            renderPicker();
+          });
+        });
+
+        selectedCountEl.textContent = `${selectedPhotos.length} sélectionnée(s)`;
+      }
+
+      async function loadGalleries() {
+        try {
+          const r = await fetch('/admin/api/galleries');
+          if (!r.ok) throw new Error('fetch');
+          const d = await r.json();
+          renderGalleries(d.galleries || []);
+        } catch (e) {
+          listEl.innerHTML = '<div class="text-center py-8 text-red-400">Erreur de chargement</div>';
+        }
+      }
+
+      function renderGalleries(galleries) {
+        if (galleries.length === 0) {
+          listEl.innerHTML = '<div class="text-center py-8 text-white/60">Aucune galerie pour le moment</div>';
+          return;
+        }
+        listEl.innerHTML = galleries.map(g => {
+          const cover = g.cover
+            ? `<img src="/photos/resize?file=${encodeURIComponent(g.cover)}&w=240" alt="" />`
+            : '<div class="w-[120px] h-[90px] bg-white/10 rounded-lg flex items-center justify-center text-white/40">—</div>';
+          const meta = [g.artist, g.venue, g.date].filter(Boolean).join(' · ');
+          return `
+            <div class="gallery-card rounded-lg p-4 flex items-center gap-4" data-id="${g.id}">
+              ${cover}
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <h4 class="font-bold text-white truncate">${escapeHtml(g.title)}</h4>
+                  ${g.published ? '<span class="text-xs px-2 py-0.5 bg-green-600 rounded-full">publiée</span>' : '<span class="text-xs px-2 py-0.5 bg-gray-600 rounded-full">brouillon</span>'}
+                </div>
+                <p class="text-sm text-white/60 truncate">${escapeHtml(meta) || '—'}</p>
+                <p class="text-xs text-white/40 mt-1">${g.photos.length} photo(s) · /galeries/${g.slug}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <a href="/galeries/${encodeURIComponent(g.slug)}" target="_blank" class="px-3 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-sm">👁️</a>
+                <button type="button" class="edit-btn px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm">✏️</button>
+                <button type="button" class="delete-btn px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm">🗑️</button>
+              </div>
+            </div>`;
+        }).join('');
+
+        listEl.querySelectorAll('.gallery-card').forEach(card => {
+          const id = card.dataset.id;
+          card.querySelector('.edit-btn').addEventListener('click', () => startEdit(id));
+          card.querySelector('.delete-btn').addEventListener('click', () => deleteGallery(id));
+        });
+      }
+
+      function escapeHtml(s) {
+        return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      }
+
+      async function startEdit(id) {
+        try {
+          const r = await fetch('/admin/api/galleries/' + id);
+          const d = await r.json();
+          const g = d.gallery;
+          editingId = g.id;
+          idInput.value = g.id;
+          titleInput.value = g.title || '';
+          artistInput.value = g.artist || '';
+          venueInput.value = g.venue || '';
+          dateInput.value = g.date || '';
+          descInput.value = g.description || '';
+          pubInput.checked = g.published !== false;
+          selectedPhotos = Array.isArray(g.photos) ? g.photos.slice() : [];
+          coverFilename = g.cover || selectedPhotos[0] || null;
+          renderPicker();
+          formTitle.textContent = '✏️ Modifier la galerie';
+          submitLabel.textContent = '💾 Enregistrer les modifications';
+          cancelBtn.classList.remove('hidden');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (e) { toast('Erreur de chargement', 'error'); }
+      }
+
+      function resetForm() {
+        editingId = null;
+        form.reset();
+        idInput.value = '';
+        pubInput.checked = true;
+        selectedPhotos = [];
+        coverFilename = null;
+        renderPicker();
+        formTitle.textContent = '✨ Nouvelle galerie';
+        submitLabel.textContent = '🚀 Créer la galerie';
+        cancelBtn.classList.add('hidden');
+      }
+
+      async function deleteGallery(id) {
+        if (!confirm('Supprimer cette galerie ? (les photos ne seront pas supprimées)')) return;
+        try {
+          const r = await fetch('/admin/api/galleries/' + id, { method: 'DELETE' });
+          if (!r.ok) throw new Error('delete');
+          toast('Galerie supprimée');
+          if (editingId === id) resetForm();
+          loadGalleries();
+        } catch (e) { toast('Erreur de suppression', 'error'); }
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (selectedPhotos.length === 0) {
+          toast('Sélectionnez au moins une photo', 'error');
+          return;
+        }
+        const payload = {
+          title: titleInput.value,
+          artist: artistInput.value,
+          venue: venueInput.value,
+          date: dateInput.value,
+          description: descInput.value,
+          published: pubInput.checked,
+          photos: selectedPhotos,
+          cover: coverFilename || selectedPhotos[0]
+        };
+        try {
+          const url = editingId ? '/admin/api/galleries/' + editingId : '/admin/api/galleries';
+          const method = editingId ? 'PUT' : 'POST';
+          const r = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!r.ok) {
+            const err = await r.json().catch(() => ({}));
+            throw new Error(err.error || 'Erreur');
+          }
+          toast(editingId ? 'Galerie mise à jour' : 'Galerie créée');
+          resetForm();
+          loadGalleries();
+        } catch (err) { toast(err.message || 'Erreur', 'error'); }
+      });
+
+      cancelBtn.addEventListener('click', resetForm);
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        if (await checkAuth()) {
+          await loadPhotos();
+          await loadGalleries();
+        }
+      });
+    </script>
+  </body>
+</html>

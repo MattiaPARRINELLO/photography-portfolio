@@ -6,6 +6,7 @@ const textUtils = require('../utils/textUtils');
 const campaignService = require('../utils/campaignService');
 const photoService = require('../utils/photoService');
 const linksService = require('../utils/linksService');
+const galleryService = require('../utils/galleryService');
 
 const router = express.Router();
 const paths = serverConfig.getPaths();
@@ -319,6 +320,182 @@ router.get('/portfolio', (req, res) => {
     res.redirect('/');
 });
 
+// =============================================
+// ROUTES PUBLIQUES POUR LES GALERIES PAR ARTISTE
+// =============================================
+
+function escapeAttr(s) {
+    return (s || '').toString().replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function formatGalleryDate(iso) {
+    if (!iso) return '';
+    try {
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return '';
+        return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch (e) { return ''; }
+}
+
+function renderGalleryCard(g) {
+    const cover = g.cover
+        ? `<img class="cover" src="/photos/resize?file=${encodeURIComponent(g.cover)}&amp;w=800" alt="${escapeAttr(g.title)} - photo par Mattia Parrinello" loading="lazy" />`
+        : '<div class="cover" style="background:#111"></div>';
+    const metaParts = [g.venue, formatGalleryDate(g.date)].filter(Boolean);
+    const meta = metaParts.join(' · ');
+    const kicker = g.artist || 'Concert';
+    const count = `${g.photos.length} photo${g.photos.length > 1 ? 's' : ''}`;
+
+    return `
+      <a class="gallery-card" href="/galeries/${encodeURIComponent(g.slug)}" aria-label="Voir la galerie ${escapeAttr(g.title)}">
+        ${cover}
+        <div class="gradient"></div>
+        <span class="count">${count}</span>
+        <div class="content">
+          <span class="kicker">${escapeAttr(kicker)}</span>
+          <h3>${escapeAttr(g.title)}</h3>
+          ${meta ? `<p class="meta">${escapeAttr(meta)}</p>` : ''}
+        </div>
+      </a>`;
+}
+
+router.get('/galeries', (req, res) => {
+    try {
+        const texts = textUtils.loadTexts();
+        const htmlPath = path.join(paths.pages, 'galleries.html');
+        let htmlContent = fs.readFileSync(htmlPath, 'utf-8');
+
+        htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, 'Galeries');
+
+        const schemaJsonLd = textUtils.generateSchemaJsonLd('Galeries', req);
+        htmlContent = htmlContent.replace('</head>', `    ${schemaJsonLd}\n  </head>`);
+
+        const galleries = galleryService.listGalleries().filter(g => g.published !== false);
+        let listHtml;
+        if (galleries.length === 0) {
+            listHtml = `
+      <div class="empty-state">
+        <p class="text-lg">Les premières galeries arrivent bientôt.</p>
+        <p class="mt-4"><a href="/contact" class="underline">Me contacter pour un projet</a></p>
+      </div>`;
+        } else {
+            listHtml = `<div class="galleries-grid">${galleries.map(renderGalleryCard).join('')}</div>`;
+        }
+        htmlContent = htmlContent.replace('<!-- GALLERIES_LIST_PLACEHOLDER -->', listHtml);
+
+        res.send(htmlContent);
+    } catch (error) {
+        console.error('❌ Erreur /galeries:', error);
+        res.status(500).send('Erreur lors du chargement des galeries');
+    }
+});
+router.get('/galeries/', (req, res) => res.redirect('/galeries'));
+
+router.get('/galeries/:slug', (req, res) => {
+    try {
+        const gallery = galleryService.getGalleryBySlug(req.params.slug);
+        if (!gallery || gallery.published === false) {
+            return res.status(404).sendFile(path.join(paths.pages, '404.html'));
+        }
+
+        const htmlPath = path.join(paths.pages, 'gallery.html');
+        let htmlContent = fs.readFileSync(htmlPath, 'utf-8');
+
+        // Meta tags dynamiques spécifiques à la galerie
+        const metaTitle = `${gallery.title} - Mattia Parrinello`;
+        const metaDescParts = [gallery.artist, gallery.venue, formatGalleryDate(gallery.date)].filter(Boolean);
+        const metaDesc = gallery.description
+            || `Galerie photo concert : ${gallery.title}${metaDescParts.length ? ' - ' + metaDescParts.join(' · ') : ''}. Photographié par Mattia Parrinello, photographe de concert à Paris.`;
+
+        htmlContent = htmlContent.replace('{{DYNAMIC_TITLE}}', escapeAttr(metaTitle));
+        htmlContent = htmlContent.replace('{{DYNAMIC_DESCRIPTION}}', escapeAttr(metaDesc));
+
+        // Canonical + og tags manuels (textUtils.injectMetaTags s'appuie sur texts.json par page)
+        const canonical = `https://www.photo.mprnl.fr/galeries/${encodeURIComponent(gallery.slug)}`;
+        const ogImage = gallery.cover
+            ? `https://www.photo.mprnl.fr/photos/resize?file=${encodeURIComponent(gallery.cover)}&w=1200`
+            : 'https://www.photo.mprnl.fr/dist/assets/Logo_MP.svg';
+
+        const extraHead = `
+    <link rel="canonical" href="${canonical}" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="${escapeAttr(metaTitle)}" />
+    <meta property="og:description" content="${escapeAttr(metaDesc)}" />
+    <meta property="og:url" content="${canonical}" />
+    <meta property="og:image" content="${ogImage}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapeAttr(metaTitle)}" />
+    <meta name="twitter:description" content="${escapeAttr(metaDesc)}" />
+    <meta name="twitter:image" content="${ogImage}" />`;
+
+        // Schema.org ImageGallery
+        const schema = {
+            '@context': 'https://schema.org',
+            '@type': 'ImageGallery',
+            name: gallery.title,
+            description: metaDesc,
+            url: canonical,
+            ...(gallery.date ? { datePublished: gallery.date } : {}),
+            ...(gallery.venue ? { contentLocation: { '@type': 'Place', name: gallery.venue } } : {}),
+            author: {
+                '@type': 'Person',
+                name: 'Mattia Parrinello',
+                url: 'https://www.photo.mprnl.fr'
+            },
+            image: (gallery.photos || []).map(f => ({
+                '@type': 'ImageObject',
+                contentUrl: `https://www.photo.mprnl.fr/photos/resize?file=${encodeURIComponent(f)}&w=1600`,
+                thumbnailUrl: `https://www.photo.mprnl.fr/photos/resize?file=${encodeURIComponent(f)}&w=640`,
+                creator: { '@type': 'Person', name: 'Mattia Parrinello' }
+            }))
+        };
+        const schemaScript = `<script type="application/ld+json">${JSON.stringify(schema)}</script>`;
+
+        htmlContent = htmlContent.replace('</head>', `${extraHead}\n    ${schemaScript}\n  </head>`);
+
+        // Hero
+        const heroCoverUrl = gallery.cover
+            ? `/photos/resize?file=${encodeURIComponent(gallery.cover)}&w=1600`
+            : '';
+        const metaLine = [gallery.artist, gallery.venue, formatGalleryDate(gallery.date)].filter(Boolean).join(' · ');
+        const heroHtml = `
+      <section class="gallery-hero">
+        ${heroCoverUrl ? `<img class="cover" src="${heroCoverUrl}" alt="${escapeAttr(gallery.title)}" />` : ''}
+        <div class="overlay"></div>
+        <div class="hero-content">
+          <h1>${escapeAttr(gallery.title)}</h1>
+          ${metaLine ? `<p class="meta">${escapeAttr(metaLine)}</p>` : ''}
+        </div>
+      </section>`;
+        htmlContent = htmlContent.replace('<!-- GALLERY_HERO_PLACEHOLDER -->', heroHtml);
+
+        const descHtml = gallery.description
+            ? `<section class="max-w-3xl mb-10"><p class="text-base md:text-lg text-gray-700 dark:text-gray-300 leading-relaxed">${escapeAttr(gallery.description)}</p></section>`
+            : '';
+        htmlContent = htmlContent.replace('<!-- GALLERY_DESCRIPTION_PLACEHOLDER -->', descHtml);
+
+        // Photos (masonry via CSS columns + Fancybox)
+        const photosHtml = (gallery.photos || []).map((filename, i) => {
+            const file = encodeURIComponent(filename);
+            const full = `/photos/resize?file=${file}&w=1600`;
+            const thumb = `/photos/resize?file=${file}&w=640`;
+            const srcset = `/photos/resize?file=${file}&w=320 320w, /photos/resize?file=${file}&w=480 480w, /photos/resize?file=${file}&w=640 640w, /photos/resize?file=${file}&w=960 960w`;
+            const loading = i < 6 ? 'eager' : 'lazy';
+            const alt = `${gallery.title} - photo ${i + 1} par Mattia Parrinello`;
+            return `<a href="${full}" data-fancybox="gallery"><img src="${thumb}" srcset="${srcset}" sizes="(max-width:768px) 50vw, (max-width:1440px) 33vw, 25vw" alt="${escapeAttr(alt)}" loading="${loading}" /></a>`;
+        }).join('');
+        const masonryHtml = photosHtml
+            ? `<section class="masonry">${photosHtml}</section>`
+            : '<p class="text-center text-gray-500 py-8">Aucune photo dans cette galerie.</p>';
+        htmlContent = htmlContent.replace('<!-- GALLERY_PHOTOS_PLACEHOLDER -->', masonryHtml);
+
+        res.send(htmlContent);
+    } catch (error) {
+        console.error('❌ Erreur /galeries/:slug :', error);
+        res.status(500).send('Erreur lors du chargement de la galerie');
+    }
+});
+
 // Dynamic sitemap.xml generation optimized for portfolio (static pages only)
 router.get('/sitemap.xml', async (req, res) => {
     try {
@@ -366,12 +543,34 @@ router.get('/sitemap.xml', async (req, res) => {
                 priority: '0.6'
             },
             {
+                loc: '/galeries',
+                lastmod: new Date().toISOString().slice(0, 10),
+                changefreq: 'weekly',
+                priority: '0.9'
+            },
+            {
                 loc: '/mentions-legales',
                 lastmod: '2025-12-31',
                 changefreq: 'yearly',
                 priority: '0.3'
             }
         ];
+
+        // Add published galleries
+        try {
+            const galleries = galleryService.listGalleries().filter(g => g.published !== false);
+            galleries.forEach(g => {
+                const lastmod = (g.updatedAt || g.createdAt || new Date().toISOString()).slice(0, 10);
+                staticPages.push({
+                    loc: `/galeries/${g.slug}`,
+                    lastmod,
+                    changefreq: 'monthly',
+                    priority: '0.8'
+                });
+            });
+        } catch (e) {
+            console.warn('Could not add galleries to sitemap:', e.message);
+        }
 
         // Build XML
         let urls = '';

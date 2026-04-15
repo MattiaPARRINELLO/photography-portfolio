@@ -10,6 +10,7 @@ const {
     clearAdminAuthCookie
 } = require('../middleware/auth');
 const linksService = require('../utils/linksService');
+const galleryService = require('../utils/galleryService');
 
 const router = express.Router();
 const paths = serverConfig.getPaths();
@@ -303,5 +304,62 @@ function handleEventBanner(req, res) {
 }
 
 router.all(['/api/links/event', '/api/links/event/'], requireAdminSession, handleEventBanner);
+
+// =============================================
+// ROUTES POUR LA GESTION DES GALERIES PAR ARTISTE
+// =============================================
+
+// Page admin galeries
+router.get('/galleries', (req, res) => {
+    res.sendFile(path.join(paths.adminPages, 'galleries.html'));
+});
+router.get('/galleries/', (req, res) => res.redirect('/admin/galleries'));
+
+// API: liste complète des galeries (admin)
+router.get('/api/galleries', requireAdminSession, (req, res) => {
+    try {
+        res.json({ galleries: galleryService.listGalleries() });
+    } catch (error) {
+        console.error('Erreur lecture galeries:', error);
+        res.status(500).json({ error: 'Erreur lors de la lecture des galeries' });
+    }
+});
+
+// API: récupérer une galerie par id
+router.get('/api/galleries/:id', requireAdminSession, (req, res) => {
+    const gallery = galleryService.getGalleryById(req.params.id);
+    if (!gallery) return res.status(404).json({ error: 'Galerie non trouvée' });
+    res.json({ gallery });
+});
+
+// API: créer une galerie
+router.post('/api/galleries', requireAdminSession, (req, res) => {
+    try {
+        const gallery = galleryService.createGallery(req.body || {});
+        res.json({ success: true, gallery });
+    } catch (error) {
+        console.error('Erreur création galerie:', error);
+        res.status(400).json({ error: error.message || 'Erreur lors de la création' });
+    }
+});
+
+// API: mettre à jour une galerie
+router.put('/api/galleries/:id', requireAdminSession, (req, res) => {
+    try {
+        const gallery = galleryService.updateGallery(req.params.id, req.body || {});
+        if (!gallery) return res.status(404).json({ error: 'Galerie non trouvée' });
+        res.json({ success: true, gallery });
+    } catch (error) {
+        console.error('Erreur maj galerie:', error);
+        res.status(400).json({ error: error.message || 'Erreur lors de la mise à jour' });
+    }
+});
+
+// API: supprimer une galerie
+router.delete('/api/galleries/:id', requireAdminSession, (req, res) => {
+    const ok = galleryService.deleteGallery(req.params.id);
+    if (!ok) return res.status(404).json({ error: 'Galerie non trouvée' });
+    res.json({ success: true });
+});
 
 module.exports = router;

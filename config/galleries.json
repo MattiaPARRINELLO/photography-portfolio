@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-04-15T12:19:07.115Z"
+  },
+  "galleries": [
+    {
+      "id": "g_0355qad0ovsb",
+      "slug": "jok-air-a-beauvais",
+      "title": "Jok'air à Beauvais",
+      "artist": "Jok'air",
+      "venue": "Elispace",
+      "date": "2025-10-10",
+      "description": "Merci à PlayTwo pour l'accreditation",
+      "cover": "1762436917747__MG_2370-crop.jpg",
+      "photos": [
+        "1762436917747__MG_2370-crop.jpg",
+        "1761576618282__MG_2226.jpg",
+        "1761576619966__MG_2039.jpg",
+        "1761576621091__MG_1606.jpg",
+        "1761576616721__MG_2439.jpg",
+        "1761617719064__MG_2332-Modifier.jpg",
+        "1761576613746__MG_2608.jpg",
+        "1761576615032__MG_2701.jpg",
+        "1761617718447__MG_2226.jpg",
+        "1761576579166__MG_3024.jpg",
+        "1761617717216__MG_2500.jpg",
+        "1761576622519__MG_1979.jpg",
+        "1761617719682__MG_1849.jpg"
+      ],
+      "published": true,
+      "createdAt": "2026-04-15T12:19:07.115Z",
+      "updatedAt": "2026-04-15T12:19:07.115Z"
+    }
+  ]
+}
