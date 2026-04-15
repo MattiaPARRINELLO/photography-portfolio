@@ -11,9 +11,87 @@ const {
 } = require('../middleware/auth');
 const linksService = require('../utils/linksService');
 const galleryService = require('../utils/galleryService');
+const multer = require('multer');
 
 const router = express.Router();
 const paths = serverConfig.getPaths();
+
+// Multer setup for admin uploads (store directly in photos directory)
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, paths.photos),
+    filename: (req, file, cb) => {
+        const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '-');
+        const name = `${Date.now()}-${Math.random().toString(36).slice(2,8)}-${safeName}`;
+        cb(null, name);
+    }
+});
+const upload = multer({ storage });
+
+function firstNonEmpty(...values) {
+    for (const v of values) {
+        if (typeof v === 'string' && v.trim() !== '') return v.trim();
+        if (typeof v === 'number') return String(v);
+    }
+    return '';
+}
+
+function parseBoolean(value, fallback = false) {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value.toLowerCase() === 'true';
+    return fallback;
+}
+
+function parsePhotosField(value) {
+    if (!value) return [];
+    if (Array.isArray(value)) return value.filter(Boolean);
+    if (typeof value === 'string') {
+        try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) return parsed.filter(Boolean);
+        } catch (_err) {
+            // fallback to comma-separated values
+            return value.split(',').map(s => s.trim()).filter(Boolean);
+        }
+    }
+    return [];
+}
+
+function buildGalleryInputFromRequest(req) {
+    const body = req.body || {};
+
+    // Support optional JSON payload wrapper from custom clients
+    let payload = {};
+    if (typeof body.payload === 'string') {
+        try {
+            payload = JSON.parse(body.payload) || {};
+        } catch (_err) {
+            payload = {};
+        }
+    }
+
+    const title = firstNonEmpty(body.title, body['g-title'], payload.title, payload['g-title'], body.name, payload.name);
+    const artist = firstNonEmpty(body.artist, payload.artist);
+    const venue = firstNonEmpty(body.venue, payload.venue);
+    const date = firstNonEmpty(body.date, payload.date);
+    const description = firstNonEmpty(body.description, payload.description);
+    const cover = firstNonEmpty(body.cover, payload.cover);
+
+    const photosFromBody = parsePhotosField(body.photos || payload.photos);
+    const photosFromUpload = (req.files || []).map(f => f.filename).filter(Boolean);
+    const photos = [...photosFromBody, ...photosFromUpload];
+
+    return {
+        title,
+        artist,
+        venue,
+        date,
+        description,
+        cover,
+        photos,
+        published: parseBoolean(body.published ?? payload.published, true),
+        excludeFromMain: parseBoolean(body.excludeFromMain ?? payload.excludeFromMain, false)
+    };
+}
 
 // Route principale d'administration (gère / et /)
 router.get(['/', '/'], (req, res) => {
@@ -333,24 +411,30 @@ router.get('/api/galleries/:id', requireAdminSession, (req, res) => {
 });
 
 // API: créer une galerie
-router.post('/api/galleries', requireAdminSession, (req, res) => {
+// Create gallery: support multipart form with uploadedPhotos files and photos field (existing filenames)
+router.post('/api/galleries', requireAdminSession, upload.array('uploadedPhotos', 50), (req, res) => {
     try {
-        const gallery = galleryService.createGallery(req.body || {});
+        const input = buildGalleryInputFromRequest(req);
+        const gallery = galleryService.createGallery(input);
         res.json({ success: true, gallery });
     } catch (error) {
         console.error('Erreur création galerie:', error);
+        console.warn('Payload gallery create keys:', Object.keys(req.body || {}));
         res.status(400).json({ error: error.message || 'Erreur lors de la création' });
     }
 });
 
 // API: mettre à jour une galerie
-router.put('/api/galleries/:id', requireAdminSession, (req, res) => {
+// Update gallery: support multipart form with uploadedPhotos files and photos field
+router.put('/api/galleries/:id', requireAdminSession, upload.array('uploadedPhotos', 50), (req, res) => {
     try {
-        const gallery = galleryService.updateGallery(req.params.id, req.body || {});
+        const input = buildGalleryInputFromRequest(req);
+        const gallery = galleryService.updateGallery(req.params.id, input);
         if (!gallery) return res.status(404).json({ error: 'Galerie non trouvée' });
         res.json({ success: true, gallery });
     } catch (error) {
         console.error('Erreur maj galerie:', error);
+        console.warn('Payload gallery update keys:', Object.keys(req.body || {}));
         res.status(400).json({ error: error.message || 'Erreur lors de la mise à jour' });
     }
 });

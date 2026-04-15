@@ -86,6 +86,8 @@
         align-items: center;
         justify-content: center;
         border-radius: 999px;
+        z-index: 2;
+        cursor: pointer;
       }
       .photo-thumb.selected .cover-star { display: flex; }
       .photo-thumb.is-cover .cover-star { color: #fbbf24; background: rgba(0, 0, 0, 0.9); }
@@ -121,6 +123,26 @@
       }
       .toast.show { transform: translateY(0); opacity: 1; }
       .toast.error { background: rgba(239, 68, 68, 0.95); }
+
+      .upload-progress {
+        display: none;
+        margin-top: 0.5rem;
+      }
+      .upload-progress.active { display: block; }
+      .upload-progress-track {
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .upload-progress-bar {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #2563eb 0%, #22d3ee 100%);
+        transition: width 0.15s ease;
+      }
     </style>
   </head>
   <body>
@@ -164,6 +186,7 @@
               <input
                 type="text"
                 id="g-title"
+                name="title"
                 required
                 class="form-input w-full rounded-lg px-3 py-2"
                 placeholder="Jok'air à La Cigale"
@@ -174,6 +197,7 @@
               <input
                 type="text"
                 id="g-artist"
+                name="artist"
                 class="form-input w-full rounded-lg px-3 py-2"
                 placeholder="Jok'air"
               />
@@ -183,6 +207,7 @@
               <input
                 type="text"
                 id="g-venue"
+                name="venue"
                 class="form-input w-full rounded-lg px-3 py-2"
                 placeholder="La Cigale, Paris"
               />
@@ -192,6 +217,7 @@
               <input
                 type="date"
                 id="g-date"
+                name="date"
                 class="form-input w-full rounded-lg px-3 py-2"
               />
             </div>
@@ -201,6 +227,7 @@
             <label class="block text-sm font-medium mb-2">Description</label>
             <textarea
               id="g-description"
+              name="description"
               class="form-input w-full rounded-lg px-3 py-2 h-20 resize-none"
               placeholder="Quelques mots sur le concert, l'ambiance, le contexte..."
             ></textarea>
@@ -216,6 +243,19 @@
                 Clic = sélectionner · Clic sur ⭐ = couverture
               </div>
             </div>
+            <div class="mb-2">
+              <input id="upload-input" name="uploadedPhotos" type="file" multiple accept="image/*" class="form-input p-2 rounded-md" />
+              <div id="upload-list" class="text-xs text-white/60 mt-2"></div>
+              <div id="upload-progress" class="upload-progress" aria-live="polite">
+                <div class="flex items-center justify-between text-xs text-white/70 mb-1">
+                  <span id="upload-progress-label">Upload des photos...</span>
+                  <span id="upload-progress-percent">0%</span>
+                </div>
+                <div class="upload-progress-track">
+                  <div id="upload-progress-bar" class="upload-progress-bar"></div>
+                </div>
+              </div>
+            </div>
             <div id="photo-picker" class="photo-picker">
               <div class="col-span-full text-center py-8 text-white/50">Chargement des photos...</div>
             </div>
@@ -223,7 +263,7 @@
 
           <div class="flex items-center justify-between pt-2">
             <label class="flex items-center gap-2 text-sm">
-              <input type="checkbox" id="g-published" checked class="w-4 h-4" />
+              <input type="checkbox" id="g-published" name="published" checked class="w-4 h-4" />
               Publiée (visible sur le site)
             </label>
             <button
@@ -265,9 +305,16 @@
       const formTitle = document.getElementById('form-title');
       const cancelBtn = document.getElementById('cancel-edit-btn');
       const picker = document.getElementById('photo-picker');
+      const uploadInput = document.getElementById('upload-input');
+      const uploadList = document.getElementById('upload-list');
+      const uploadProgress = document.getElementById('upload-progress');
+      const uploadProgressBar = document.getElementById('upload-progress-bar');
+      const uploadProgressPercent = document.getElementById('upload-progress-percent');
+      const uploadProgressLabel = document.getElementById('upload-progress-label');
       const listEl = document.getElementById('galleries-list');
       const selectedCountEl = document.getElementById('selected-count');
       const toastEl = document.getElementById('toast');
+      const submitBtn = form.querySelector('button[type="submit"]');
 
       let allPhotos = [];
       let selectedPhotos = [];
@@ -278,6 +325,74 @@
         toastEl.textContent = msg;
         toastEl.className = 'toast show' + (type === 'error' ? ' error' : '');
         setTimeout(() => { toastEl.className = 'toast' + (type === 'error' ? ' error' : ''); }, 2500);
+      }
+
+      function normalizeCoverSelection() {
+        if (selectedPhotos.length === 0) {
+          coverFilename = null;
+          return;
+        }
+        if (!coverFilename || !selectedPhotos.includes(coverFilename)) {
+          coverFilename = selectedPhotos[0];
+        }
+      }
+
+      function setUploadProgress(percent, label = null) {
+        const safe = Math.max(0, Math.min(100, Number(percent) || 0));
+        uploadProgress.classList.add('active');
+        uploadProgressBar.style.width = `${safe}%`;
+        uploadProgressPercent.textContent = `${safe}%`;
+        if (label) uploadProgressLabel.textContent = label;
+      }
+
+      function resetUploadProgress() {
+        uploadProgress.classList.remove('active');
+        uploadProgressBar.style.width = '0%';
+        uploadProgressPercent.textContent = '0%';
+        uploadProgressLabel.textContent = 'Upload des photos...';
+      }
+
+      function setSubmittingState(isSubmitting) {
+        submitBtn.disabled = isSubmitting;
+        submitBtn.classList.toggle('opacity-60', isSubmitting);
+        submitBtn.classList.toggle('cursor-not-allowed', isSubmitting);
+        cancelBtn.disabled = isSubmitting;
+      }
+
+      function sendMultipartWithProgress(url, method, formData, onProgress) {
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open(method, url, true);
+          xhr.responseType = 'json';
+
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable && typeof onProgress === 'function') {
+              const percent = Math.round((event.loaded / event.total) * 100);
+              onProgress(percent);
+            }
+          };
+
+          xhr.onload = () => {
+            let data = xhr.response;
+            if (!data) {
+              try {
+                data = JSON.parse(xhr.responseText || '{}');
+              } catch (_e) {
+                data = {};
+              }
+            }
+
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(data);
+              return;
+            }
+
+            reject(new Error((data && data.error) || 'Erreur lors de l\'upload'));
+          };
+
+          xhr.onerror = () => reject(new Error('Erreur réseau pendant l\'upload'));
+          xhr.send(formData);
+        });
       }
 
       async function checkAuth() {
@@ -299,7 +414,18 @@
         }
       }
 
+      uploadInput?.addEventListener('change', () => {
+        const files = Array.from(uploadInput.files || []);
+        if (files.length === 0) {
+          uploadList.textContent = '';
+          return;
+        }
+        uploadList.textContent = files.map(f => f.name).join(', ');
+      });
+
       function renderPicker() {
+        normalizeCoverSelection();
+
         if (allPhotos.length === 0) {
           picker.innerHTML = '<div class="col-span-full text-center py-8 text-white/50">Aucune photo disponible. Uploadez des photos depuis l\'admin.</div>';
           return;
@@ -320,7 +446,8 @@
         picker.querySelectorAll('.photo-thumb').forEach(el => {
           const file = el.dataset.file;
           el.addEventListener('click', (e) => {
-            if (e.target.classList.contains('cover-star')) {
+            const coverTrigger = e.target.closest('.cover-star');
+            if (coverTrigger) {
               e.stopPropagation();
               if (!selectedPhotos.includes(file)) selectedPhotos.push(file);
               coverFilename = file;
@@ -330,10 +457,10 @@
             const idx = selectedPhotos.indexOf(file);
             if (idx === -1) {
               selectedPhotos.push(file);
-              if (!coverFilename) coverFilename = file;
+              normalizeCoverSelection();
             } else {
               selectedPhotos.splice(idx, 1);
-              if (coverFilename === file) coverFilename = selectedPhotos[0] || null;
+              normalizeCoverSelection();
             }
             renderPicker();
           });
@@ -408,6 +535,7 @@
           pubInput.checked = g.published !== false;
           selectedPhotos = Array.isArray(g.photos) ? g.photos.slice() : [];
           coverFilename = g.cover || selectedPhotos[0] || null;
+          normalizeCoverSelection();
           renderPicker();
           formTitle.textContent = '✏️ Modifier la galerie';
           submitLabel.textContent = '💾 Enregistrer les modifications';
@@ -423,6 +551,9 @@
         pubInput.checked = true;
         selectedPhotos = [];
         coverFilename = null;
+        if (uploadInput) uploadInput.value = '';
+        if (uploadList) uploadList.textContent = '';
+        resetUploadProgress();
         renderPicker();
         formTitle.textContent = '✨ Nouvelle galerie';
         submitLabel.textContent = '🚀 Créer la galerie';
@@ -442,36 +573,55 @@
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (selectedPhotos.length === 0) {
-          toast('Sélectionnez au moins une photo', 'error');
+        // Ensure at least one source of photos: selected or uploaded
+        const hasSelected = selectedPhotos.length > 0;
+        const hasUploads = (uploadInput && uploadInput.files && uploadInput.files.length > 0);
+        if (!hasSelected && !hasUploads) {
+          toast('Sélectionnez au moins une photo ou uploadez-en', 'error');
           return;
         }
-        const payload = {
-          title: titleInput.value,
-          artist: artistInput.value,
-          venue: venueInput.value,
-          date: dateInput.value,
-          description: descInput.value,
-          published: pubInput.checked,
-          photos: selectedPhotos,
-          cover: coverFilename || selectedPhotos[0]
-        };
+
+        const formData = new FormData(form);
+        // Normalize critical fields and always send selected photos ordering
+        formData.set('title', (titleInput.value || '').trim());
+        formData.set('artist', artistInput.value || '');
+        formData.set('venue', venueInput.value || '');
+        formData.set('date', dateInput.value || '');
+        formData.set('description', descInput.value || '');
+        formData.set('published', pubInput.checked ? 'true' : 'false');
+        formData.set('photos', JSON.stringify(selectedPhotos));
+        normalizeCoverSelection();
+        formData.set('cover', coverFilename || '');
+
         try {
           const url = editingId ? '/admin/api/galleries/' + editingId : '/admin/api/galleries';
           const method = editingId ? 'PUT' : 'POST';
-          const r = await fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          if (!r.ok) {
-            const err = await r.json().catch(() => ({}));
-            throw new Error(err.error || 'Erreur');
+
+          setSubmittingState(true);
+          if (hasUploads) {
+            setUploadProgress(0, 'Upload des photos...');
+          } else {
+            setUploadProgress(10, 'Enregistrement...');
           }
+
+          await sendMultipartWithProgress(url, method, formData, (percent) => {
+            if (hasUploads) {
+              setUploadProgress(percent, 'Upload des photos...');
+            }
+          });
+
+          setUploadProgress(100, 'Finalisation...');
           toast(editingId ? 'Galerie mise à jour' : 'Galerie créée');
+          // refresh photos list to include newly uploaded images
+          await loadPhotos();
           resetForm();
           loadGalleries();
-        } catch (err) { toast(err.message || 'Erreur', 'error'); }
+        } catch (err) {
+          toast(err.message || 'Erreur', 'error');
+        } finally {
+          setSubmittingState(false);
+          setTimeout(() => resetUploadProgress(), 800);
+        }
       });
 
       cancelBtn.addEventListener('click', resetForm);

@@ -80,6 +80,8 @@ function createGallery(input) {
         cover: input.cover || (Array.isArray(input.photos) && input.photos[0]) || null,
         photos: Array.isArray(input.photos) ? input.photos.filter(Boolean) : [],
         published: input.published !== false,
+        // When true, photos in this gallery should not appear in the site's main photo listing
+        excludeFromMain: !!input.excludeFromMain,
         createdAt: now,
         updatedAt: now
     };
@@ -105,6 +107,7 @@ function updateGallery(id, updates) {
     if (updates.cover !== undefined) merged.cover = updates.cover;
     if (Array.isArray(updates.photos)) merged.photos = updates.photos.filter(Boolean);
     if (updates.published !== undefined) merged.published = !!updates.published;
+    if (updates.excludeFromMain !== undefined) merged.excludeFromMain = !!updates.excludeFromMain;
     if (updates.slug !== undefined && updates.slug.trim()) {
         merged.slug = generateUniqueSlug(updates.slug, data.galleries, id);
     }
