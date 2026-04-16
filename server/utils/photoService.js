@@ -64,26 +64,16 @@ async function getPhotosList() {
             try {
                 const galleries = galleryService.loadGalleries().galleries || [];
                 const excluded = new Set();
-                const galleryUploadNamePattern = /^\d{13}-[a-z0-9]{6}-/i;
+                // Exclude all photos that belong to any gallery from the main listing
                 galleries.forEach(g => {
-                    if (g.excludeFromMain && Array.isArray(g.photos)) {
+                    if (Array.isArray(g.photos)) {
                         g.photos.forEach(p => { if (p) excluded.add(p); });
                     }
-                    if (Array.isArray(g.galleryOnlyPhotos)) {
-                        g.galleryOnlyPhotos.forEach(p => { if (p) excluded.add(p); });
-                    }
-                    if (Array.isArray(g.photos)) {
-                        g.photos.forEach(p => {
-                            if (p && galleryUploadNamePattern.test(p)) excluded.add(p);
-                        });
-                    }
                 });
-                // filter images array to remove excluded filenames
                 for (let i = images.length - 1; i >= 0; i--) {
                     if (excluded.has(images[i])) images.splice(i, 1);
                 }
             } catch (e) {
-                // if gallery loading fails, fall back to showing all images
                 console.warn('Could not load galleries to compute excluded photos:', e && e.message);
             }
             const withDates = await Promise.all(images.map(async (f) => {

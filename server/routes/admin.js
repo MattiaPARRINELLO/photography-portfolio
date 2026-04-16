@@ -136,6 +136,9 @@ function buildGalleryInputFromRequest(req) {
     const photosFromUpload = uniqueStrings((req.files || []).map(f => f.filename));
     const photos = uniqueStrings([...photosFromBody, ...photosFromUpload]);
 
+    // galleryOnlyPhotos can be sent explicitly (e.g. when photos are pre-uploaded one-by-one)
+    const galleryOnlyFromBody = parsePhotosField(body.galleryOnlyPhotos || payload.galleryOnlyPhotos);
+
     return {
         title,
         artist,
@@ -145,6 +148,7 @@ function buildGalleryInputFromRequest(req) {
         cover,
         photos,
         uploadedPhotos: photosFromUpload,
+        galleryOnlyPhotos: uniqueStrings([...galleryOnlyFromBody, ...photosFromUpload]),
         ...(artistLinks !== undefined ? { artistLinks } : {}),
         published: parseBoolean(body.published ?? payload.published, true),
         excludeFromMain: parseBoolean(body.excludeFromMain ?? payload.excludeFromMain, false)

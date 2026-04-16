@@ -792,6 +792,7 @@
           setSubmittingState(true);
 
           // Upload new photos one by one first
+          const newlyUploadedFilenames = [];
           if (hasUploads) {
             const filesToUpload = Array.from(uploadInput.files);
             const total = filesToUpload.length;
@@ -806,6 +807,7 @@
                 const result = await uploadSinglePhoto(file);
                 if (result.files && result.files.length > 0) {
                   const newFilename = result.files[0].filename;
+                  newlyUploadedFilenames.push(newFilename);
                   if (!selectedPhotos.includes(newFilename)) {
                     selectedPhotos.push(newFilename);
                   }
@@ -825,6 +827,10 @@
             formData.set("cover", coverFilename || "");
             // Remove file inputs so gallery save doesn't re-upload
             formData.delete("uploadedPhotos");
+          }
+          // Tell the server which photos were just uploaded so it can track them as gallery-only
+          if (newlyUploadedFilenames.length > 0) {
+            formData.set("galleryOnlyPhotos", JSON.stringify(newlyUploadedFilenames));
           }
 
           setUploadProgress(85, "Enregistrement de la galerie...");
