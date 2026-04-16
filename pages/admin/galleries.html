@@ -4,378 +4,485 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>Gestion des Galeries - Admin</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Signika:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Galeries - Administration</title>
+    <link rel="icon" type="image/svg+xml" href="../../dist/assets/Logo_MP.svg" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
     <style>
-      * {
-        font-family: "Signika", sans-serif;
-      }
-      body {
-        background: linear-gradient(
-          135deg,
-          #000 0%,
-          #1a1a2e 25%,
-          #16213e 50%,
-          #0f3460 75%,
-          #000 100%
-        );
-        min-height: 100vh;
-        color: white;
-      }
-      .glass {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      }
-      .form-input {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-      }
-      .form-input:focus {
-        border-color: #3b82f6;
-        background: rgba(255, 255, 255, 0.15);
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
-      }
-      .form-input::placeholder {
-        color: rgba(255, 255, 255, 0.5);
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #0f0f0f;
+        --surface: #1a1a1a;
+        --surface-hover: #222;
+        --border: #2a2a2a;
+        --text: #e5e5e5;
+        --text-muted: #888;
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --danger: #dc2626;
+        --radius: 8px;
       }
 
+      body {
+        font-family: 'Inter', -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+
+      .hidden { display: none !important; }
+
+      .header {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: rgba(15,15,15,0.92);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .header-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 1.25rem;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .header-title { font-size: 0.95rem; font-weight: 600; }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 0.9rem;
+        border: none;
+        border-radius: var(--radius);
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s;
+        text-decoration: none;
+        color: #fff;
+      }
+
+      .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+      .btn-primary { background: var(--accent); }
+      .btn-primary:hover { background: var(--accent-hover); }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+      }
+      .btn-ghost:hover { background: var(--surface-hover); color: var(--text); }
+
+      .btn-danger-solid { background: var(--danger); }
+      .btn-danger-solid:hover { background: #b91c1c; }
+
+      .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+      .main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1.5rem 1.25rem 3rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.25rem;
+      }
+
+      .card-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 1rem; }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+      }
+
+      .card-header .card-title { margin-bottom: 0; }
+
+      label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        margin-bottom: 0.35rem;
+      }
+
+      input[type="text"],
+      input[type="url"],
+      input[type="date"],
+      input[type="file"],
+      select,
+      textarea {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text);
+        font-size: 0.85rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      input:focus, textarea:focus { border-color: var(--accent); }
+      ::placeholder { color: #555; }
+      textarea { resize: vertical; min-height: 60px; }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .form-full { margin-bottom: 0.75rem; }
+
+      .links-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+      }
+
+      /* Photo picker */
       .photo-picker {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 0.75rem;
-        max-height: 460px;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.5rem;
+        max-height: 400px;
         overflow-y: auto;
-        padding: 0.75rem;
-        background: rgba(0, 0, 0, 0.3);
-        border-radius: 0.75rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.5rem;
+        background: var(--bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
       }
+
       .photo-thumb {
         position: relative;
         aspect-ratio: 1 / 1;
-        border-radius: 0.5rem;
+        border-radius: 6px;
         overflow: hidden;
         cursor: pointer;
         border: 2px solid transparent;
-        transition: all 0.2s ease;
+        transition: border-color 0.15s;
       }
+
       .photo-thumb img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
       }
+
       .photo-thumb.selected {
-        border-color: #3b82f6;
-        transform: scale(0.96);
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+        border-color: var(--accent);
       }
+
       .photo-thumb .badge {
         position: absolute;
-        top: 4px;
-        left: 4px;
-        background: #3b82f6;
+        top: 3px;
+        left: 3px;
+        background: var(--accent);
         color: white;
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 700;
-        padding: 2px 6px;
-        border-radius: 999px;
+        padding: 1px 5px;
+        border-radius: 3px;
       }
+
       .photo-thumb .cover-star {
         position: absolute;
-        top: 4px;
-        right: 4px;
-        background: rgba(0, 0, 0, 0.7);
+        top: 3px;
+        right: 3px;
+        background: rgba(0,0,0,0.7);
         color: #fbbf24;
-        font-size: 14px;
-        width: 22px;
-        height: 22px;
+        font-size: 12px;
+        width: 20px;
+        height: 20px;
         display: none;
         align-items: center;
         justify-content: center;
-        border-radius: 999px;
+        border-radius: 50%;
         z-index: 2;
         cursor: pointer;
       }
-      .photo-thumb.selected .cover-star {
-        display: flex;
-      }
-      .photo-thumb.is-cover .cover-star {
-        color: #fbbf24;
-        background: rgba(0, 0, 0, 0.9);
+
+      .photo-thumb.selected .cover-star { display: flex; }
+      .photo-thumb.is-cover .cover-star { background: rgba(0,0,0,0.9); }
+
+      .picker-hint {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-bottom: 0.35rem;
       }
 
+      /* Gallery list */
       .gallery-card {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        transition: all 0.2s ease;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: border-color 0.15s;
       }
-      .gallery-card:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(59, 130, 246, 0.3);
-      }
+
+      .gallery-card:hover { border-color: #444; }
+
       .gallery-card img {
-        width: 120px;
-        height: 90px;
+        width: 100px;
+        height: 70px;
         object-fit: cover;
-        border-radius: 0.5rem;
+        border-radius: 6px;
+        flex-shrink: 0;
       }
+
+      .gallery-card-placeholder {
+        width: 100px;
+        height: 70px;
+        border-radius: 6px;
+        background: #222;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        flex-shrink: 0;
+      }
+
+      .gallery-card-info { flex: 1; min-width: 0; }
+
+      .gallery-card-title {
+        font-weight: 600;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 0.15rem;
+      }
+
+      .gallery-badge {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 600;
+        padding: 1px 5px;
+        border-radius: 3px;
+        margin-left: 0.4rem;
+        vertical-align: middle;
+      }
+
+      .gallery-badge.published { background: rgba(34,197,94,0.15); color: #4ade80; }
+      .gallery-badge.draft { background: rgba(255,255,255,0.08); color: var(--text-muted); }
+
+      .gallery-card-meta {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .gallery-card-actions {
+        display: flex;
+        gap: 0.35rem;
+        flex-shrink: 0;
+      }
+
+      .gallery-card-actions .btn { padding: 0.4rem 0.6rem; font-size: 0.8rem; }
+
+      /* Checkbox */
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+      }
+
+      .checkbox-row input[type="checkbox"] { width: 16px; height: 16px; }
+
+      /* Form footer */
+      .form-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 0.75rem;
+      }
+
+      /* Upload progress */
+      .upload-progress { display: none; margin-top: 0.5rem; }
+      .upload-progress.active { display: block; }
+
+      .progress-bar-bg {
+        height: 6px;
+        background: #222;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 3px;
+        transition: width 0.15s;
+        width: 0%;
+      }
+
+      .progress-text {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      /* Toast */
       .toast {
         position: fixed;
-        bottom: 24px;
-        right: 24px;
-        padding: 12px 18px;
-        border-radius: 12px;
-        background: rgba(16, 185, 129, 0.95);
+        bottom: 1.5rem;
+        right: 1.5rem;
+        padding: 0.6rem 1rem;
+        border-radius: var(--radius);
+        background: #16a34a;
         color: white;
-        font-weight: 600;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        transform: translateY(100px);
+        font-weight: 500;
+        font-size: 0.85rem;
+        z-index: 100;
+        transform: translateY(80px);
         opacity: 0;
         transition: all 0.3s ease;
-        z-index: 100;
-      }
-      .toast.show {
-        transform: translateY(0);
-        opacity: 1;
-      }
-      .toast.error {
-        background: rgba(239, 68, 68, 0.95);
       }
 
-      .upload-progress {
-        display: none;
-        margin-top: 0.5rem;
+      .toast.show { transform: translateY(0); opacity: 1; }
+      .toast.error { background: var(--danger); }
+
+      .empty-state {
+        text-align: center;
+        padding: 2rem 0;
+        color: var(--text-muted);
+        font-size: 0.85rem;
       }
-      .upload-progress.active {
-        display: block;
-      }
-      .upload-progress-track {
-        width: 100%;
-        height: 10px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.18);
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
-      .upload-progress-bar {
-        width: 0%;
-        height: 100%;
-        background: linear-gradient(90deg, #2563eb 0%, #22d3ee 100%);
-        transition: width 0.15s ease;
+
+      @media (max-width: 640px) {
+        .form-grid, .links-grid { grid-template-columns: 1fr; }
+        .gallery-card { flex-direction: column; align-items: flex-start; }
+        .gallery-card img, .gallery-card-placeholder { width: 100%; height: 120px; }
       }
     </style>
   </head>
   <body>
-    <header class="glass">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center py-6">
-          <div>
-            <h1 class="text-3xl font-bold text-white">
-              📸 Galeries par artiste
-            </h1>
-            <p class="text-white/60 mt-1">
-              Créez des galeries thématiques et associez-leur vos photos
-            </p>
-          </div>
-          <a
-            href="/admin"
-            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-            >← Retour Admin</a
-          >
-        </div>
+    <header class="header">
+      <div class="header-inner">
+        <span class="header-title">Galeries</span>
+        <a href="/admin" class="btn btn-ghost">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          <span>Retour</span>
+        </a>
       </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <!-- Formulaire de création / édition -->
-      <section class="glass rounded-xl p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xl font-bold text-white" id="form-title">
-            ✨ Nouvelle galerie
-          </h2>
-          <button
-            id="cancel-edit-btn"
-            type="button"
-            class="hidden px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-700 rounded-lg"
-          >
-            Annuler l'édition
-          </button>
+    <main class="main">
+      <!-- Create / Edit form -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" id="form-title">Nouvelle galerie</div>
+          <button id="cancel-edit-btn" type="button" class="btn btn-ghost hidden">Annuler</button>
         </div>
 
-        <form id="gallery-form" class="space-y-4">
+        <form id="gallery-form">
           <input type="hidden" id="gallery-id" />
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="form-grid">
             <div>
-              <label class="block text-sm font-medium mb-2">Titre *</label>
-              <input
-                type="text"
-                id="g-title"
-                name="title"
-                required
-                class="form-input w-full rounded-lg px-3 py-2"
-                placeholder="Jok'air à La Cigale"
-              />
+              <label for="g-title">Titre *</label>
+              <input type="text" id="g-title" name="title" required placeholder="Jok'air a La Cigale" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-2">Artiste</label>
-              <input
-                type="text"
-                id="g-artist"
-                name="artist"
-                class="form-input w-full rounded-lg px-3 py-2"
-                placeholder="Jok'air"
-              />
+              <label for="g-artist">Artiste</label>
+              <input type="text" id="g-artist" name="artist" placeholder="Jok'air" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-2">Lieu / salle</label>
-              <input
-                type="text"
-                id="g-venue"
-                name="venue"
-                class="form-input w-full rounded-lg px-3 py-2"
-                placeholder="La Cigale, Paris"
-              />
+              <label for="g-venue">Lieu / salle</label>
+              <input type="text" id="g-venue" name="venue" placeholder="La Cigale, Paris" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-2">Date</label>
-              <input
-                type="date"
-                id="g-date"
-                name="date"
-                class="form-input w-full rounded-lg px-3 py-2"
-              />
+              <label for="g-date">Date</label>
+              <input type="date" id="g-date" name="date" />
             </div>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium mb-2">Description</label>
-            <textarea
-              id="g-description"
-              name="description"
-              class="form-input w-full rounded-lg px-3 py-2 h-20 resize-none"
-              placeholder="Quelques mots sur le concert, l'ambiance, le contexte..."
-            ></textarea>
+          <div class="form-full">
+            <label for="g-description">Description</label>
+            <textarea id="g-description" name="description" placeholder="Quelques mots sur le concert..."></textarea>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium mb-2"
-              >Liens artiste (optionnel)</label
-            >
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <input
-                type="url"
-                id="g-artist-instagram"
-                name="artistInstagram"
-                class="form-input w-full rounded-lg px-3 py-2"
-                placeholder="https://instagram.com/artiste"
-              />
-              <input
-                type="url"
-                id="g-artist-deezer"
-                name="artistDeezer"
-                class="form-input w-full rounded-lg px-3 py-2"
-                placeholder="https://deezer.com/..."
-              />
-              <input
-                type="url"
-                id="g-artist-spotify"
-                name="artistSpotify"
-                class="form-input w-full rounded-lg px-3 py-2"
-                placeholder="https://open.spotify.com/..."
-              />
+          <div class="form-full">
+            <label>Liens artiste (optionnel)</label>
+            <div class="links-grid">
+              <input type="url" id="g-artist-instagram" name="artistInstagram" placeholder="Instagram URL" />
+              <input type="url" id="g-artist-deezer" name="artistDeezer" placeholder="Deezer URL" />
+              <input type="url" id="g-artist-spotify" name="artistSpotify" placeholder="Spotify URL" />
             </div>
           </div>
 
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <label class="block text-sm font-medium">
-                Photos de la galerie
-                <span id="selected-count" class="ml-2 text-white/60 text-xs"
-                  >0 sélectionnée(s)</span
-                >
-              </label>
-              <div class="text-xs text-white/50">
-                Clic = sélectionner · Clic sur ⭐ = couverture
-              </div>
+          <div class="form-full">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.35rem;">
+              <label style="margin-bottom:0;">Photos <span id="selected-count" style="color:var(--text-muted);">0 selectionnee(s)</span></label>
+              <span class="picker-hint">Clic = selectionner / Etoile = couverture</span>
             </div>
-            <div class="mb-2">
-              <input
-                id="upload-input"
-                name="uploadedPhotos"
-                type="file"
-                multiple
-                accept="image/*"
-                class="form-input p-2 rounded-md"
-              />
-              <div id="upload-list" class="text-xs text-white/60 mt-2"></div>
-              <div
-                id="upload-progress"
-                class="upload-progress"
-                aria-live="polite"
-              >
-                <div
-                  class="flex items-center justify-between text-xs text-white/70 mb-1"
-                >
+            <div style="margin-bottom:0.5rem;">
+              <input id="upload-input" name="uploadedPhotos" type="file" multiple accept="image/*" />
+              <div id="upload-list" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;"></div>
+              <div id="upload-progress" class="upload-progress" aria-live="polite">
+                <div class="progress-bar-bg"><div id="upload-progress-bar" class="progress-bar-fill"></div></div>
+                <div class="progress-text">
                   <span id="upload-progress-label">Upload des photos...</span>
                   <span id="upload-progress-percent">0%</span>
-                </div>
-                <div class="upload-progress-track">
-                  <div
-                    id="upload-progress-bar"
-                    class="upload-progress-bar"
-                  ></div>
                 </div>
               </div>
             </div>
             <div id="photo-picker" class="photo-picker">
-              <div class="col-span-full text-center py-8 text-white/50">
-                Chargement des photos...
-              </div>
+              <div style="grid-column:1/-1;text-align:center;padding:2rem 0;color:var(--text-muted);">Chargement des photos...</div>
             </div>
           </div>
 
-          <div class="flex items-center justify-between pt-2">
-            <label class="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                id="g-published"
-                name="published"
-                checked
-                class="w-4 h-4"
-              />
-              Publiée (visible sur le site)
+          <div class="form-footer">
+            <label class="checkbox-row">
+              <input type="checkbox" id="g-published" name="published" checked />
+              Publiee (visible sur le site)
             </label>
-            <button
-              type="submit"
-              class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
-            >
-              <span id="submit-label">🚀 Créer la galerie</span>
+            <button type="submit" class="btn btn-primary">
+              <span id="submit-label">Creer la galerie</span>
             </button>
           </div>
         </form>
-      </section>
+      </div>
 
-      <!-- Liste des galeries -->
-      <section class="glass rounded-xl">
-        <div class="p-6 border-b border-white/10">
-          <h3 class="text-lg font-bold">📋 Galeries existantes</h3>
-          <p class="text-white/60 text-sm">
-            Cliquez sur une galerie pour la modifier
-          </p>
+      <!-- Gallery list -->
+      <div class="card">
+        <div class="card-title">Galeries existantes</div>
+        <div id="galleries-list">
+          <div class="empty-state">Chargement...</div>
         </div>
-        <div id="galleries-list" class="p-6 space-y-3">
-          <div class="text-center py-8 text-white/60">Chargement...</div>
-        </div>
-      </section>
+      </div>
     </main>
 
     <div id="toast" class="toast"></div>
@@ -388,8 +495,7 @@
       const venueInput = document.getElementById("g-venue");
       const dateInput = document.getElementById("g-date");
       const descInput = document.getElementById("g-description");
-      const artistInstagramInput =
-        document.getElementById("g-artist-instagram");
+      const artistInstagramInput = document.getElementById("g-artist-instagram");
       const artistDeezerInput = document.getElementById("g-artist-deezer");
       const artistSpotifyInput = document.getElementById("g-artist-spotify");
       const pubInput = document.getElementById("g-published");
@@ -401,12 +507,8 @@
       const uploadList = document.getElementById("upload-list");
       const uploadProgress = document.getElementById("upload-progress");
       const uploadProgressBar = document.getElementById("upload-progress-bar");
-      const uploadProgressPercent = document.getElementById(
-        "upload-progress-percent",
-      );
-      const uploadProgressLabel = document.getElementById(
-        "upload-progress-label",
-      );
+      const uploadProgressPercent = document.getElementById("upload-progress-percent");
+      const uploadProgressLabel = document.getElementById("upload-progress-label");
       const listEl = document.getElementById("galleries-list");
       const selectedCountEl = document.getElementById("selected-count");
       const toastEl = document.getElementById("toast");
@@ -420,19 +522,12 @@
       function toast(msg, type = "success") {
         toastEl.textContent = msg;
         toastEl.className = "toast show" + (type === "error" ? " error" : "");
-        setTimeout(() => {
-          toastEl.className = "toast" + (type === "error" ? " error" : "");
-        }, 2500);
+        setTimeout(() => { toastEl.className = "toast" + (type === "error" ? " error" : ""); }, 2500);
       }
 
       function normalizeCoverSelection() {
-        if (selectedPhotos.length === 0) {
-          coverFilename = null;
-          return;
-        }
-        if (!coverFilename || !selectedPhotos.includes(coverFilename)) {
-          coverFilename = selectedPhotos[0];
-        }
+        if (selectedPhotos.length === 0) { coverFilename = null; return; }
+        if (!coverFilename || !selectedPhotos.includes(coverFilename)) coverFilename = selectedPhotos[0];
       }
 
       function setUploadProgress(percent, label = null) {
@@ -452,8 +547,6 @@
 
       function setSubmittingState(isSubmitting) {
         submitBtn.disabled = isSubmitting;
-        submitBtn.classList.toggle("opacity-60", isSubmitting);
-        submitBtn.classList.toggle("cursor-not-allowed", isSubmitting);
         cancelBtn.disabled = isSubmitting;
       }
 
@@ -462,36 +555,18 @@
           const xhr = new XMLHttpRequest();
           xhr.open(method, url, true);
           xhr.responseType = "json";
-
           xhr.upload.onprogress = (event) => {
             if (event.lengthComputable && typeof onProgress === "function") {
-              const percent = Math.round((event.loaded / event.total) * 100);
-              onProgress(percent);
+              onProgress(Math.round((event.loaded / event.total) * 100));
             }
           };
-
           xhr.onload = () => {
             let data = xhr.response;
-            if (!data) {
-              try {
-                data = JSON.parse(xhr.responseText || "{}");
-              } catch (_e) {
-                data = {};
-              }
-            }
-
-            if (xhr.status >= 200 && xhr.status < 300) {
-              resolve(data);
-              return;
-            }
-
-            reject(
-              new Error((data && data.error) || "Erreur lors de l'upload"),
-            );
+            if (!data) { try { data = JSON.parse(xhr.responseText || "{}"); } catch (_e) { data = {}; } }
+            if (xhr.status >= 200 && xhr.status < 300) { resolve(data); return; }
+            reject(new Error((data && data.error) || "Erreur lors de l'upload"));
           };
-
-          xhr.onerror = () =>
-            reject(new Error("Erreur réseau pendant l'upload"));
+          xhr.onerror = () => reject(new Error("Erreur reseau"));
           xhr.send(formData);
         });
       }
@@ -500,66 +575,52 @@
         try {
           const r = await fetch("/admin/status");
           const d = await r.json();
-          if (!d.isLoggedIn) {
-            window.location.href = "/admin";
-            return false;
-          }
+          if (!d.isLoggedIn) { globalThis.location.href = "/admin"; return false; }
           return true;
         } catch (e) {
-          window.location.href = "/admin";
+          globalThis.location.href = "/admin";
           return false;
         }
       }
 
       async function loadPhotos() {
         try {
-          // Admin picker must include photos hidden from public/home listings.
           const r = await fetch("/admin/photos");
           allPhotos = await r.json();
           renderPicker();
         } catch (e) {
-          picker.innerHTML =
-            '<div class="col-span-full text-center py-8 text-red-400">Erreur de chargement des photos</div>';
+          picker.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem 0;color:#f87171;">Erreur de chargement</div>';
         }
       }
 
       uploadInput?.addEventListener("change", () => {
         const files = Array.from(uploadInput.files || []);
-        if (files.length === 0) {
-          uploadList.textContent = "";
-          return;
-        }
-        uploadList.textContent = files.map((f) => f.name).join(", ");
+        uploadList.textContent = files.length ? files.map((f) => f.name).join(", ") : "";
       });
 
       function renderPicker() {
         normalizeCoverSelection();
-
         if (allPhotos.length === 0) {
-          picker.innerHTML =
-            '<div class="col-span-full text-center py-8 text-white/50">Aucune photo disponible. Uploadez des photos depuis l\'admin.</div>';
+          picker.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem 0;color:var(--text-muted);">Aucune photo disponible</div>';
           return;
         }
-        picker.innerHTML = allPhotos
-          .map((p) => {
-            const isSel = selectedPhotos.includes(p.filename);
-            const isCover = coverFilename === p.filename;
-            const orderIdx = selectedPhotos.indexOf(p.filename);
-            const thumb = `/photos/resize?file=${encodeURIComponent(p.filename)}&w=240`;
-            return `
-            <div class="photo-thumb${isSel ? " selected" : ""}${isCover ? " is-cover" : ""}" data-file="${p.filename}">
-              <img src="${thumb}" alt="" loading="lazy" />
-              ${isSel ? `<span class="badge">${orderIdx + 1}</span>` : ""}
-              <span class="cover-star" title="Définir comme couverture">★</span>
-            </div>`;
-          })
-          .join("");
+        picker.innerHTML = allPhotos.map((p) => {
+          const isSel = selectedPhotos.includes(p.filename);
+          const isCover = coverFilename === p.filename;
+          const orderIdx = selectedPhotos.indexOf(p.filename);
+          const thumb = `/photos/resize?file=${encodeURIComponent(p.filename)}&w=240`;
+          return `
+          <div class="photo-thumb${isSel ? " selected" : ""}${isCover ? " is-cover" : ""}" data-file="${p.filename}">
+            <img src="${thumb}" alt="" loading="lazy" />
+            ${isSel ? `<span class="badge">${orderIdx + 1}</span>` : ""}
+            <span class="cover-star" title="Definir comme couverture">&#9733;</span>
+          </div>`;
+        }).join("");
 
         picker.querySelectorAll(".photo-thumb").forEach((el) => {
           const file = el.dataset.file;
           el.addEventListener("click", (e) => {
-            const coverTrigger = e.target.closest(".cover-star");
-            if (coverTrigger) {
+            if (e.target.closest(".cover-star")) {
               e.stopPropagation();
               if (!selectedPhotos.includes(file)) selectedPhotos.push(file);
               coverFilename = file;
@@ -567,18 +628,13 @@
               return;
             }
             const idx = selectedPhotos.indexOf(file);
-            if (idx === -1) {
-              selectedPhotos.push(file);
-              normalizeCoverSelection();
-            } else {
-              selectedPhotos.splice(idx, 1);
-              normalizeCoverSelection();
-            }
+            if (idx === -1) { selectedPhotos.push(file); } else { selectedPhotos.splice(idx, 1); }
+            normalizeCoverSelection();
             renderPicker();
           });
         });
 
-        selectedCountEl.textContent = `${selectedPhotos.length} sélectionnée(s)`;
+        selectedCountEl.textContent = `${selectedPhotos.length} selectionnee(s)`;
       }
 
       async function loadGalleries() {
@@ -588,68 +644,48 @@
           const d = await r.json();
           renderGalleries(d.galleries || []);
         } catch (e) {
-          listEl.innerHTML =
-            '<div class="text-center py-8 text-red-400">Erreur de chargement</div>';
+          listEl.innerHTML = '<div class="empty-state" style="color:#f87171;">Erreur de chargement</div>';
         }
       }
 
       function renderGalleries(galleries) {
         if (galleries.length === 0) {
-          listEl.innerHTML =
-            '<div class="text-center py-8 text-white/60">Aucune galerie pour le moment</div>';
+          listEl.innerHTML = '<div class="empty-state">Aucune galerie</div>';
           return;
         }
-        listEl.innerHTML = galleries
-          .map((g) => {
-            const cover = g.cover
-              ? `<img src="/photos/resize?file=${encodeURIComponent(g.cover)}&w=240" alt="" />`
-              : '<div class="w-[120px] h-[90px] bg-white/10 rounded-lg flex items-center justify-center text-white/40">—</div>';
-            const meta = [g.artist, g.venue, g.date]
-              .filter(Boolean)
-              .join(" · ");
-            return `
-            <div class="gallery-card rounded-lg p-4 flex items-center gap-4" data-id="${g.id}">
-              ${cover}
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                  <h4 class="font-bold text-white truncate">${escapeHtml(g.title)}</h4>
-                  ${g.published ? '<span class="text-xs px-2 py-0.5 bg-green-600 rounded-full">publiée</span>' : '<span class="text-xs px-2 py-0.5 bg-gray-600 rounded-full">brouillon</span>'}
-                </div>
-                <p class="text-sm text-white/60 truncate">${escapeHtml(meta) || "—"}</p>
-                <p class="text-xs text-white/40 mt-1">${g.photos.length} photo(s) · /galeries/${g.slug}</p>
+        listEl.innerHTML = galleries.map((g) => {
+          const cover = g.cover
+            ? `<img src="/photos/resize?file=${encodeURIComponent(g.cover)}&w=240" alt="" />`
+            : '<div class="gallery-card-placeholder">--</div>';
+          const meta = [g.artist, g.venue, g.date].filter(Boolean).join(" · ");
+          return `
+          <div class="gallery-card" data-id="${g.id}">
+            ${cover}
+            <div class="gallery-card-info">
+              <div class="gallery-card-title">
+                ${escapeHtml(g.title)}
+                <span class="gallery-badge ${g.published ? 'published' : 'draft'}">${g.published ? 'publiee' : 'brouillon'}</span>
               </div>
-              <div class="flex items-center gap-2">
-                <a href="/galeries/${encodeURIComponent(g.slug)}" target="_blank" class="px-3 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg text-sm">👁️</a>
-                <button type="button" class="edit-btn px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm">✏️</button>
-                <button type="button" class="delete-btn px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm">🗑️</button>
-              </div>
-            </div>`;
-          })
-          .join("");
+              <div class="gallery-card-meta">${escapeHtml(meta) || "--"}</div>
+              <div class="gallery-card-meta">${g.photos.length} photo(s) · /galeries/${g.slug}</div>
+            </div>
+            <div class="gallery-card-actions">
+              <a href="/galeries/${encodeURIComponent(g.slug)}" target="_blank" class="btn btn-ghost">Voir</a>
+              <button type="button" class="edit-btn btn btn-primary">Editer</button>
+              <button type="button" class="delete-btn btn btn-danger-solid">Supprimer</button>
+            </div>
+          </div>`;
+        }).join("");
 
         listEl.querySelectorAll(".gallery-card").forEach((card) => {
           const id = card.dataset.id;
-          card
-            .querySelector(".edit-btn")
-            .addEventListener("click", () => startEdit(id));
-          card
-            .querySelector(".delete-btn")
-            .addEventListener("click", () => deleteGallery(id));
+          card.querySelector(".edit-btn").addEventListener("click", () => startEdit(id));
+          card.querySelector(".delete-btn").addEventListener("click", () => deleteGallery(id));
         });
       }
 
       function escapeHtml(s) {
-        return (s || "").replace(
-          /[&<>"']/g,
-          (c) =>
-            ({
-              "&": "&amp;",
-              "<": "&lt;",
-              ">": "&gt;",
-              '"': "&quot;",
-              "'": "&#39;",
-            })[c],
-        );
+        return (s || "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
       }
 
       async function startEdit(id) {
@@ -664,21 +700,18 @@
           venueInput.value = g.venue || "";
           dateInput.value = g.date || "";
           descInput.value = g.description || "";
-          artistInstagramInput.value =
-            (g.artistLinks && g.artistLinks.instagram) || "";
-          artistDeezerInput.value =
-            (g.artistLinks && g.artistLinks.deezer) || "";
-          artistSpotifyInput.value =
-            (g.artistLinks && g.artistLinks.spotify) || "";
+          artistInstagramInput.value = (g.artistLinks && g.artistLinks.instagram) || "";
+          artistDeezerInput.value = (g.artistLinks && g.artistLinks.deezer) || "";
+          artistSpotifyInput.value = (g.artistLinks && g.artistLinks.spotify) || "";
           pubInput.checked = g.published !== false;
           selectedPhotos = Array.isArray(g.photos) ? g.photos.slice() : [];
           coverFilename = g.cover || selectedPhotos[0] || null;
           normalizeCoverSelection();
           renderPicker();
-          formTitle.textContent = "✏️ Modifier la galerie";
-          submitLabel.textContent = "💾 Enregistrer les modifications";
+          formTitle.textContent = "Modifier la galerie";
+          submitLabel.textContent = "Enregistrer";
           cancelBtn.classList.remove("hidden");
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          globalThis.scrollTo({ top: 0, behavior: "smooth" });
         } catch (e) {
           toast("Erreur de chargement", "error");
         }
@@ -695,24 +728,17 @@
         if (uploadList) uploadList.textContent = "";
         resetUploadProgress();
         renderPicker();
-        formTitle.textContent = "✨ Nouvelle galerie";
-        submitLabel.textContent = "🚀 Créer la galerie";
+        formTitle.textContent = "Nouvelle galerie";
+        submitLabel.textContent = "Creer la galerie";
         cancelBtn.classList.add("hidden");
       }
 
       async function deleteGallery(id) {
-        if (
-          !confirm(
-            "Supprimer cette galerie ? (les photos ne seront pas supprimées)",
-          )
-        )
-          return;
+        if (!confirm("Supprimer cette galerie ? (les photos ne seront pas supprimees)")) return;
         try {
-          const r = await fetch("/admin/api/galleries/" + id, {
-            method: "DELETE",
-          });
+          const r = await fetch("/admin/api/galleries/" + id, { method: "DELETE" });
           if (!r.ok) throw new Error("delete");
-          toast("Galerie supprimée");
+          toast("Galerie supprimee");
           if (editingId === id) resetForm();
           loadGalleries();
         } catch (e) {
@@ -722,17 +748,14 @@
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        // Ensure at least one source of photos: selected or uploaded
         const hasSelected = selectedPhotos.length > 0;
-        const hasUploads =
-          uploadInput && uploadInput.files && uploadInput.files.length > 0;
+        const hasUploads = uploadInput && uploadInput.files && uploadInput.files.length > 0;
         if (!hasSelected && !hasUploads) {
-          toast("Sélectionnez au moins une photo ou uploadez-en", "error");
+          toast("Selectionnez au moins une photo", "error");
           return;
         }
 
         const formData = new FormData(form);
-        // Normalize critical fields and always send selected photos ordering
         formData.set("title", (titleInput.value || "").trim());
         formData.set("artist", artistInput.value || "");
         formData.set("venue", venueInput.value || "");
@@ -747,27 +770,18 @@
         formData.set("cover", coverFilename || "");
 
         try {
-          const url = editingId
-            ? "/admin/api/galleries/" + editingId
-            : "/admin/api/galleries";
+          const url = editingId ? "/admin/api/galleries/" + editingId : "/admin/api/galleries";
           const method = editingId ? "PUT" : "POST";
-
           setSubmittingState(true);
-          if (hasUploads) {
-            setUploadProgress(0, "Upload des photos...");
-          } else {
-            setUploadProgress(10, "Enregistrement...");
-          }
+          if (hasUploads) setUploadProgress(0, "Upload des photos...");
+          else setUploadProgress(10, "Enregistrement...");
 
           await sendMultipartWithProgress(url, method, formData, (percent) => {
-            if (hasUploads) {
-              setUploadProgress(percent, "Upload des photos...");
-            }
+            if (hasUploads) setUploadProgress(percent, "Upload des photos...");
           });
 
           setUploadProgress(100, "Finalisation...");
-          toast(editingId ? "Galerie mise à jour" : "Galerie créée");
-          // refresh photos list to include newly uploaded images
+          toast(editingId ? "Galerie mise a jour" : "Galerie creee");
           await loadPhotos();
           resetForm();
           loadGalleries();

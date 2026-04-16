@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" class="scroll-smooth">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,634 +7,482 @@
     <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
     <title>Administration - Portfolio</title>
     <link rel="icon" type="image/svg+xml" href="../../dist/assets/Logo_MP.svg">
-    <link rel="stylesheet" href="../../dist/css/output.css">
-    <!-- Alpine.js -->
-    <script
-      defer
-      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-    ></script>
-    <!-- Start - Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Signika:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
-    <!-- End - Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
     <style>
-        * {
-            font-family: 'Signika', sans-serif;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0f0f0f;
+            --surface: #1a1a1a;
+            --surface-hover: #222;
+            --border: #2a2a2a;
+            --text: #e5e5e5;
+            --text-muted: #888;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger: #dc2626;
+            --danger-hover: #b91c1c;
+            --radius: 8px;
         }
-        
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
-            padding: 1.5rem;
-        }
-        
-        .login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
             min-height: 100vh;
-            background: linear-gradient(135deg, 
-                #000000 0%, 
-                #1a1a2e 25%, 
-                #16213e 50%, 
-                #0f3460 75%, 
-                #000000 100%);
-            position: relative;
-            overflow: hidden;
         }
-        
-        .login-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 20% 30%, rgba(102, 126, 234, 0.4), transparent 40%),
-                        radial-gradient(circle at 80% 20%, rgba(139, 69, 19, 0.3), transparent 50%),
-                        radial-gradient(circle at 40% 80%, rgba(75, 0, 130, 0.35), transparent 60%),
-                        radial-gradient(circle at 90% 90%, rgba(255, 20, 147, 0.2), transparent 45%);
-            animation: gradientShift 12s ease-in-out infinite alternate;
+
+        .hidden { display: none !important; }
+
+        /* ── Login ── */
+        .login-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
         }
-        
-        .login-container::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
-            opacity: 0.3;
-        }
-        @keyframes gradientShift {
-            0% { 
-                filter: hue-rotate(0deg) brightness(1); 
-                transform: scale(1);
-            }
-            33% { 
-                filter: hue-rotate(60deg) brightness(1.2); 
-                transform: scale(1.05);
-            }
-            66% { 
-                filter: hue-rotate(-30deg) brightness(0.9); 
-                transform: scale(0.98);
-            }
-            100% { 
-                filter: hue-rotate(30deg) brightness(1.1); 
-                transform: scale(1.02);
-            }
-        }
-        
-        .login-card {
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(25px);
-            border-radius: 24px;
-            padding: 3rem 2.5rem;
-            width: 100%;
-            max-width: 450px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-            position: relative;
-            z-index: 10;
-            overflow: hidden;
-        }
-        
-        .login-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, 
-                transparent, 
-                rgba(255, 255, 255, 0.1), 
-                transparent);
-            animation: shimmerLogin 3s infinite;
-            z-index: 1;
-        }
-        
-        @keyframes shimmerLogin {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-        
+
         .login-box {
-            background: rgba(10, 10, 10, 0.8);
-            backdrop-filter: blur(20px);
-            padding: 2.5rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
             width: 100%;
-            max-width: 400px;
-            position: relative;
-            z-index: 10;
+            max-width: 380px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
         }
-        .admin-header {
-            background: linear-gradient(135deg, 
-                rgba(0, 0, 0, 0.98) 0%, 
-                rgba(20, 25, 45, 0.95) 30%, 
-                rgba(45, 55, 85, 0.92) 70%, 
-                rgba(0, 0, 0, 0.98) 100%);
-            backdrop-filter: blur(25px);
-            color: white;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            padding: 1rem 0;
+
+        .login-box h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
         }
-        
-        .admin-header::before {
-            content: '';
-            position: absolute;
+
+        .login-error {
+            background: rgba(220,38,38,0.12);
+            color: #fca5a5;
+            border: 1px solid rgba(220,38,38,0.3);
+            border-radius: var(--radius);
+            padding: 0.6rem 0.8rem;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 0.9rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        input[type="password"]:focus {
+            border-color: var(--accent);
+        }
+
+        input[type="password"]::placeholder {
+            color: #555;
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 0.9rem;
+            border: none;
+            border-radius: var(--radius);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+        .btn-primary {
+            background: var(--accent);
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: #f87171;
+            border: 1px solid rgba(220,38,38,0.3);
+        }
+        .btn-danger:hover {
+            background: rgba(220,38,38,0.12);
+        }
+
+        .btn-danger-solid {
+            background: var(--danger);
+            color: #fff;
+        }
+        .btn-danger-solid:hover { background: var(--danger-hover); }
+
+        /* ── Header ── */
+        .header {
+            position: sticky;
             top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, 
-                transparent 0%, 
-                rgba(102, 126, 234, 0.15) 25%,
-                rgba(139, 69, 19, 0.1) 50%,
-                rgba(75, 0, 130, 0.12) 75%,
-                transparent 100%);
-            animation: shimmer 6s ease-in-out infinite;
+            z-index: 30;
+            background: rgba(15,15,15,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
         }
-        
-        @keyframes shimmer {
-            0%, 100% { transform: translateX(-100%); opacity: 0; }
-            50% { transform: translateX(100%); opacity: 1; }
+
+        .header-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1.25rem;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-        .section-card {
-            background: linear-gradient(145deg, 
-                rgba(15, 15, 25, 0.9) 0%,
-                rgba(25, 25, 35, 0.85) 50%,
-                rgba(35, 35, 45, 0.9) 100%);
-            backdrop-filter: blur(30px);
-            border-radius: 24px;
-            box-shadow: 
-                0 20px 40px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.15),
-                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            color: white;
-            position: relative;
+
+        .header-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ── Main layout ── */
+        .main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1.5rem 1.25rem 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* ── Navigation grid ── */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.6rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.7rem 0.8rem;
+            border-radius: var(--radius);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        .nav-link:hover {
+            border-color: #444;
+            background: var(--surface-hover);
+        }
+
+        .nav-link svg { width: 18px; height: 18px; color: var(--text-muted); flex-shrink: 0; }
+
+        /* ── Upload ── */
+        .upload-zone {
+            border: 1px dashed #333;
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: border-color 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .upload-zone:hover { border-color: #555; }
+        .upload-zone.dragover { border-color: var(--accent); }
+
+        .upload-zone-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .progress-wrap {
+            margin-top: 1rem;
+        }
+
+        .progress-bar-bg {
+            height: 4px;
+            background: #222;
+            border-radius: 2px;
             overflow: hidden;
-            padding: 1rem 0;
         }
-        
-        .section-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg,
-                transparent 30%,
-                rgba(255, 255, 255, 0.03) 50%,
-                transparent 70%);
-            opacity: 0.7;
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.3s;
+            width: 0%;
         }
-        .photo-item img {
+
+        .progress-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.4rem;
+        }
+
+        /* ── Photos grid ── */
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .photo-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .photo-card img {
             width: 100%;
             height: 150px;
             object-fit: cover;
-            border-radius: 0.75rem;
+            display: block;
         }
-        .photo-info {
-            margin-top: 0.75rem;
-            font-size: 0.875rem;
-            color: rgba(255, 255, 255, 0.9);
+
+        .photo-card-body {
+            padding: 0.6rem 0.7rem;
         }
-        .photo-info p {
-            color: rgba(255, 255, 255, 0.7);
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, 
-                #667eea 0%, 
-                #764ba2 50%, 
-                #667eea 100%);
-            border: none;
-            border-radius: 16px;
-            padding: 1rem 2rem;
-            color: white;
-            font-weight: 700;
-            font-size: 1rem;
-            letter-spacing: 0.5px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            font-family: 'Signika', sans-serif;
-            position: relative;
+
+        .photo-card-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+            white-space: nowrap;
             overflow: hidden;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-            transform-origin: center;
-            margin: 0 1rem ;
+            text-overflow: ellipsis;
         }
-        
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
+
+        .photo-card-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        .photo-card-delete {
+            display: block;
             width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg,
-                transparent,
-                rgba(255, 255, 255, 0.3),
-                transparent);
-            transition: left 0.5s ease;
+            margin-top: 0.5rem;
+            padding: 0.35rem;
+            background: transparent;
+            border: 1px solid rgba(220,38,38,0.25);
+            border-radius: 6px;
+            color: #f87171;
+            font-size: 0.78rem;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s;
         }
-        
-        .btn-primary:hover::before {
-            left: 100%;
+
+        .photo-card-delete:hover {
+            background: rgba(220,38,38,0.12);
         }
-        
-        .btn-primary:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+
+        /* ── Section header with action ── */
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
         }
-        
-        .btn-primary:active {
-            transform: translateY(-1px) scale(0.98);
-        }
-        .upload-area {
-            border-radius: 20px;
-            padding: 3rem 2rem;
+
+        .card-header .card-title { margin-bottom: 0; }
+
+        /* ── Loading ── */
+        .loading-text {
             text-align: center;
-            background: linear-gradient(135deg,
-                rgba(0, 0, 0, 0.6) 0%,
-                rgba(20, 20, 30, 0.4) 50%,
-                rgba(0, 0, 0, 0.6) 100%);
-            backdrop-filter: blur(15px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
+            padding: 2rem 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
         }
-        
-        .upload-area::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(
-                transparent,
-                rgba(102, 126, 234, 0.1),
-                transparent 30%);
-            animation: rotate 8s linear infinite;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .upload-area.dragover {
-            background: rgba(16, 185, 129, 0.1);
-            box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
-        }
-        .photo-item {
-            background: linear-gradient(145deg,
-                rgba(20, 20, 30, 0.9) 0%,
-                rgba(30, 30, 40, 0.8) 100%);
-            border-radius: 20px;
-            padding: 1.5rem;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(15px);
-        }
-        
-        .photo-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg,
-                transparent 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                transparent 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .photo-item:hover::before {
-            opacity: 1;
-        }
-        
-        .photo-item:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 
-                0 25px 50px rgba(0, 0, 0, 0.3),
-                0 0 30px rgba(102, 126, 234, 0.2);
-        }
-        .delete-btn {
-            background: linear-gradient(135deg, 
-                #ef4444 0%, 
-                #dc2626 50%, 
-                #b91c1c 100%);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.25rem;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-family: 'Signika', sans-serif;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
-        }
-        
-        .delete-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255, 255, 255, 0.3);
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #333;
+            border-top-color: var(--accent);
             border-radius: 50%;
-            transition: all 0.3s ease;
-            transform: translate(-50%, -50%);
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+            margin-right: 0.5rem;
         }
-        
-        .delete-btn:hover::before {
-            width: 300px;
-            height: 300px;
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
-        
-        .delete-btn:hover {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 12px 30px rgba(239, 68, 68, 0.4);
-        }
-        
-        .upload-compact {
-            padding: 1rem !important;
-        }
-        
-        .hidden { 
-            display: none !important; 
-        }
-        
-        /* Styles pour le champ mot de passe */
-        input[type="password"] {
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
-            font-size: 16px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            color: #ffffff !important;
-            background: rgba(0, 0, 0, 0.7) !important;
-        }
-        
-        input[type="password"]:focus {
-            box-shadow: 
-                inset 0 2px 8px rgba(0, 0, 0, 0.7),
-                0 0 0 2px rgba(102, 126, 234, 0.3);
-            background: rgba(0, 0, 0, 0.8) !important;
-            color: #ffffff !important;
-        }
-        
-        input[type="password"]::placeholder {
-            color: rgba(255, 255, 255, 0.4) !important;
-            font-weight: 400;
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .nav-grid { grid-template-columns: 1fr; }
+            .upload-zone { flex-direction: column; align-items: flex-start; }
+            .header-actions .btn span { display: none; }
         }
     </style>
 </head>
-<body class="bg-black text-white font-signika" x-data="{ darkMode: true }">
-    <!-- Login Form -->
-    <div id="login-container" class="login-container">
+<body>
+    <!-- Login -->
+    <div id="login-container" class="login-wrap">
         <div class="login-box">
-            <h1 class="text-3xl font-bold text-center mb-8 text-white font-signika">Administration</h1>
-            <div id="login-error" class="hidden bg-red-500/20 text-red-200 px-4 py-3 rounded-lg mb-6 backdrop-blur-sm">
+            <h1>Administration</h1>
+            <div id="login-error" class="login-error hidden">
                 Mot de passe incorrect
             </div>
             <form id="login-form">
-                <div class="mb-6">
-                    <label class="block text-white/80 text-sm font-semibold mb-3 font-signika" for="password">
-                        Mot de passe
-                    </label>
-                    <input type="password" id="password" class="w-full py-3 px-4 text-white bg-black/70 backdrop-blur-sm rounded-xl leading-tight focus:outline-none focus:bg-black/80 transition-all duration-300 placeholder-white/50" placeholder="Entrez votre mot de passe" required>
+                <div style="margin-bottom:1.25rem">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" placeholder="Entrez votre mot de passe" required>
                 </div>
-                <button type="submit" class="btn-primary text-white font-bold py-3 px-4 rounded-xl w-full transition-all duration-300 font-signika">
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
                     Se connecter
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Admin Panel -->
+    <!-- Admin panel -->
     <div id="admin-panel" class="hidden">
-        <header class="admin-header shadow-lg border-b border-white/10">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-20 items-center">
-                    <div class="flex items-center space-x-6">
-                        <div class="relative">
-                            <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center ring-2 ring-white/30">
-                                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </div>
-                            <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
-                        </div>
-                        <div>
-                            <h1 class="text-2xl font-bold text-white">Panneau d'Administration</h1>
-                            <p class="text-white/70 text-sm font-medium">Portfolio Photography Manager</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-6">
-                        <div class="hidden md:flex items-center space-x-4 text-white/80 bg-white/10 px-4 py-2 rounded-xl backdrop-blur-sm">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <span id="current-time" class="text-sm font-bold"></span>
-                        </div>
-                        <a href="/admin/text-editor" class="group bg-purple-500/80 hover:bg-purple-600/90 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 flex items-center space-x-2 backdrop-blur-sm shadow-lg hover:shadow-xl transform hover:scale-105">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                            </svg>
-                            <span>Textes</span>
-                        </a>
-                        <a href="/admin/links" class="group bg-cyan-500/80 hover:bg-cyan-600/90 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 flex items-center space-x-2 backdrop-blur-sm shadow-lg hover:shadow-xl transform hover:scale-105">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-                            </svg>
-                            <span>Links</span>
-                        </a>
-                        <a href="/admin/logs" class="group bg-blue-500/80 hover:bg-blue-600/90 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 flex items-center space-x-2 backdrop-blur-sm shadow-lg hover:shadow-xl transform hover:scale-105">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                            </svg>
-                            <span>Logs</span>
-                        </a>
-                        <button id="logout-btn" class="group bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 flex items-center space-x-2 backdrop-blur-sm shadow-lg hover:shadow-xl transform hover:scale-105">
-                            <svg class="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                            </svg>
-                            <span>Déconnexion</span>
-                        </button>
-                    </div>
+        <header class="header">
+            <div class="header-inner">
+                <span class="header-title">Administration</span>
+                <div class="header-actions">
+                    <a href="/" class="btn btn-ghost" aria-label="Voir le site">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        <span>Voir le site</span>
+                    </a>
+                    <button id="logout-btn" class="btn btn-danger" aria-label="Se deconnecter">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        <span>Deconnexion</span>
+                    </button>
                 </div>
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 min-h-screen relative">
-            <div class="fixed inset-0 -z-10">
-                <div class="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black"></div>
-                <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"40\" height=\"40\" viewBox=\"0 0 40 40\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.02\"%3E%3Ccircle cx=\"20\" cy=\"20\" r=\"1\"/%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
-                <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
-                <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
-                <div class="absolute top-1/2 left-1/2 w-96 h-96 bg-indigo-600/5 rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2"></div>
-            </div>
-            <!-- Upload Section - Version compacte -->
-            <div class="section-card p-6 mb-8">
-                <div class="flex items-center justify-between mb-4 bg-gradient-to-r from-indigo-900/20 to-purple-900/20 p-4 rounded-xl">
-                    <div>
-                        <h2 class="text-2xl font-bold text-white font-signika mb-1">Ajouter Photos</h2>
-                        <p class="text-white/70 font-medium">Glissez-déposez ou sélectionnez vos images</p>
-                    </div>
-                </div>
-                <div class="upload-area upload-compact" id="upload-area">
-                    <input type="file" id="file-input" accept="image/*" multiple style="display: none;">
-                    <div id="upload-text" class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <svg class="w-6 h-6 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                            </svg>
-                            <div>
-                                <p class="text-sm font-medium text-white/80 font-signika">Glissez-déposez vos photos ici</p>
-                                <p class="text-xs text-white/50">ou cliquez sur le bouton pour sélectionner</p>
-                            </div>
-                        </div>
-                        <button type="button" class="btn-primary text-white font-medium py-2 px-4 rounded-lg text-sm font-signika">
-                            Parcourir
-                        </button>
-                    </div>
-                </div>
-                <div id="upload-progress" class="hidden mt-4">
-                    <div class="bg-white/10 rounded-full h-2 overflow-hidden backdrop-blur-sm">
-                        <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                    </div>
-                    <p id="upload-status" class="text-sm text-white/70 mt-2 text-center font-signika">Upload en cours...</p>
+        <main class="main">
+            <!-- Navigation -->
+            <div class="card">
+                <div class="card-title">Raccourcis</div>
+                <div class="nav-grid">
+                    <a href="/admin/logs" class="nav-link">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6m4 6V7m4 10v-4M5 20h14"/></svg>
+                        Logs
+                    </a>
+                    <a href="/admin/campaigns" class="nav-link">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                        Campagnes
+                    </a>
+                    <a href="/admin/text-editor" class="nav-link">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        Textes
+                    </a>
+                    <a href="/admin/galleries" class="nav-link">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Galeries
+                    </a>
+                    <a href="/admin/links" class="nav-link">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                        Liens
+                    </a>
                 </div>
             </div>
 
-            <!-- Photos Grid -->
-            <div class="section-card p-6">
-                <div class="flex justify-between items-center mb-6 bg-gradient-to-r from-purple-900/20 to-blue-900/20 p-4 rounded-xl">
-                    <div>
-                        <h2 class="text-2xl font-bold text-white font-signika mb-1">Galerie Photos</h2>
-                        <p class="text-white/70 font-medium">Gérez vos photos sur le serveur</p>
+            <!-- Upload -->
+            <div class="card">
+                <div class="card-title">Ajouter des photos</div>
+                <div class="upload-zone" id="upload-area">
+                    <input type="file" id="file-input" accept="image/*" multiple style="display:none">
+                    <span class="upload-zone-text">Glisser-deposer ou cliquer pour ajouter des images</span>
+                    <button type="button" class="btn btn-primary">Parcourir</button>
+                </div>
+                <div id="upload-progress" class="progress-wrap hidden">
+                    <div class="progress-bar-bg">
+                        <div id="progress-bar" class="progress-bar-fill" style="width:0%"></div>
                     </div>
-                    <button id="refresh-btn" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 flex items-center space-x-2 font-signika shadow-lg hover:shadow-xl transform hover:scale-105">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                        </svg>
+                    <p id="upload-status" class="progress-text">Upload en cours...</p>
+                </div>
+            </div>
+
+            <!-- Photo library -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Photos</div>
+                    <button id="refresh-btn" class="btn btn-ghost" aria-label="Actualiser">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9M20 20v-5h-.581m0 0a8.003 8.003 0 01-15.357-2"/></svg>
                         <span>Actualiser</span>
                     </button>
                 </div>
-
-                <!-- Actions Rapides -->
-                <div class="section-card p-6 mb-8">
-                    <h3 class="text-xl font-bold text-white mb-6 font-signika">Actions Rapides</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <!-- Bouton Logs -->
-                        <a href="/admin/logs" class="group bg-gradient-to-br from-blue-600/80 to-blue-700/80 hover:from-blue-700/90 hover:to-blue-800/90 text-white p-6 rounded-xl transition-all duration-300 flex flex-col items-center space-y-3 backdrop-blur-sm shadow-lg hover:shadow-2xl transform hover:scale-105 border border-blue-500/20">
-                            <div class="bg-blue-500/20 p-3 rounded-full group-hover:bg-blue-400/30 transition-colors">
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                </svg>
-                            </div>
-                            <div class="text-center">
-                                <h4 class="font-bold text-lg font-signika">Logs & Analytics</h4>
-                                <p class="text-blue-200/80 text-sm font-medium">Consultez les statistiques de votre portfolio</p>
-                            </div>
-                        </a>
-
-                        <!-- Bouton Gestion des Campagnes -->
-                        <a href="/admin/campaigns" class="group bg-gradient-to-br from-orange-600/80 to-orange-700/80 hover:from-orange-700/90 hover:to-orange-800/90 text-white p-6 rounded-xl transition-all duration-300 flex flex-col items-center space-y-3 backdrop-blur-sm shadow-lg hover:shadow-2xl transform hover:scale-105 border border-orange-500/20">
-                            <div class="bg-orange-500/20 p-3 rounded-full group-hover:bg-orange-400/30 transition-colors">
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                                </svg>
-                            </div>
-                            <div class="text-center">
-                                <h4 class="font-bold text-lg font-signika">Campagnes Marketing</h4>
-                                <p class="text-orange-200/80 text-sm font-medium">Créez et suivez vos campagnes marketing</p>
-                            </div>
-                        </a>
-
-                        <!-- Bouton Éditeur de textes -->
-                        <a href="/admin/text-editor" class="group bg-gradient-to-br from-purple-600/80 to-purple-700/80 hover:from-purple-700/90 hover:to-purple-800/90 text-white p-6 rounded-xl transition-all duration-300 flex flex-col items-center space-y-3 backdrop-blur-sm shadow-lg hover:shadow-2xl transform hover:scale-105 border border-purple-500/20">
-                            <div class="bg-purple-500/20 p-3 rounded-full group-hover:bg-purple-400/30 transition-colors">
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                </svg>
-                            </div>
-                            <div class="text-center">
-                                <h4 class="font-bold text-lg font-signika">Éditeur de Textes</h4>
-                                <p class="text-purple-200/80 text-sm font-medium">Modifiez le contenu de votre site</p>
-                            </div>
-                        </a>
-
-                        <!-- Bouton Galeries par artiste -->
-                        <a href="/admin/galleries" class="group bg-gradient-to-br from-pink-600/80 to-pink-700/80 hover:from-pink-700/90 hover:to-pink-800/90 text-white p-6 rounded-xl transition-all duration-300 flex flex-col items-center space-y-3 backdrop-blur-sm shadow-lg hover:shadow-2xl transform hover:scale-105 border border-pink-500/20">
-                            <div class="bg-pink-500/20 p-3 rounded-full group-hover:bg-pink-400/30 transition-colors">
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                            </div>
-                            <div class="text-center">
-                                <h4 class="font-bold text-lg font-signika">Galeries par artiste</h4>
-                                <p class="text-pink-200/80 text-sm font-medium">Créez des galeries dédiées à un artiste ou concert</p>
-                            </div>
-                        </a>
-
-                        <!-- Bouton Retour au site -->
-                        <a href="/" class="group bg-gradient-to-br from-green-600/80 to-green-700/80 hover:from-green-700/90 hover:to-green-800/90 text-white p-6 rounded-xl transition-all duration-300 flex flex-col items-center space-y-3 backdrop-blur-sm shadow-lg hover:shadow-2xl transform hover:scale-105 border border-green-500/20">
-                            <div class="bg-green-500/20 p-3 rounded-full group-hover:bg-green-400/30 transition-colors">
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                                </svg>
-                            </div>
-                            <div class="text-center">
-                                <h4 class="font-bold text-lg font-signika">Voir le Site</h4>
-                                <p class="text-green-200/80 text-sm font-medium">Retournez à votre portfolio</p>
-                            </div>
-                        </a>
-                    </div>
+                <div id="loading" class="loading-text">
+                    <span class="spinner"></span> Chargement...
                 </div>
-
-                <div id="loading" class="text-center py-12">
-                    <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm text-white/60 font-signika">
-                        <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Chargement des photos...
-                    </div>
-                </div>
-                <div id="photos-grid" class="photo-grid hidden"></div>
+                <div id="photos-grid" class="photos-grid hidden"></div>
             </div>
         </main>
     </div>
 
     <script>
-        // Variables globales
         let isLoggedIn = false;
 
-        // Éléments DOM
         const loginContainer = document.getElementById('login-container');
         const adminPanel = document.getElementById('admin-panel');
         const loginForm = document.getElementById('login-form');
@@ -649,14 +497,11 @@
         const progressBar = document.getElementById('progress-bar');
         const uploadStatus = document.getElementById('upload-status');
 
-        // Vérifier le statut de connexion au chargement
         async function checkLoginStatus() {
             try {
                 const response = await fetch('/admin/status');
                 const data = await response.json();
-                if (data.isLoggedIn) {
-                    showAdminPanel();
-                }
+                if (data.isLoggedIn) showAdminPanel();
             } catch (error) {
                 console.error('Erreur lors de la vérification du statut:', error);
             }
@@ -670,20 +515,15 @@
             loadPhotos();
         }
 
-        // Gestion de la connexion
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const password = document.getElementById('password').value;
-            
             try {
                 const response = await fetch('/admin/login', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ password })
                 });
-                
                 if (response.ok) {
                     showAdminPanel();
                 } else {
@@ -707,9 +547,8 @@
             }
         });
 
-        // Gestion de l'upload
         uploadArea.addEventListener('click', () => fileInput.click());
-        
+
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
@@ -723,8 +562,7 @@
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            handleFileUpload(files);
+            handleFileUpload(e.dataTransfer.files);
         });
 
         fileInput.addEventListener('change', (e) => {
@@ -747,53 +585,49 @@
 
             uploadProgress.classList.remove('hidden');
             progressBar.style.width = '0%';
-            uploadStatus.textContent = `Upload de ${fileCount} fichier${fileCount>1? 's' : ''} en cours...`;
-            // disable interactions while uploading
+            uploadStatus.textContent = `Upload de ${fileCount} fichier${fileCount > 1 ? 's' : ''} en cours...`;
             uploadArea.style.pointerEvents = 'none';
 
             const xhr = new XMLHttpRequest();
             xhr.open('POST', '/admin/upload');
+            xhr.responseType = 'json';
 
-            // progress event
             xhr.upload.addEventListener('progress', (e) => {
                 if (e.lengthComputable) {
                     const percent = Math.round((e.loaded / e.total) * 100);
                     progressBar.style.width = percent + '%';
-                    uploadStatus.textContent = `Upload ${percent}% - ${fileCount} fichier${fileCount>1? 's' : ''}`;
+                    uploadStatus.textContent = `Upload ${percent}% — ${fileCount} fichier${fileCount > 1 ? 's' : ''}`;
                 }
             });
 
-            xhr.onreadystatechange = function() {
+            xhr.onreadystatechange = function () {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
-                    uploadArea.style.pointerEvents = ''; // re-enable
+                    uploadArea.style.pointerEvents = '';
                     if (xhr.status >= 200 && xhr.status < 300) {
                         progressBar.style.width = '100%';
-                        uploadStatus.textContent = 'Upload terminé avec succès !';
+                        uploadStatus.textContent = 'Upload terminé';
                         setTimeout(() => {
                             uploadProgress.classList.add('hidden');
                             loadPhotos();
                         }, 1200);
                     } else {
                         let msg = 'Erreur lors de l\'upload';
-                        try {
-                            const res = JSON.parse(xhr.responseText || '{}');
-                            if (res.error) msg = res.error;
-                        } catch (e) {}
+                        const res = xhr.response && typeof xhr.response === 'object' ? xhr.response : null;
+                        if (res && res.error) msg = res.error;
                         uploadStatus.textContent = msg;
                         progressBar.style.width = '0%';
                     }
                 }
             };
 
-            xhr.onerror = function() {
+            xhr.onerror = function () {
                 uploadArea.style.pointerEvents = '';
                 uploadStatus.textContent = 'Erreur réseau pendant l\'upload';
                 progressBar.style.width = '0%';
             };
 
-            // Optional: set a timeout for long uploads
-            xhr.timeout = 5 * 60 * 1000; // 5 minutes
-            xhr.ontimeout = function() {
+            xhr.timeout = 5 * 60 * 1000;
+            xhr.ontimeout = function () {
                 uploadArea.style.pointerEvents = '';
                 uploadStatus.textContent = 'Upload expiré (timeout)';
                 progressBar.style.width = '0%';
@@ -802,96 +636,64 @@
             xhr.send(formData);
         }
 
-        // Chargement des photos
         async function loadPhotos() {
             loading.classList.remove('hidden');
             photosGrid.classList.add('hidden');
-            
+
             try {
                 const response = await fetch('/admin/photos');
                 const photos = await response.json();
-                
+
                 photosGrid.innerHTML = '';
                 photos.forEach(photo => {
                     const item = document.createElement('div');
-                    item.className = 'photo-item';
+                    item.className = 'photo-card';
                     item.innerHTML = `
                         <img src="/photos/resize?file=${encodeURIComponent(photo.filename)}&w=320" alt="${photo.filename}" onerror="this.src='/photos/${encodeURIComponent(photo.filename)}'">
-                        <div class="photo-info">
-                            <p class="font-medium truncate">${photo.filename}</p>
-                            <p class="text-gray-500">${formatFileSize(photo.size)}</p>
-                            <p class="text-gray-500">${new Date(photo.mtime).toLocaleDateString('fr-FR')}</p>
+                        <div class="photo-card-body">
+                            <div class="photo-card-name">${photo.filename}</div>
+                            <div class="photo-card-meta">${formatFileSize(photo.size)} · ${new Date(photo.mtime).toLocaleDateString('fr-FR')}</div>
+                            <button class="photo-card-delete" onclick="deletePhoto('${photo.filename}')">Supprimer</button>
                         </div>
-                        <button class="delete-btn" onclick="deletePhoto('${photo.filename}')">
-                            Supprimer
-                        </button>
                     `;
                     photosGrid.appendChild(item);
                 });
-                
+
                 loading.classList.add('hidden');
                 photosGrid.classList.remove('hidden');
             } catch (error) {
                 console.error('Erreur lors du chargement des photos:', error);
-                loading.innerHTML = '<p class="text-red-500">Erreur lors du chargement des photos</p>';
+                loading.innerHTML = '<p style="color:#f87171">Erreur lors du chargement des photos</p>';
             }
         }
 
-        // Suppression d'une photo
         async function deletePhoto(filename) {
-            if (!confirm(`Êtes-vous sûr de vouloir supprimer "${filename}" ?`)) return;
-            
+            if (!confirm(`Supprimer "${filename}" ?`)) return;
+
             try {
-                const response = await fetch(`/admin/photos/${encodeURIComponent(filename)}`, {
-                    method: 'DELETE'
-                });
-                
+                const response = await fetch(`/admin/photos/${encodeURIComponent(filename)}`, { method: 'DELETE' });
                 if (response.ok) {
-                    loadPhotos(); // Recharger la liste
-                    alert('Photo supprimée avec succès');
+                    loadPhotos();
                 } else {
                     const errorText = await response.text();
-                    alert('Erreur lors de la suppression: ' + errorText);
+                    alert('Erreur: ' + errorText);
                 }
             } catch (error) {
-                alert('Erreur lors de la suppression: ' + error.message);
+                alert('Erreur: ' + error.message);
             }
         }
 
-        // Utilitaires
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 B';
             const k = 1024;
             const sizes = ['B', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
         refreshBtn.addEventListener('click', loadPhotos);
-
-        // Rendre la fonction globale pour les boutons inline
-        window.deletePhoto = deletePhoto;
-
-        // Vérifier le statut au chargement de la page
+        globalThis.deletePhoto = deletePhoto;
         checkLoginStatus();
-
-        // Afficher l'heure actuelle dans le header
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('fr-FR', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            const timeElement = document.getElementById('current-time');
-            if (timeElement) {
-                timeElement.textContent = timeString;
-            }
-        }
-        
-        // Mettre à jour l'heure toutes les secondes
-        setInterval(updateTime, 1000);
-        updateTime(); // Afficher immédiatement
     </script>
 </body>
 </html>
