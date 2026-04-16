@@ -64,9 +64,13 @@ async function getPhotosList() {
             try {
                 const galleries = galleryService.loadGalleries().galleries || [];
                 const excluded = new Set();
-                // Exclude all photos that belong to any gallery from the main listing
                 galleries.forEach(g => {
-                    if (Array.isArray(g.photos)) {
+                    // Photos explicitly uploaded via the gallery form are gallery-only
+                    if (Array.isArray(g.galleryOnlyPhotos)) {
+                        g.galleryOnlyPhotos.forEach(p => { if (p) excluded.add(p); });
+                    }
+                    // Galleries flagged excludeFromMain hide all their photos
+                    if (g.excludeFromMain && Array.isArray(g.photos)) {
                         g.photos.forEach(p => { if (p) excluded.add(p); });
                     }
                 });
