@@ -708,74 +708,81 @@
         handleFileUpload(e.target.files);
       });
 
-      function handleFileUpload(files) {
+      function uploadSingleFile(file) {
+        return new Promise((resolve, reject) => {
+          const formData = new FormData();
+          formData.append("photos", file);
+
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "/admin/upload");
+          xhr.responseType = "json";
+          xhr.timeout = 5 * 60 * 1000;
+
+          xhr.upload.addEventListener("progress", (e) => {
+            if (e.lengthComputable) {
+              const filePercent = Math.round((e.loaded / e.total) * 100);
+              xhr._lastFilePercent = filePercent;
+            }
+          });
+
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                resolve();
+              } else {
+                const res = xhr.response && typeof xhr.response === "object" ? xhr.response : null;
+                reject(new Error((res && res.error) || `Erreur ${xhr.status}`));
+              }
+            }
+          };
+
+          xhr.onerror = () => reject(new Error("Erreur réseau"));
+          xhr.ontimeout = () => reject(new Error("Timeout"));
+
+          xhr.send(formData);
+        });
+      }
+
+      async function handleFileUpload(files) {
         if (!files || !files.length) return;
 
-        const formData = new FormData();
-        let fileCount = 0;
-        for (let file of files) {
-          if (file.type && file.type.startsWith("image/")) {
-            formData.append("photos", file);
-            fileCount++;
-          }
-        }
+        const imageFiles = Array.from(files).filter(
+          (f) => f.type && f.type.startsWith("image/")
+        );
+        if (imageFiles.length === 0) return;
 
-        if (fileCount === 0) return;
+        const total = imageFiles.length;
+        let completed = 0;
+        let failed = 0;
 
         uploadProgress.classList.remove("hidden");
         progressBar.style.width = "0%";
-        uploadStatus.textContent = `Upload de ${fileCount} fichier${fileCount > 1 ? "s" : ""} en cours...`;
+        uploadStatus.textContent = `Upload 0/${total}...`;
         uploadArea.style.pointerEvents = "none";
 
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/admin/upload");
-        xhr.responseType = "json";
-
-        xhr.upload.addEventListener("progress", (e) => {
-          if (e.lengthComputable) {
-            const percent = Math.round((e.loaded / e.total) * 100);
-            progressBar.style.width = percent + "%";
-            uploadStatus.textContent = `Upload ${percent}% — ${fileCount} fichier${fileCount > 1 ? "s" : ""}`;
+        for (const file of imageFiles) {
+          uploadStatus.textContent = `Upload ${completed + 1}/${total} — ${file.name}`;
+          try {
+            await uploadSingleFile(file);
+            completed++;
+          } catch (err) {
+            failed++;
+            console.error(`Echec upload ${file.name}:`, err.message);
           }
-        });
+          const percent = Math.round(((completed + failed) / total) * 100);
+          progressBar.style.width = percent + "%";
+        }
 
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState === XMLHttpRequest.DONE) {
-            uploadArea.style.pointerEvents = "";
-            if (xhr.status >= 200 && xhr.status < 300) {
-              progressBar.style.width = "100%";
-              uploadStatus.textContent = "Upload terminé";
-              setTimeout(() => {
-                uploadProgress.classList.add("hidden");
-                loadPhotos();
-              }, 1200);
-            } else {
-              let msg = "Erreur lors de l'upload";
-              const res =
-                xhr.response && typeof xhr.response === "object"
-                  ? xhr.response
-                  : null;
-              if (res && res.error) msg = res.error;
-              uploadStatus.textContent = msg;
-              progressBar.style.width = "0%";
-            }
-          }
-        };
-
-        xhr.onerror = function () {
-          uploadArea.style.pointerEvents = "";
-          uploadStatus.textContent = "Erreur réseau pendant l'upload";
-          progressBar.style.width = "0%";
-        };
-
-        xhr.timeout = 5 * 60 * 1000;
-        xhr.ontimeout = function () {
-          uploadArea.style.pointerEvents = "";
-          uploadStatus.textContent = "Upload expiré (timeout)";
-          progressBar.style.width = "0%";
-        };
-
-        xhr.send(formData);
+        uploadArea.style.pointerEvents = "";
+        if (failed === 0) {
+          uploadStatus.textContent = `Upload terminé — ${completed} fichier${completed > 1 ? "s" : ""}`;
+        } else {
+          uploadStatus.textContent = `Upload terminé — ${completed} OK, ${failed} erreur${failed > 1 ? "s" : ""}`;
+        }
+        setTimeout(() => {
+          uploadProgress.classList.add("hidden");
+          loadPhotos();
+        }, 1500);
       }
 
       async function loadPhotos() {
