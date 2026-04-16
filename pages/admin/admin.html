@@ -1,699 +1,849 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
-    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="robots"
+      content="noindex, nofollow, noarchive, nosnippet, noimageindex"
+    />
+    <meta
+      name="googlebot"
+      content="noindex, nofollow, noarchive, nosnippet, noimageindex"
+    />
     <title>Administration - Portfolio</title>
-    <link rel="icon" type="image/svg+xml" href="../../dist/assets/Logo_MP.svg">
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="../../dist/assets/Logo_MP.svg"
+    />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-        :root {
-            --bg: #0f0f0f;
-            --surface: #1a1a1a;
-            --surface-hover: #222;
-            --border: #2a2a2a;
-            --text: #e5e5e5;
-            --text-muted: #888;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --danger: #dc2626;
-            --danger-hover: #b91c1c;
-            --radius: 8px;
+      :root {
+        --bg: #0f0f0f;
+        --surface: #1a1a1a;
+        --surface-hover: #222;
+        --border: #2a2a2a;
+        --text: #e5e5e5;
+        --text-muted: #888;
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --danger: #dc2626;
+        --danger-hover: #b91c1c;
+        --radius: 8px;
+      }
+
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* ── Login ── */
+      .login-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 1rem;
+      }
+
+      .login-box {
+        width: 100%;
+        max-width: 380px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 2rem;
+      }
+
+      .login-box h1 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        text-align: center;
+      }
+
+      .login-error {
+        background: rgba(220, 38, 38, 0.12);
+        color: #fca5a5;
+        border: 1px solid rgba(220, 38, 38, 0.3);
+        border-radius: var(--radius);
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+      }
+
+      label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        margin-bottom: 0.4rem;
+      }
+
+      input[type="password"] {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text);
+        font-size: 0.9rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      input[type="password"]:focus {
+        border-color: var(--accent);
+      }
+
+      input[type="password"]::placeholder {
+        color: #555;
+      }
+
+      /* ── Buttons ── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 0.9rem;
+        border: none;
+        border-radius: var(--radius);
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s;
+        text-decoration: none;
+        color: #fff;
+      }
+
+      .btn svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+      }
+      .btn-primary:hover {
+        background: var(--accent-hover);
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+      }
+      .btn-ghost:hover {
+        background: var(--surface-hover);
+        color: var(--text);
+      }
+
+      .btn-danger {
+        background: transparent;
+        color: #f87171;
+        border: 1px solid rgba(220, 38, 38, 0.3);
+      }
+      .btn-danger:hover {
+        background: rgba(220, 38, 38, 0.12);
+      }
+
+      .btn-danger-solid {
+        background: var(--danger);
+        color: #fff;
+      }
+      .btn-danger-solid:hover {
+        background: var(--danger-hover);
+      }
+
+      /* ── Header ── */
+      .header {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: rgba(15, 15, 15, 0.92);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .header-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 1.25rem;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .header-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      /* ── Main layout ── */
+      .main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1.5rem 1.25rem 3rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      /* ── Cards ── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.25rem;
+      }
+
+      .card-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+
+      /* ── Navigation grid ── */
+      .nav-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 0.6rem;
+      }
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.7rem 0.8rem;
+        border-radius: var(--radius);
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+      }
+
+      .nav-link:hover {
+        border-color: #444;
+        background: var(--surface-hover);
+      }
+
+      .nav-link svg {
+        width: 18px;
+        height: 18px;
+        color: var(--text-muted);
+        flex-shrink: 0;
+      }
+
+      /* ── Upload ── */
+      .upload-zone {
+        border: 1px dashed #333;
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        cursor: pointer;
+        transition: border-color 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .upload-zone:hover {
+        border-color: #555;
+      }
+      .upload-zone.dragover {
+        border-color: var(--accent);
+      }
+
+      .upload-zone-text {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+
+      .progress-wrap {
+        margin-top: 1rem;
+      }
+
+      .progress-bar-bg {
+        height: 4px;
+        background: #222;
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 2px;
+        transition: width 0.3s;
+        width: 0%;
+      }
+
+      .progress-text {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 0.4rem;
+      }
+
+      /* ── Photos grid ── */
+      .photos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.75rem;
+      }
+
+      .photo-card {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      .photo-card img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .photo-card-body {
+        padding: 0.6rem 0.7rem;
+      }
+
+      .photo-card-name {
+        font-size: 0.8rem;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .photo-card-meta {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.15rem;
+      }
+
+      .photo-card-delete {
+        display: block;
+        width: 100%;
+        margin-top: 0.5rem;
+        padding: 0.35rem;
+        background: transparent;
+        border: 1px solid rgba(220, 38, 38, 0.25);
+        border-radius: 6px;
+        color: #f87171;
+        font-size: 0.78rem;
+        font-family: inherit;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .photo-card-delete:hover {
+        background: rgba(220, 38, 38, 0.12);
+      }
+
+      /* ── Section header with action ── */
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+      }
+
+      .card-header .card-title {
+        margin-bottom: 0;
+      }
+
+      /* ── Loading ── */
+      .loading-text {
+        text-align: center;
+        padding: 2rem 0;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+
+      .spinner {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #333;
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        vertical-align: middle;
+        margin-right: 0.5rem;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
+      }
 
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-            min-height: 100vh;
-        }
-
-        .hidden { display: none !important; }
-
-        /* ── Login ── */
-        .login-wrap {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 1rem;
-        }
-
-        .login-box {
-            width: 100%;
-            max-width: 380px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 2rem;
-        }
-
-        .login-box h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-
-        .login-error {
-            background: rgba(220,38,38,0.12);
-            color: #fca5a5;
-            border: 1px solid rgba(220,38,38,0.3);
-            border-radius: var(--radius);
-            padding: 0.6rem 0.8rem;
-            font-size: 0.85rem;
-            margin-bottom: 1rem;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-muted);
-            margin-bottom: 0.4rem;
-        }
-
-        input[type="password"] {
-            width: 100%;
-            padding: 0.6rem 0.75rem;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            color: var(--text);
-            font-size: 0.9rem;
-            font-family: inherit;
-            outline: none;
-            transition: border-color 0.15s;
-        }
-
-        input[type="password"]:focus {
-            border-color: var(--accent);
-        }
-
-        input[type="password"]::placeholder {
-            color: #555;
-        }
-
-        /* ── Buttons ── */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.5rem 0.9rem;
-            border: none;
-            border-radius: var(--radius);
-            font-family: inherit;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.15s;
-            text-decoration: none;
-            color: #fff;
-        }
-
-        .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
-
-        .btn-primary {
-            background: var(--accent);
-        }
-        .btn-primary:hover { background: var(--accent-hover); }
-
-        .btn-ghost {
-            background: transparent;
-            color: var(--text-muted);
-            border: 1px solid var(--border);
-        }
-        .btn-ghost:hover {
-            background: var(--surface-hover);
-            color: var(--text);
-        }
-
-        .btn-danger {
-            background: transparent;
-            color: #f87171;
-            border: 1px solid rgba(220,38,38,0.3);
-        }
-        .btn-danger:hover {
-            background: rgba(220,38,38,0.12);
-        }
-
-        .btn-danger-solid {
-            background: var(--danger);
-            color: #fff;
-        }
-        .btn-danger-solid:hover { background: var(--danger-hover); }
-
-        /* ── Header ── */
-        .header {
-            position: sticky;
-            top: 0;
-            z-index: 30;
-            background: rgba(15,15,15,0.92);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .header-inner {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 1.25rem;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .header-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* ── Main layout ── */
-        .main {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 1.5rem 1.25rem 3rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        /* ── Cards ── */
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.25rem;
-        }
-
-        .card-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        /* ── Navigation grid ── */
+      /* ── Responsive ── */
+      @media (max-width: 640px) {
         .nav-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 0.6rem;
+          grid-template-columns: 1fr;
         }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.7rem 0.8rem;
-            border-radius: var(--radius);
-            background: var(--bg);
-            border: 1px solid var(--border);
-            color: var(--text);
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: border-color 0.15s, background 0.15s;
-        }
-
-        .nav-link:hover {
-            border-color: #444;
-            background: var(--surface-hover);
-        }
-
-        .nav-link svg { width: 18px; height: 18px; color: var(--text-muted); flex-shrink: 0; }
-
-        /* ── Upload ── */
         .upload-zone {
-            border: 1px dashed #333;
-            border-radius: var(--radius);
-            padding: 1.25rem;
-            cursor: pointer;
-            transition: border-color 0.15s;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
+          flex-direction: column;
+          align-items: flex-start;
         }
-
-        .upload-zone:hover { border-color: #555; }
-        .upload-zone.dragover { border-color: var(--accent); }
-
-        .upload-zone-text {
-            font-size: 0.85rem;
-            color: var(--text-muted);
+        .header-actions .btn span {
+          display: none;
         }
-
-        .progress-wrap {
-            margin-top: 1rem;
-        }
-
-        .progress-bar-bg {
-            height: 4px;
-            background: #222;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: var(--accent);
-            border-radius: 2px;
-            transition: width 0.3s;
-            width: 0%;
-        }
-
-        .progress-text {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 0.4rem;
-        }
-
-        /* ── Photos grid ── */
-        .photos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 0.75rem;
-        }
-
-        .photo-card {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
-        }
-
-        .photo-card img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            display: block;
-        }
-
-        .photo-card-body {
-            padding: 0.6rem 0.7rem;
-        }
-
-        .photo-card-name {
-            font-size: 0.8rem;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .photo-card-meta {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 0.15rem;
-        }
-
-        .photo-card-delete {
-            display: block;
-            width: 100%;
-            margin-top: 0.5rem;
-            padding: 0.35rem;
-            background: transparent;
-            border: 1px solid rgba(220,38,38,0.25);
-            border-radius: 6px;
-            color: #f87171;
-            font-size: 0.78rem;
-            font-family: inherit;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-
-        .photo-card-delete:hover {
-            background: rgba(220,38,38,0.12);
-        }
-
-        /* ── Section header with action ── */
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-        }
-
-        .card-header .card-title { margin-bottom: 0; }
-
-        /* ── Loading ── */
-        .loading-text {
-            text-align: center;
-            padding: 2rem 0;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 2px solid #333;
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            vertical-align: middle;
-            margin-right: 0.5rem;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ── Responsive ── */
-        @media (max-width: 640px) {
-            .nav-grid { grid-template-columns: 1fr; }
-            .upload-zone { flex-direction: column; align-items: flex-start; }
-            .header-actions .btn span { display: none; }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Login -->
     <div id="login-container" class="login-wrap">
-        <div class="login-box">
-            <h1>Administration</h1>
-            <div id="login-error" class="login-error hidden">
-                Mot de passe incorrect
-            </div>
-            <form id="login-form">
-                <div style="margin-bottom:1.25rem">
-                    <label for="password">Mot de passe</label>
-                    <input type="password" id="password" placeholder="Entrez votre mot de passe" required>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
-                    Se connecter
-                </button>
-            </form>
+      <div class="login-box">
+        <h1>Administration</h1>
+        <div id="login-error" class="login-error hidden">
+          Mot de passe incorrect
         </div>
+        <form id="login-form">
+          <div style="margin-bottom: 1.25rem">
+            <label for="password">Mot de passe</label>
+            <input
+              type="password"
+              id="password"
+              placeholder="Entrez votre mot de passe"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            style="width: 100%; justify-content: center"
+          >
+            Se connecter
+          </button>
+        </form>
+      </div>
     </div>
 
     <!-- Admin panel -->
     <div id="admin-panel" class="hidden">
-        <header class="header">
-            <div class="header-inner">
-                <span class="header-title">Administration</span>
-                <div class="header-actions">
-                    <a href="/" class="btn btn-ghost" aria-label="Voir le site">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                        <span>Voir le site</span>
-                    </a>
-                    <button id="logout-btn" class="btn btn-danger" aria-label="Se deconnecter">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                        <span>Deconnexion</span>
-                    </button>
-                </div>
-            </div>
-        </header>
+      <header class="header">
+        <div class="header-inner">
+          <span class="header-title">Administration</span>
+          <div class="header-actions">
+            <a href="/" class="btn btn-ghost" aria-label="Voir le site">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+              <span>Voir le site</span>
+            </a>
+            <button
+              id="logout-btn"
+              class="btn btn-danger"
+              aria-label="Se deconnecter"
+            >
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              <span>Deconnexion</span>
+            </button>
+          </div>
+        </div>
+      </header>
 
-        <main class="main">
-            <!-- Navigation -->
-            <div class="card">
-                <div class="card-title">Raccourcis</div>
-                <div class="nav-grid">
-                    <a href="/admin/logs" class="nav-link">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6m4 6V7m4 10v-4M5 20h14"/></svg>
-                        Logs
-                    </a>
-                    <a href="/admin/campaigns" class="nav-link">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-                        Campagnes
-                    </a>
-                    <a href="/admin/text-editor" class="nav-link">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        Textes
-                    </a>
-                    <a href="/admin/galleries" class="nav-link">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        Galeries
-                    </a>
-                    <a href="/admin/links" class="nav-link">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                        Liens
-                    </a>
-                </div>
-            </div>
+      <main class="main">
+        <!-- Navigation -->
+        <div class="card">
+          <div class="card-title">Raccourcis</div>
+          <div class="nav-grid">
+            <a href="/admin/logs" class="nav-link">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 17v-6m4 6V7m4 10v-4M5 20h14"
+                />
+              </svg>
+              Logs
+            </a>
+            <a href="/admin/campaigns" class="nav-link">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
+              </svg>
+              Campagnes
+            </a>
+            <a href="/admin/text-editor" class="nav-link">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+              Textes
+            </a>
+            <a href="/admin/galleries" class="nav-link">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              Galeries
+            </a>
+            <a href="/admin/links" class="nav-link">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                />
+              </svg>
+              Liens
+            </a>
+          </div>
+        </div>
 
-            <!-- Upload -->
-            <div class="card">
-                <div class="card-title">Ajouter des photos</div>
-                <div class="upload-zone" id="upload-area">
-                    <input type="file" id="file-input" accept="image/*" multiple style="display:none">
-                    <span class="upload-zone-text">Glisser-deposer ou cliquer pour ajouter des images</span>
-                    <button type="button" class="btn btn-primary">Parcourir</button>
-                </div>
-                <div id="upload-progress" class="progress-wrap hidden">
-                    <div class="progress-bar-bg">
-                        <div id="progress-bar" class="progress-bar-fill" style="width:0%"></div>
-                    </div>
-                    <p id="upload-status" class="progress-text">Upload en cours...</p>
-                </div>
+        <!-- Upload -->
+        <div class="card">
+          <div class="card-title">Ajouter des photos</div>
+          <div class="upload-zone" id="upload-area">
+            <input
+              type="file"
+              id="file-input"
+              accept="image/*"
+              multiple
+              style="display: none"
+            />
+            <span class="upload-zone-text"
+              >Glisser-deposer ou cliquer pour ajouter des images</span
+            >
+            <button type="button" class="btn btn-primary">Parcourir</button>
+          </div>
+          <div id="upload-progress" class="progress-wrap hidden">
+            <div class="progress-bar-bg">
+              <div
+                id="progress-bar"
+                class="progress-bar-fill"
+                style="width: 0%"
+              ></div>
             </div>
+            <p id="upload-status" class="progress-text">Upload en cours...</p>
+          </div>
+        </div>
 
-            <!-- Photo library -->
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">Photos</div>
-                    <button id="refresh-btn" class="btn btn-ghost" aria-label="Actualiser">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9M20 20v-5h-.581m0 0a8.003 8.003 0 01-15.357-2"/></svg>
-                        <span>Actualiser</span>
-                    </button>
-                </div>
-                <div id="loading" class="loading-text">
-                    <span class="spinner"></span> Chargement...
-                </div>
-                <div id="photos-grid" class="photos-grid hidden"></div>
-            </div>
-        </main>
+        <!-- Photo library -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Photos</div>
+            <button
+              id="refresh-btn"
+              class="btn btn-ghost"
+              aria-label="Actualiser"
+            >
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9M20 20v-5h-.581m0 0a8.003 8.003 0 01-15.357-2"
+                />
+              </svg>
+              <span>Actualiser</span>
+            </button>
+          </div>
+          <div id="loading" class="loading-text">
+            <span class="spinner"></span> Chargement...
+          </div>
+          <div id="photos-grid" class="photos-grid hidden"></div>
+        </div>
+      </main>
     </div>
 
     <script>
-        let isLoggedIn = false;
+      let isLoggedIn = false;
 
-        const loginContainer = document.getElementById('login-container');
-        const adminPanel = document.getElementById('admin-panel');
-        const loginForm = document.getElementById('login-form');
-        const loginError = document.getElementById('login-error');
-        const logoutBtn = document.getElementById('logout-btn');
-        const photosGrid = document.getElementById('photos-grid');
-        const loading = document.getElementById('loading');
-        const refreshBtn = document.getElementById('refresh-btn');
-        const uploadArea = document.getElementById('upload-area');
-        const fileInput = document.getElementById('file-input');
-        const uploadProgress = document.getElementById('upload-progress');
-        const progressBar = document.getElementById('progress-bar');
-        const uploadStatus = document.getElementById('upload-status');
+      const loginContainer = document.getElementById("login-container");
+      const adminPanel = document.getElementById("admin-panel");
+      const loginForm = document.getElementById("login-form");
+      const loginError = document.getElementById("login-error");
+      const logoutBtn = document.getElementById("logout-btn");
+      const photosGrid = document.getElementById("photos-grid");
+      const loading = document.getElementById("loading");
+      const refreshBtn = document.getElementById("refresh-btn");
+      const uploadArea = document.getElementById("upload-area");
+      const fileInput = document.getElementById("file-input");
+      const uploadProgress = document.getElementById("upload-progress");
+      const progressBar = document.getElementById("progress-bar");
+      const uploadStatus = document.getElementById("upload-status");
 
-        async function checkLoginStatus() {
-            try {
-                const response = await fetch('/admin/status');
-                const data = await response.json();
-                if (data.isLoggedIn) showAdminPanel();
-            } catch (error) {
-                console.error('Erreur lors de la vérification du statut:', error);
-            }
+      async function checkLoginStatus() {
+        try {
+          const response = await fetch("/admin/status");
+          const data = await response.json();
+          if (data.isLoggedIn) showAdminPanel();
+        } catch (error) {
+          console.error("Erreur lors de la vérification du statut:", error);
+        }
+      }
+
+      function showAdminPanel() {
+        isLoggedIn = true;
+        loginContainer.classList.add("hidden");
+        adminPanel.classList.remove("hidden");
+        loginError.classList.add("hidden");
+        loadPhotos();
+      }
+
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const password = document.getElementById("password").value;
+        try {
+          const response = await fetch("/admin/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password }),
+          });
+          if (response.ok) {
+            showAdminPanel();
+          } else {
+            loginError.classList.remove("hidden");
+          }
+        } catch (error) {
+          console.error("Erreur lors de la connexion:", error);
+          loginError.classList.remove("hidden");
+        }
+      });
+
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          await fetch("/admin/logout", { method: "POST" });
+          isLoggedIn = false;
+          loginContainer.classList.remove("hidden");
+          adminPanel.classList.add("hidden");
+          document.getElementById("password").value = "";
+        } catch (error) {
+          console.error("Erreur lors de la déconnexion:", error);
+        }
+      });
+
+      uploadArea.addEventListener("click", () => fileInput.click());
+
+      uploadArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadArea.classList.add("dragover");
+      });
+
+      uploadArea.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove("dragover");
+      });
+
+      uploadArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove("dragover");
+        handleFileUpload(e.dataTransfer.files);
+      });
+
+      fileInput.addEventListener("change", (e) => {
+        handleFileUpload(e.target.files);
+      });
+
+      function handleFileUpload(files) {
+        if (!files || !files.length) return;
+
+        const formData = new FormData();
+        let fileCount = 0;
+        for (let file of files) {
+          if (file.type && file.type.startsWith("image/")) {
+            formData.append("photos", file);
+            fileCount++;
+          }
         }
 
-        function showAdminPanel() {
-            isLoggedIn = true;
-            loginContainer.classList.add('hidden');
-            adminPanel.classList.remove('hidden');
-            loginError.classList.add('hidden');
-            loadPhotos();
-        }
+        if (fileCount === 0) return;
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const password = document.getElementById('password').value;
-            try {
-                const response = await fetch('/admin/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password })
-                });
-                if (response.ok) {
-                    showAdminPanel();
-                } else {
-                    loginError.classList.remove('hidden');
-                }
-            } catch (error) {
-                console.error('Erreur lors de la connexion:', error);
-                loginError.classList.remove('hidden');
+        uploadProgress.classList.remove("hidden");
+        progressBar.style.width = "0%";
+        uploadStatus.textContent = `Upload de ${fileCount} fichier${fileCount > 1 ? "s" : ""} en cours...`;
+        uploadArea.style.pointerEvents = "none";
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/admin/upload");
+        xhr.responseType = "json";
+
+        xhr.upload.addEventListener("progress", (e) => {
+          if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            progressBar.style.width = percent + "%";
+            uploadStatus.textContent = `Upload ${percent}% — ${fileCount} fichier${fileCount > 1 ? "s" : ""}`;
+          }
+        });
+
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === XMLHttpRequest.DONE) {
+            uploadArea.style.pointerEvents = "";
+            if (xhr.status >= 200 && xhr.status < 300) {
+              progressBar.style.width = "100%";
+              uploadStatus.textContent = "Upload terminé";
+              setTimeout(() => {
+                uploadProgress.classList.add("hidden");
+                loadPhotos();
+              }, 1200);
+            } else {
+              let msg = "Erreur lors de l'upload";
+              const res =
+                xhr.response && typeof xhr.response === "object"
+                  ? xhr.response
+                  : null;
+              if (res && res.error) msg = res.error;
+              uploadStatus.textContent = msg;
+              progressBar.style.width = "0%";
             }
-        });
+          }
+        };
 
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                await fetch('/admin/logout', { method: 'POST' });
-                isLoggedIn = false;
-                loginContainer.classList.remove('hidden');
-                adminPanel.classList.add('hidden');
-                document.getElementById('password').value = '';
-            } catch (error) {
-                console.error('Erreur lors de la déconnexion:', error);
-            }
-        });
+        xhr.onerror = function () {
+          uploadArea.style.pointerEvents = "";
+          uploadStatus.textContent = "Erreur réseau pendant l'upload";
+          progressBar.style.width = "0%";
+        };
 
-        uploadArea.addEventListener('click', () => fileInput.click());
+        xhr.timeout = 5 * 60 * 1000;
+        xhr.ontimeout = function () {
+          uploadArea.style.pointerEvents = "";
+          uploadStatus.textContent = "Upload expiré (timeout)";
+          progressBar.style.width = "0%";
+        };
 
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+        xhr.send(formData);
+      }
 
-        uploadArea.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-        });
+      async function loadPhotos() {
+        loading.classList.remove("hidden");
+        photosGrid.classList.add("hidden");
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            handleFileUpload(e.dataTransfer.files);
-        });
+        try {
+          const response = await fetch("/admin/photos");
+          const photos = await response.json();
 
-        fileInput.addEventListener('change', (e) => {
-            handleFileUpload(e.target.files);
-        });
-
-        function handleFileUpload(files) {
-            if (!files || !files.length) return;
-
-            const formData = new FormData();
-            let fileCount = 0;
-            for (let file of files) {
-                if (file.type && file.type.startsWith('image/')) {
-                    formData.append('photos', file);
-                    fileCount++;
-                }
-            }
-
-            if (fileCount === 0) return;
-
-            uploadProgress.classList.remove('hidden');
-            progressBar.style.width = '0%';
-            uploadStatus.textContent = `Upload de ${fileCount} fichier${fileCount > 1 ? 's' : ''} en cours...`;
-            uploadArea.style.pointerEvents = 'none';
-
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/admin/upload');
-            xhr.responseType = 'json';
-
-            xhr.upload.addEventListener('progress', (e) => {
-                if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    progressBar.style.width = percent + '%';
-                    uploadStatus.textContent = `Upload ${percent}% — ${fileCount} fichier${fileCount > 1 ? 's' : ''}`;
-                }
-            });
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    uploadArea.style.pointerEvents = '';
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        progressBar.style.width = '100%';
-                        uploadStatus.textContent = 'Upload terminé';
-                        setTimeout(() => {
-                            uploadProgress.classList.add('hidden');
-                            loadPhotos();
-                        }, 1200);
-                    } else {
-                        let msg = 'Erreur lors de l\'upload';
-                        const res = xhr.response && typeof xhr.response === 'object' ? xhr.response : null;
-                        if (res && res.error) msg = res.error;
-                        uploadStatus.textContent = msg;
-                        progressBar.style.width = '0%';
-                    }
-                }
-            };
-
-            xhr.onerror = function () {
-                uploadArea.style.pointerEvents = '';
-                uploadStatus.textContent = 'Erreur réseau pendant l\'upload';
-                progressBar.style.width = '0%';
-            };
-
-            xhr.timeout = 5 * 60 * 1000;
-            xhr.ontimeout = function () {
-                uploadArea.style.pointerEvents = '';
-                uploadStatus.textContent = 'Upload expiré (timeout)';
-                progressBar.style.width = '0%';
-            };
-
-            xhr.send(formData);
-        }
-
-        async function loadPhotos() {
-            loading.classList.remove('hidden');
-            photosGrid.classList.add('hidden');
-
-            try {
-                const response = await fetch('/admin/photos');
-                const photos = await response.json();
-
-                photosGrid.innerHTML = '';
-                photos.forEach(photo => {
-                    const item = document.createElement('div');
-                    item.className = 'photo-card';
-                    item.innerHTML = `
+          photosGrid.innerHTML = "";
+          photos.forEach((photo) => {
+            const item = document.createElement("div");
+            item.className = "photo-card";
+            item.innerHTML = `
                         <img src="/photos/resize?file=${encodeURIComponent(photo.filename)}&w=320" alt="${photo.filename}" onerror="this.src='/photos/${encodeURIComponent(photo.filename)}'">
                         <div class="photo-card-body">
                             <div class="photo-card-name">${photo.filename}</div>
-                            <div class="photo-card-meta">${formatFileSize(photo.size)} · ${new Date(photo.mtime).toLocaleDateString('fr-FR')}</div>
+                            <div class="photo-card-meta">${formatFileSize(photo.size)} · ${new Date(photo.mtime).toLocaleDateString("fr-FR")}</div>
                             <button class="photo-card-delete" onclick="deletePhoto('${photo.filename}')">Supprimer</button>
                         </div>
                     `;
-                    photosGrid.appendChild(item);
-                });
+            photosGrid.appendChild(item);
+          });
 
-                loading.classList.add('hidden');
-                photosGrid.classList.remove('hidden');
-            } catch (error) {
-                console.error('Erreur lors du chargement des photos:', error);
-                loading.innerHTML = '<p style="color:#f87171">Erreur lors du chargement des photos</p>';
-            }
+          loading.classList.add("hidden");
+          photosGrid.classList.remove("hidden");
+        } catch (error) {
+          console.error("Erreur lors du chargement des photos:", error);
+          loading.innerHTML =
+            '<p style="color:#f87171">Erreur lors du chargement des photos</p>';
         }
+      }
 
-        async function deletePhoto(filename) {
-            if (!confirm(`Supprimer "${filename}" ?`)) return;
+      async function deletePhoto(filename) {
+        if (!confirm(`Supprimer "${filename}" ?`)) return;
 
-            try {
-                const response = await fetch(`/admin/photos/${encodeURIComponent(filename)}`, { method: 'DELETE' });
-                if (response.ok) {
-                    loadPhotos();
-                } else {
-                    const errorText = await response.text();
-                    alert('Erreur: ' + errorText);
-                }
-            } catch (error) {
-                alert('Erreur: ' + error.message);
-            }
+        try {
+          const response = await fetch(
+            `/admin/photos/${encodeURIComponent(filename)}`,
+            { method: "DELETE" },
+          );
+          if (response.ok) {
+            loadPhotos();
+          } else {
+            const errorText = await response.text();
+            alert("Erreur: " + errorText);
+          }
+        } catch (error) {
+          alert("Erreur: " + error.message);
         }
+      }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
+      function formatFileSize(bytes) {
+        if (bytes === 0) return "0 B";
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return (
+          Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) +
+          " " +
+          sizes[i]
+        );
+      }
 
-        refreshBtn.addEventListener('click', loadPhotos);
-        globalThis.deletePhoto = deletePhoto;
-        checkLoginStatus();
+      refreshBtn.addEventListener("click", loadPhotos);
+      globalThis.deletePhoto = deletePhoto;
+      checkLoginStatus();
     </script>
-</body>
+  </body>
 </html>
