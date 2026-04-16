@@ -513,7 +513,8 @@
 
       async function loadPhotos() {
         try {
-          const r = await fetch("/photos-list");
+          // Admin picker must include photos hidden from public/home listings.
+          const r = await fetch("/admin/photos");
           allPhotos = await r.json();
           renderPicker();
         } catch (e) {

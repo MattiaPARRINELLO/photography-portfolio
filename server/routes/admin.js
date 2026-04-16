@@ -56,6 +56,17 @@ function parsePhotosField(value) {
     return [];
 }
 
+function uniqueStrings(values) {
+    return Array.from(
+        new Set(
+            (values || [])
+                .filter(v => typeof v === 'string')
+                .map(v => v.trim())
+                .filter(Boolean)
+        )
+    );
+}
+
 function buildGalleryInputFromRequest(req) {
     const body = req.body || {};
 
@@ -122,8 +133,8 @@ function buildGalleryInputFromRequest(req) {
         : undefined;
 
     const photosFromBody = parsePhotosField(body.photos || payload.photos);
-    const photosFromUpload = (req.files || []).map(f => f.filename).filter(Boolean);
-    const photos = [...photosFromBody, ...photosFromUpload];
+    const photosFromUpload = uniqueStrings((req.files || []).map(f => f.filename));
+    const photos = uniqueStrings([...photosFromBody, ...photosFromUpload]);
 
     return {
         title,
@@ -133,6 +144,7 @@ function buildGalleryInputFromRequest(req) {
         description,
         cover,
         photos,
+        uploadedPhotos: photosFromUpload,
         ...(artistLinks !== undefined ? { artistLinks } : {}),
         published: parseBoolean(body.published ?? payload.published, true),
         excludeFromMain: parseBoolean(body.excludeFromMain ?? payload.excludeFromMain, false)

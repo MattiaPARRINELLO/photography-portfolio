@@ -57,13 +57,25 @@ async function getPhotosList() {
 
             const images = files.filter(f => f.match(/\.(jpg|jpeg|png|webp)$/i));
 
-            // Exclude photos that belong to galleries marked as excludeFromMain
+            // Exclude photos hidden from main listing:
+            // - all photos from galleries marked excludeFromMain
+            // - photos explicitly flagged as gallery-only (uploaded via gallery form)
+            // - backward-compat: infer gallery uploads by admin-gallery filename pattern
             try {
                 const galleries = galleryService.loadGalleries().galleries || [];
                 const excluded = new Set();
+                const galleryUploadNamePattern = /^\d{13}-[a-z0-9]{6}-/i;
                 galleries.forEach(g => {
                     if (g.excludeFromMain && Array.isArray(g.photos)) {
                         g.photos.forEach(p => { if (p) excluded.add(p); });
+                    }
+                    if (Array.isArray(g.galleryOnlyPhotos)) {
+                        g.galleryOnlyPhotos.forEach(p => { if (p) excluded.add(p); });
+                    }
+                    if (Array.isArray(g.photos)) {
+                        g.photos.forEach(p => {
+                            if (p && galleryUploadNamePattern.test(p)) excluded.add(p);
+                        });
                     }
                 });
                 // filter images array to remove excluded filenames

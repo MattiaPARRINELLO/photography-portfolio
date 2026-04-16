@@ -46,6 +46,17 @@ function generateId() {
     return 'g_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 }
 
+function uniqueStrings(values = []) {
+    return Array.from(
+        new Set(
+            values
+                .filter(v => typeof v === 'string')
+                .map(v => v.trim())
+                .filter(Boolean)
+        )
+    );
+}
+
 function sanitizeExternalUrl(value) {
     const raw = (value || '').toString().trim();
     if (!raw) return '';
@@ -112,6 +123,11 @@ function createGallery(input) {
     const title = (input.title || '').trim();
     if (!title) throw new Error('Le titre est requis');
 
+    const photos = uniqueStrings(Array.isArray(input.photos) ? input.photos : []);
+    const uploadedPhotos = uniqueStrings(Array.isArray(input.uploadedPhotos) ? input.uploadedPhotos : []);
+    const explicitGalleryOnlyPhotos = uniqueStrings(Array.isArray(input.galleryOnlyPhotos) ? input.galleryOnlyPhotos : []);
+    const galleryOnlyPhotos = uniqueStrings([...explicitGalleryOnlyPhotos, ...uploadedPhotos]).filter(name => photos.includes(name));
+
     const gallery = {
         id: generateId(),
         slug: generateUniqueSlug(input.slug || title, data.galleries),
@@ -120,8 +136,10 @@ function createGallery(input) {
         venue: (input.venue || '').trim(),
         date: (input.date || '').trim(),
         description: (input.description || '').trim(),
-        cover: input.cover || (Array.isArray(input.photos) && input.photos[0]) || null,
-        photos: Array.isArray(input.photos) ? input.photos.filter(Boolean) : [],
+        cover: input.cover || photos[0] || null,
+        photos,
+        // Photos uploaded from the gallery form should stay gallery-only.
+        galleryOnlyPhotos,
         artistLinks: normalizeArtistLinks(input.artistLinks || input),
         published: input.published !== false,
         // When true, photos in this gallery should not appear in the site's main photo listing
@@ -149,7 +167,23 @@ function updateGallery(id, updates) {
     if (updates.date !== undefined) merged.date = updates.date.trim();
     if (updates.description !== undefined) merged.description = updates.description.trim();
     if (updates.cover !== undefined) merged.cover = updates.cover;
-    if (Array.isArray(updates.photos)) merged.photos = updates.photos.filter(Boolean);
+    if (Array.isArray(updates.photos)) merged.photos = uniqueStrings(updates.photos);
+    if (!Array.isArray(merged.photos)) merged.photos = [];
+    if (!Array.isArray(merged.galleryOnlyPhotos)) merged.galleryOnlyPhotos = [];
+
+    if (Array.isArray(updates.galleryOnlyPhotos)) {
+        merged.galleryOnlyPhotos = uniqueStrings(updates.galleryOnlyPhotos);
+    }
+
+    if (Array.isArray(updates.uploadedPhotos) && updates.uploadedPhotos.length > 0) {
+        merged.galleryOnlyPhotos = uniqueStrings([
+            ...merged.galleryOnlyPhotos,
+            ...updates.uploadedPhotos
+        ]);
+    }
+
+    // Keep gallery-only list coherent with current gallery photos.
+    merged.galleryOnlyPhotos = merged.galleryOnlyPhotos.filter(name => merged.photos.includes(name));
     if (updates.artistLinks !== undefined || updates.artistInstagram !== undefined || updates.artistDeezer !== undefined || updates.artistSpotify !== undefined) {
         merged.artistLinks = mergeArtistLinks(current.artistLinks, updates.artistLinks || updates);
     }
