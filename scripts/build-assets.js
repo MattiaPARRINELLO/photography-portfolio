@@ -14,10 +14,8 @@ function hashContent(content) {
 }
 
 async function writeCompressedOutputs(outPath, content) {
-    // gzip
     const gz = zlib.gzipSync(Buffer.from(content), { level: zlib.constants.Z_BEST_COMPRESSION });
     await fsp.writeFile(outPath + '.gz', gz);
-    // brotli
     if (zlib.brotliCompressSync) {
         try {
             const br = zlib.brotliCompressSync(Buffer.from(content), { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 11 } });
@@ -46,20 +44,55 @@ async function buildCss() {
     return { name: outName, path: outPath };
 }
 
-async function updateHtmlReferences(oldName, newName) {
+async function loadOldFingerprintedName() {
+    const root = path.resolve(__dirname, '..');
+    const manifestPath = path.join(root, 'dist', 'manifest.json');
+    try {
+        const manifest = JSON.parse(await fsp.readFile(manifestPath, 'utf-8'));
+        const oldValue = manifest['dist/css/output.css'];
+        if (oldValue) return path.basename(oldValue);
+    } catch (e) {}
+    return null;
+}
+
+async function updateHtmlReferences(newName) {
     const root = path.resolve(__dirname, '..');
     const pagesDir = path.join(root, 'pages');
-    const files = await fsp.readdir(pagesDir);
-    for (const f of files) {
-        if (!f.endsWith('.html')) continue;
-        const p = path.join(pagesDir, f);
-        let txt = await fsp.readFile(p, 'utf-8');
-        const replaced = txt.split(oldName).join(newName);
-        if (replaced !== txt) {
-            await fsp.writeFile(p, replaced, 'utf-8');
-            console.log(`Updated ${f}: ${oldName} -> ${newName}`);
+    const oldFingerprintedName = await loadOldFingerprintedName();
+
+    async function walk(dir) {
+        const entries = await fsp.readdir(dir, { withFileTypes: true });
+        for (const entry of entries) {
+            const fullPath = path.join(dir, entry.name);
+            if (entry.isDirectory()) {
+                await walk(fullPath);
+            } else if (entry.name.endsWith('.html')) {
+                let txt = await fsp.readFile(fullPath, 'utf-8');
+                let updated = false;
+
+                // Replace base name output.css
+                let newTxt = txt.split('output.css').join(newName);
+                if (newTxt !== txt) { updated = true; txt = newTxt; }
+
+                // Replace old fingerprinted name (e.g. output.b5468ae2.css)
+                if (oldFingerprintedName && oldFingerprintedName !== newName) {
+                    newTxt = txt.split(oldFingerprintedName).join(newName);
+                    if (newTxt !== txt) { updated = true; txt = newTxt; }
+                }
+
+                // Replace any other old fingerprinted names (output.<hex>.css)
+                newTxt = txt.replace(/output\.[a-f0-9]{8}\.css/g, newName);
+                if (newTxt !== txt) { updated = true; txt = newTxt; }
+
+                if (updated) {
+                    await fsp.writeFile(fullPath, txt, 'utf-8');
+                    console.log(`Updated ${path.relative(pagesDir, fullPath)} -> ${newName}`);
+                }
+            }
         }
     }
+
+    await walk(pagesDir);
 }
 
 async function writeManifest(manifest) {
@@ -69,13 +102,28 @@ async function writeManifest(manifest) {
     console.log('Wrote manifest to', manifestPath);
 }
 
+async function cleanupOldFingerprinted(keepName) {
+    const root = path.resolve(__dirname, '..');
+    const cssDir = path.join(root, 'dist', 'css');
+    const entries = await fsp.readdir(cssDir);
+    for (const entry of entries) {
+        if (/^output\.[a-f0-9]{8}\.css(\.(gz|br))?$/.test(entry)) {
+            if (entry.startsWith(keepName)) continue;
+            const fullPath = path.join(cssDir, entry);
+            fs.unlinkSync(fullPath);
+        }
+    }
+}
+
 async function main() {
     console.log('Building assets: minify + fingerprint + precompress');
     try {
         const cssRes = await buildCss();
         if (!cssRes) return process.exit(0);
-        // Update HTML references from output.css to new name
-        await updateHtmlReferences('output.css', cssRes.name);
+
+        await cleanupOldFingerprinted(cssRes.name);
+        await updateHtmlReferences(cssRes.name);
+
         const manifest = { 'dist/css/output.css': `dist/css/${cssRes.name}` };
         await writeManifest(manifest);
         console.log('Build complete. New CSS:', cssRes.name);

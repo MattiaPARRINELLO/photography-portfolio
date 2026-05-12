@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const postcss = require('postcss');
-// Tailwind v4 exposes a separate PostCSS plugin package
-const tailwindPostcss = require('@tailwindcss/postcss');
 const autoprefixer = require('autoprefixer');
 
 (async () => {
@@ -19,7 +17,6 @@ const autoprefixer = require('autoprefixer');
 
   try {
     const result = await postcss([
-      tailwindPostcss({ content: ['./pages/**/*.html', './server/**/*.js', './src/**/*.*'] }),
       autoprefixer()
     ]).process(input, { from: inPath, to: outPath });
 
