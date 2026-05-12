@@ -1,0 +1,158 @@
+{
+  "/home/mattia/photography-portfolio/server/config.js": {
+    "mtime": 1776278523.5322986,
+    "hash": "e9842f1c92becb70e8569dd7033d9524"
+  },
+  "/home/mattia/photography-portfolio/server/middleware/auth.js": {
+    "mtime": 1769158278.1704311,
+    "hash": "c589a4c6859b0e2d871418a62a91c84a"
+  },
+  "/home/mattia/photography-portfolio/server/middleware/tracking.js": {
+    "mtime": 1762435300.0608237,
+    "hash": "cf03eb2a9ecac67eb0785c487a709632"
+  },
+  "/home/mattia/photography-portfolio/server/routes/content.js": {
+    "mtime": 1762338811.516712,
+    "hash": "71939c6558465b609aba3fa7811d140f"
+  },
+  "/home/mattia/photography-portfolio/server/routes/photos.js": {
+    "mtime": 1776257342.3825178,
+    "hash": "905d50b29537e74eff18cf6294694252"
+  },
+  "/home/mattia/photography-portfolio/server/routes/pages.js": {
+    "mtime": 1776279806.9137354,
+    "hash": "514bbb7082f4343f170b25605458c9f1"
+  },
+  "/home/mattia/photography-portfolio/server/routes/image-resize.js": {
+    "mtime": 1776278523.5322986,
+    "hash": "1caf5f2426ea3d4c61b349d8c405f6b2"
+  },
+  "/home/mattia/photography-portfolio/server/routes/signed-images.js": {
+    "mtime": 1776278523.5322986,
+    "hash": "8b5909f7076c0cf3d6e8b7cd6fa9d10d"
+  },
+  "/home/mattia/photography-portfolio/server/routes/stats.js": {
+    "mtime": 1776278523.5322986,
+    "hash": "1e3b2eb1c1ec354803c60eb439b28400"
+  },
+  "/home/mattia/photography-portfolio/server/routes/admin.js": {
+    "mtime": 1776345093.5319614,
+    "hash": "f1b1d6df0e705ff24b03f19532e07a09"
+  },
+  "/home/mattia/photography-portfolio/server/utils/campaignService.js": {
+    "mtime": 1762435300.0618236,
+    "hash": "af2efdbb457772d229cf0547ac27dd63"
+  },
+  "/home/mattia/photography-portfolio/server/utils/globalErrorManager.js": {
+    "mtime": 1762436018.5513422,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/home/mattia/photography-portfolio/server/utils/linksService.js": {
+    "mtime": 1769200967.5643814,
+    "hash": "0c1e35014c146a3548e23c8a6f9655e9"
+  },
+  "/home/mattia/photography-portfolio/server/utils/galleryService.js": {
+    "mtime": 1776321659.1292484,
+    "hash": "0817df7caa74b601d05f31f76ac42826"
+  },
+  "/home/mattia/photography-portfolio/server/utils/textUtils.js": {
+    "mtime": 1776257342.6449401,
+    "hash": "f49c054c6e3f0f34f86d0b58379214c1"
+  },
+  "/home/mattia/photography-portfolio/server/utils/photoService.js": {
+    "mtime": 1776354471.791955,
+    "hash": "d4059faffbc5b62b7e5f80878eba757e"
+  },
+  "/home/mattia/photography-portfolio/scripts/CampaignManager.js": {
+    "mtime": 1762338811.5156615,
+    "hash": "efb8ee8066b35e33a57909fb9a35af67"
+  },
+  "/home/mattia/photography-portfolio/scripts/PhotoClickTracker.js": {
+    "mtime": 1762338811.515793,
+    "hash": "e983f2c48077384e036bcbcd60f354e0"
+  },
+  "/home/mattia/photography-portfolio/scripts/generate-placeholders.js": {
+    "mtime": 1762438802.2478213,
+    "hash": "21b564958a3bdb4d83f59d40fbf4fcb0"
+  },
+  "/home/mattia/photography-portfolio/scripts/convert-thumbnails-to-webp.js": {
+    "mtime": 1762438802.1238248,
+    "hash": "ac4c1ae20ccaa6ee74541d7c0f1e60b6"
+  },
+  "/home/mattia/photography-portfolio/scripts/build-css.js": {
+    "mtime": 1778584924.4593632,
+    "hash": "cc95bcf75e84ace9dbb7d3f9e052f5c4"
+  },
+  "/home/mattia/photography-portfolio/scripts/build-assets.js": {
+    "mtime": 1778585089.7229023,
+    "hash": "5a00fc93a8d8e0b832050e18242cec8f"
+  },
+  "/home/mattia/photography-portfolio/scripts/UserActivityLogger.js": {
+    "mtime": 1776278523.5312986,
+    "hash": "f5624c68240ba086a0145df35c3a169e"
+  },
+  "/home/mattia/photography-portfolio/scripts/test-email.js": {
+    "mtime": 1776278523.5312986,
+    "hash": "523da9eede20dacdb76150bc170cc43e"
+  },
+  "/home/mattia/photography-portfolio/server/README.md": {
+    "mtime": 1762338811.5162961,
+    "hash": "8f1693c8a024dcbfe7f3542539c66143"
+  },
+  "/home/mattia/photography-portfolio/pages/links.html": {
+    "mtime": 1769201491.1414828,
+    "hash": "4b5dd5187608ee4c9252443e69ac01e4"
+  },
+  "/home/mattia/photography-portfolio/pages/404.html": {
+    "mtime": 1775633461.0726616,
+    "hash": "2198836af40a4e4e00f93cabc0af191b"
+  },
+  "/home/mattia/photography-portfolio/pages/about_me.html": {
+    "mtime": 1778586154.0382814,
+    "hash": "966a9f9030302e6fe8efcf7c000e5a81"
+  },
+  "/home/mattia/photography-portfolio/pages/contact.html": {
+    "mtime": 1778586154.0382814,
+    "hash": "106cb4703103d81ab85db17574d1ebbb"
+  },
+  "/home/mattia/photography-portfolio/pages/galleries.html": {
+    "mtime": 1778586154.0382814,
+    "hash": "fea45d7284598bfaf3ca4ea5384d773d"
+  },
+  "/home/mattia/photography-portfolio/pages/gallery.html": {
+    "mtime": 1778586154.0382814,
+    "hash": "3e63374941899124a25a0e4f9d23c5be"
+  },
+  "/home/mattia/photography-portfolio/pages/home.html": {
+    "mtime": 1778586154.0392814,
+    "hash": "17b9c2208b6b508831715cfe951e1336"
+  },
+  "/home/mattia/photography-portfolio/pages/mentions.html": {
+    "mtime": 1778586154.0392814,
+    "hash": "3783fe3363932b20da9b597f99f7f963"
+  },
+  "/home/mattia/photography-portfolio/pages/admin/logs.html": {
+    "mtime": 1776323432.362922,
+    "hash": "c479cdf906f1d8a3eac83be6840ea538"
+  },
+  "/home/mattia/photography-portfolio/pages/admin/campaigns.html": {
+    "mtime": 1776323494.4352643,
+    "hash": "9b4073c5ee12b1ec0a777b29a31b77da"
+  },
+  "/home/mattia/photography-portfolio/pages/admin/text-editor.html": {
+    "mtime": 1776323580.0128653,
+    "hash": "0b11e400462776beeb411c7bdf51e396"
+  },
+  "/home/mattia/photography-portfolio/pages/admin/links.html": {
+    "mtime": 1776323840.9065077,
+    "hash": "eeb4592da420f907b776d68d04859de7"
+  },
+  "/home/mattia/photography-portfolio/pages/admin/admin.html": {
+    "mtime": 1776339290.7399182,
+    "hash": "307d2a2a3b840e77dfcc87370c2bf1b7"
+  },
+  "/home/mattia/photography-portfolio/pages/admin/galleries.html": {
+    "mtime": 1776345077.8365166,
+    "hash": "891148b28d407fa0d9fcbd568941e53a"
+  }
+}
