@@ -43,6 +43,9 @@ logs
 .DS_Store
 Thumbs.db
 
+# IDE / extensions
+.vscode/hunkwise/
+
 # Build
 /build
 /dist/*.map
