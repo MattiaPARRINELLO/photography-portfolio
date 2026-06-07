@@ -171,19 +171,18 @@ function updateGallery(id, updates) {
     if (!Array.isArray(merged.photos)) merged.photos = [];
     if (!Array.isArray(merged.galleryOnlyPhotos)) merged.galleryOnlyPhotos = [];
 
-    if (Array.isArray(updates.galleryOnlyPhotos)) {
-        merged.galleryOnlyPhotos = uniqueStrings(updates.galleryOnlyPhotos);
-    }
+    const incomingGalleryOnly = Array.isArray(updates.galleryOnlyPhotos) ? updates.galleryOnlyPhotos : [];
+    const incomingUploaded = Array.isArray(updates.uploadedPhotos) ? updates.uploadedPhotos : [];
 
-    if (Array.isArray(updates.uploadedPhotos) && updates.uploadedPhotos.length > 0) {
+    if (incomingGalleryOnly.length > 0 || incomingUploaded.length > 0) {
         merged.galleryOnlyPhotos = uniqueStrings([
-            ...merged.galleryOnlyPhotos,
-            ...updates.uploadedPhotos
+            ...merged.galleryOnlyPhotos.filter(name => merged.photos.includes(name)),
+            ...incomingGalleryOnly,
+            ...incomingUploaded
         ]);
+    } else {
+        merged.galleryOnlyPhotos = merged.galleryOnlyPhotos.filter(name => merged.photos.includes(name));
     }
-
-    // Keep gallery-only list coherent with current gallery photos.
-    merged.galleryOnlyPhotos = merged.galleryOnlyPhotos.filter(name => merged.photos.includes(name));
     if (updates.artistLinks !== undefined || updates.artistInstagram !== undefined || updates.artistDeezer !== undefined || updates.artistSpotify !== undefined) {
         merged.artistLinks = mergeArtistLinks(current.artistLinks, updates.artistLinks || updates);
     }

@@ -10,7 +10,8 @@
     "build:css": "node scripts/build-css.js",
     "build:assets": "node scripts/build-assets.js",
     "convert-thumbnails": "node scripts/convert-thumbnails-to-webp.js",
-    "test:email": "node scripts/test-email.js"
+    "test:email": "node scripts/test-email.js",
+    "migrate:gallery-only": "node scripts/migrate-gallery-only-photos.js"
   },
   "repository": {
     "type": "git",
