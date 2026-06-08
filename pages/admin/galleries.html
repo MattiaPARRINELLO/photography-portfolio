@@ -793,6 +793,7 @@
 
           // Upload new photos one by one first
           const newlyUploadedFilenames = [];
+          const galleryOnlyUploaded = [];
           if (hasUploads) {
             const filesToUpload = Array.from(uploadInput.files);
             const total = filesToUpload.length;
@@ -811,6 +812,10 @@
                   if (!selectedPhotos.includes(newFilename)) {
                     selectedPhotos.push(newFilename);
                   }
+                  const alreadyExisted = allPhotos.some(p => p.filename === newFilename);
+                  if (!alreadyExisted) {
+                    galleryOnlyUploaded.push(newFilename);
+                  }
                 }
                 uploaded++;
               } catch (err) {
@@ -828,9 +833,9 @@
             // Remove file inputs so gallery save doesn't re-upload
             formData.delete("uploadedPhotos");
           }
-          // Tell the server which photos were just uploaded so it can track them as gallery-only
-          if (newlyUploadedFilenames.length > 0) {
-            formData.set("galleryOnlyPhotos", JSON.stringify(newlyUploadedFilenames));
+          // Track only truly new uploads as gallery-only (re-uploads of existing photos stay in portfolio)
+          if (galleryOnlyUploaded.length > 0) {
+            formData.set("galleryOnlyPhotos", JSON.stringify(galleryOnlyUploaded));
           }
 
           setUploadProgress(85, "Enregistrement de la galerie...");

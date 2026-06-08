@@ -47,8 +47,14 @@ function generateHomeHeroHtml() {
 
     // SEO: Liste des artistes avec noms comme mots-clés
     const artistNames = artists.map(a => a.name).join(' · ');
-    // SEO: Liste des lieux avec noms comme mots-clés locaux
-    const venueNames = venues.map(v => `${v.name} (${v.city})`).join(' · ');
+    // SEO: Liste des lieux avec noms comme mots-clés locaux, avec badge pour salles mises en avant
+    const venueItemsHtml = venues.map(v => {
+        const text = `${v.name} (${v.city})`;
+        if (v.highlight) {
+            return `<span class="inline-flex items-center"><span>${text}</span>&nbsp;<span class="inline-block text-[0.65rem] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wide bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 align-middle leading-none" title="${v.highlight}">${v.highlight}</span></span>`;
+        }
+        return `<span>${text}</span>`;
+    }).join(' <span class="text-gray-400 dark:text-gray-500 select-none">·</span> ');
 
     return `
             <div class="home-hero px-5 md:px-0 pt-10 pb-6">
@@ -64,7 +70,7 @@ function generateHomeHeroHtml() {
         <!-- SEO: Section lieux - mots-clés locaux -->
         <div class="mb-6">
           <p class="text-sm text-gray-500 dark:text-gray-400 font-signika uppercase tracking-wider mb-1">Salles & festivals</p>
-          <p class="text-sm md:text-base text-gray-600 dark:text-gray-300">${venueNames}</p>
+          <p class="text-sm md:text-base text-gray-600 dark:text-gray-300">${venueItemsHtml}</p>
         </div>
                 <!-- SEO: CTA vers contact + galerie -->
                 <div class="mt-6 flex items-center gap-10">
