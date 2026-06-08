@@ -49,3 +49,9 @@ Thumbs.db
 # Build
 /build
 /dist/*.map
+
+# Jest
+coverage/
+
+# Bun
+bun.lock
