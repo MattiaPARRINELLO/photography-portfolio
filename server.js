@@ -49,7 +49,7 @@ app.use(compression());
 
 // Configuration des sessions
 app.use(session({
-    secret: 'votre-secret-session-super-securise', // À changer !
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
