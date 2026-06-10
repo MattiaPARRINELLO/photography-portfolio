@@ -109,7 +109,7 @@ function makeApp() {
   return app;
 }
 
-var SECRET = 'mp-contact-form-2024-secret-key';
+var SECRET = process.env.CONTACT_API_SECRET;
 
 describe('Route contact POST /send-mail', function () {
   var supertest;

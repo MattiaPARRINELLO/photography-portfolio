@@ -53,7 +53,10 @@ const SPAM_KEYWORDS = [
 // vient bien du formulaire et non d'un appel API direct.
 // Elle est combinée avec le timestamp pour créer une signature.
 
-const API_SECRET = process.env.CONTACT_API_SECRET || 'mp-contact-form-2024-secret-key';
+const API_SECRET = process.env.CONTACT_API_SECRET;
+if (!API_SECRET) {
+    throw new Error('CONTACT_API_SECRET must be set in environment');
+}
 
 // ===== ROUTES DE COMMUNICATION =====
 
