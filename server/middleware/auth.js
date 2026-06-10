@@ -3,7 +3,10 @@ const serverConfig = require('../config');
 
 const ADMIN_COOKIE_NAME = 'adminAuth';
 const ADMIN_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 jours
-const ADMIN_COOKIE_SALT = process.env.ADMIN_REMEMBER_SALT || 'admin-remember-salt';
+const ADMIN_COOKIE_SALT = process.env.ADMIN_REMEMBER_SALT;
+if (!ADMIN_COOKIE_SALT) {
+    throw new Error('ADMIN_REMEMBER_SALT must be set in environment');
+}
 
 function computeAdminToken() {
     const password = serverConfig.adminPassword || '';
