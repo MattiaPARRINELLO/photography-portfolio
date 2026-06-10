@@ -145,20 +145,40 @@ router.get('/', async (req, res) => {
         let htmlContent = await fsp.readFile(htmlPath, 'utf-8');
         console.log('📄 HTML lu, taille:', htmlContent.length, 'caractères');
 
-        // INLINE CSS OPTIMIZATION
+        // INLINE CSS OPTIMIZATION — utilise le manifest pour matcher le fichier fingerprinté
         try {
-            const cssPath = path.join(paths.root, 'dist/css/output.css');
-            try {
-                if (fs.existsSync(cssPath)) {
-                    const cssContent = await fsp.readFile(cssPath, 'utf-8');
-                    htmlContent = htmlContent.replace(
-                        '<link rel="stylesheet" href="../dist/css/output.css" />',
-                        `<style>${cssContent}</style>`
-                    );
-                    console.log('🎨 CSS inlined successfully');
+            let cssContent = null;
+            const manifestPath = path.join(paths.root, 'dist/manifest.json');
+
+            // Essayer le CSS fingerprinté d'abord (via manifest)
+            if (fs.existsSync(manifestPath)) {
+                try {
+                    const manifest = JSON.parse(await fsp.readFile(manifestPath, 'utf-8'));
+                    const fingerprinted = manifest['dist/css/output.css'];
+                    if (fingerprinted) {
+                        const fpPath = path.join(paths.root, fingerprinted);
+                        if (fs.existsSync(fpPath)) {
+                            cssContent = await fsp.readFile(fpPath, 'utf-8');
+                        }
+                    }
+                } catch (_) { /* manifest invalide, ignorer */ }
+            }
+
+            // Fallback: output.css non-fingerprinté
+            if (!cssContent) {
+                const defaultCssPath = path.join(paths.root, 'dist/css/output.css');
+                if (fs.existsSync(defaultCssPath)) {
+                    cssContent = await fsp.readFile(defaultCssPath, 'utf-8');
                 }
-            } catch (e) {
-                console.error('CSS Inline Error (async):', e);
+            }
+
+            if (cssContent) {
+                // Regex qui matche tout <link> vers output*.css quel que soit le fingerprint
+                htmlContent = htmlContent.replace(
+                    /<link\s+rel=["']stylesheet["'][^>]*href=["'][^"']*dist\/css\/output[^"' ]*\.css["'][^>]*\/?>/,
+                    `<style>${cssContent}</style>`
+                );
+                console.log('🎨 CSS inlined successfully');
             }
         } catch (e) {
             console.error('CSS Inline Error:', e);
