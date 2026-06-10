@@ -140,38 +140,25 @@ app.use((req, res, next) => {
     return next();
 });
 
-app.use(express.static(paths.root, {
-    index: false, // Désactiver l'index automatique
-    // Laisser l'option maxAge vide et définir des en-têtes par type
-    setHeaders: (res, filePath) => {
-        // Bloquer l'accès au dossier admin/ en statique
-        if (filePath.includes('/admin/')) {
-            res.setHeader('Cache-Control', 'no-store');
-            return;
-        }
-
-        // HTML: ne pas mettre en cache durablement
-        if (/\.html?$/.test(filePath)) {
-            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-            return;
-        }
-
-        // JS / CSS: assets versionnés immutables
-        if (/\.(js|css)$/.test(filePath)) {
-            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-            return;
-        }
-
-        // Images & fonts: immutables si stockés dans des dossiers générés
-        if (/\.(png|jpe?g|webp|avif|svg|gif|ico|ttf|woff2?)$/.test(filePath)) {
-            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-            return;
-        }
-
-        // Par défaut: cache court
-        res.setHeader('Cache-Control', 'public, max-age=86400');
-    }
+// Static ciblé: ne sert que les dossiers nécessaires, pas le projet entier
+app.use('/dist', express.static(path.join(__dirname, 'dist'), {
+    index: false,
+    maxAge: '1y',
+    immutable: true
 }));
+
+app.use('/photos', express.static(path.join(__dirname, 'photos'), {
+    index: false,
+    maxAge: '1y',
+    immutable: true
+}));
+
+// Servir /robots.txt depuis la racine
+app.get('/robots.txt', (req, res) => {
+    const robotsPath = path.join(paths.root, 'robots.txt');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.sendFile(robotsPath);
+});
 
 // Rendre les services disponibles dans les routes
 app.locals.userLogger = userLogger;

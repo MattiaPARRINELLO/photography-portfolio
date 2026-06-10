@@ -17,6 +17,7 @@ class ServerConfig {
             photos: path.join(__dirname, '..', 'photos'),
             pages: path.join(__dirname, '..', 'pages'),
             adminPages: path.join(__dirname, '..', 'pages', 'admin'),
+            dist: path.join(__dirname, '..', 'dist'),
             temp: path.join(__dirname, '..', 'temp')
         };
     }
