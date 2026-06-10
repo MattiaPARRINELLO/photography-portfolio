@@ -95,12 +95,11 @@ function campaignMiddleware(campaignManager) {
 
         if (campaignInfo && req.userId) {
             // Enregistrer la campagne
-            campaignManager.recordCampaignVisit(campaignInfo.campaignId, {
-                userId: req.userId,
-                ip: req.ip || req.connection.remoteAddress,
-                userAgent: req.get('User-Agent'),
-                referer: req.get('Referer')
-            });
+            campaignManager.recordCampaignVisit(
+                campaignInfo.campaignId,
+                req.get('User-Agent') || '',
+                req.ip || req.connection.remoteAddress
+            );
 
             // Associer l'utilisateur à la campagne
             campaignService.associateUserToCampaign(req.userId, campaignInfo);

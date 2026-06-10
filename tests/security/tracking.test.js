@@ -225,7 +225,8 @@ describe('campaignMiddleware', function () {
 
     expect(campaignManager.recordCampaignVisit).toHaveBeenCalledWith(
       'printemps2025',
-      expect.objectContaining({ userId: 'user_camp1', ip: '1.2.3.4' })
+      'Chrome',
+      '1.2.3.4'
     );
     expect(campaignService.associateUserToCampaign).toHaveBeenCalledWith(
       'user_camp1',

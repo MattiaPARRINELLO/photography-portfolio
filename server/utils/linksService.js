@@ -120,7 +120,7 @@ function generateAvatarHtml(profile) {
 function generateLinkHtml(link) {
     const icon = ICONS[link.icon] || ICONS.link;
     const styleClass = link.style === 'primary' ? ' primary' : '';
-    const externalAttrs = link.url.startsWith('http') || link.url.startsWith('mailto:') || link.url.startsWith('tel:') || link.url.startsWith('https://wa.me')
+    const externalAttrs = (link.url && (link.url.startsWith('http') || link.url.startsWith('mailto:') || link.url.startsWith('tel:') || link.url.startsWith('https://wa.me')))
         ? ' target="_blank" rel="noopener noreferrer"'
         : '';
 

@@ -4,8 +4,9 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 
-// Clé secrète pour signer les URLs (à stocker dans config ou variable d'environnement)
-const SECRET_KEY = process.env.IMAGE_SECRET_KEY || crypto.randomBytes(32).toString('hex');
+// Clé secrète pour signer les URLs
+const SECRET_KEY = process.env.IMAGE_SECRET_KEY;
+if (!SECRET_KEY) throw new Error('IMAGE_SECRET_KEY doit être définie dans .env');
 
 // Durée de validité des URLs signées (en secondes)
 const URL_EXPIRY = 3600; // 1 heure

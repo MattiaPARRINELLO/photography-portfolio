@@ -76,14 +76,14 @@ describe('photoService — extractDateFromFilename', function () {
     expect(result).toBeNull();
   });
 
-  it.skip('[Q-PHOTO-1] extractDateFromFilename ne gère pas null — manque un guard', function () {
+  it('[Q-PHOTO-1] extractDateFromFilename retourne null pour null', function () {
     var result = photoService.extractDateFromFilename(null);
-    // Attendu: null, Reel: TypeError
+    expect(result).toBeNull();
   });
 
-  it.skip('[Q-PHOTO-1] extractDateFromFilename ne gère pas undefined — manque un guard', function () {
+  it('[Q-PHOTO-1] extractDateFromFilename retourne null pour undefined', function () {
     var result = photoService.extractDateFromFilename(undefined);
-    // Attendu: null, Reel: TypeError
+    expect(result).toBeNull();
   });
 });
 

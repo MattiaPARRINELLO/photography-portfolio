@@ -8,6 +8,8 @@ const paths = serverConfig.getPaths();
 
 // Fonction pour extraire la date du nom de fichier
 function extractDateFromFilename(filename) {
+    if (!filename || typeof filename !== 'string') return null;
+
     // Pattern pour YYYYMMDD_HHMMSS_
     const pattern1 = /^(\d{8})_(\d{6})_/;
     const match1 = filename.match(pattern1);

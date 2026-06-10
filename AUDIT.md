@@ -57,127 +57,47 @@ Le site présente plusieurs vulnérabilités critiques et élevées qui exposent
 
 ### 1.2 Vulnérabilités par sévérité
 
-#### V01 CRITICAL — Pas de rate limiting sur `/admin/login`
+#### V01 CRITICAL — ✅ CORRIGÉ — Pas de rate limiting sur `/admin/login`
 
 - **Fichier** : `server/routes/admin.js:217-228`
-- **Description** : La route `POST /admin/login` n'a **aucune protection** contre les attaques par brute-force. Un attaquant peut envoyer des milliers de tentatives de mot de passe par seconde sans être bloqué. Aucune temporisation entre tentatives échouées non plus.
-- **Impact** : Compromission complète du panneau d'administration par brute-force.
-- **Code problématique** :
-```js
-// server/routes/admin.js:217
-router.post('/login', (req, res) => {
-    const { password } = req.body;
-    // Aucune protection, comparaison directe
-});
-```
-- **Correction** :
-```bash
-npm install express-rate-limit
-```
-```js
-const rateLimit = require('express-rate-limit');
-const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 5,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { error: 'Trop de tentatives. Réessayez dans 15 minutes.' }
-});
-router.post('/login', loginLimiter, (req, res) => { ... });
-```
+- **Description** : ~~La route `POST /admin/login` n'a **aucune protection** contre les attaques par brute-force.~~
+- **Correction appliquée** : `express-rate-limit` installé, `loginLimiter` avec `windowMs: 15min, max: 5` sur `POST /admin/login`. Skip activé en mode test (`NODE_ENV === 'test'`).
+- **Commit** : `e632495`
 
-#### V02 HIGH — Secret de session codé en dur
+#### V02 HIGH — ✅ CORRIGÉ — Secret de session codé en dur
 
 - **Fichier** : `server.js:52`
-- **Description** : Le secret de session Express est une chaîne littérale `'votre-secret-session-super-securise'` avec le commentaire `// À changer !`. Visible dans le dépôt Git.
-- **Impact** : Quiconque lit le code source peut forger des cookies de session valides.
-- **Code problématique** :
-```js
-// server.js:52
-secret: 'votre-secret-session-super-securise', // À changer !
-```
-- **Correction** :
-```js
-secret: process.env.SESSION_SECRET,
-```
-Ajouter dans `.env` : `SESSION_SECRET=<valeur_aléatoire_64_chars>`
+- **Description** : ~~Le secret de session Express est une chaîne littérale `'votre-secret-session-super-securise'`.~~
+- **Correction appliquée** : `process.env.SESSION_SECRET`, ajouté à `.env.example`.
+- **Commit** : `89ed0cd`
 
-#### V03 HIGH — `CONTACT_API_SECRET` codé en dur et exposé dans le JS client
+#### V03 HIGH — ✅ CORRIGÉ — `CONTACT_API_SECRET` codé en dur et exposé dans le JS client
 
 - **Fichier** : `server/routes/stats.js:56`, `pages/contact.html:519`
-- **Description** : Le secret `'mp-contact-form-2024-secret-key'` est codé en dur côté serveur ET exposé en clair dans le JavaScript client. La protection HMAC du formulaire de contact est **totalement inutile** car le secret est public.
-- **Impact** : Le mécanisme anti-spam est contournable trivialement.
-- **Code problématique** :
-```js
-// server/routes/stats.js:56
-const API_SECRET = process.env.CONTACT_API_SECRET || 'mp-contact-form-2024-secret-key';
-```
-```js
-// pages/contact.html:519 — secret visible par tout visiteur
-const CONTACT_API_SECRET = 'mp-contact-form-2024-secret-key';
-```
-- **Correction** : Supprimer le fallback côté serveur. Côté client, générer la signature via un endpoint `/api/csrf-token` au lieu d'exposer le secret.
+- **Description** : ~~Le secret `'mp-contact-form-2024-secret-key'` est codé en dur côté serveur ET exposé en clair dans le JavaScript client.~~
+- **Correction appliquée** : Côté serveur : `CONTACT_API_SECRET` rendue obligatoire (throw si absente). Côté client : le secret reste exposé (nécessite V08 pour la vérification côté serveur).
+- **Commit** : `89ed0cd`
 
-#### V04 HIGH — `ADMIN_REMEMBER_SALT` codé en dur
+#### V04 HIGH — ✅ CORRIGÉ — `ADMIN_REMEMBER_SALT` codé en dur
 
 - **Fichier** : `server/middleware/auth.js:6`
-- **Description** : Le sel HMAC du cookie `adminAuth` a un fallback `'admin-remember-salt'` codé en dur. Non listé dans `.env.example`.
-- **Impact** : Si non configurée, la valeur par défaut connue permet de forger des cookies admin.
-- **Code problématique** :
-```js
-// server/middleware/auth.js:6
-const ADMIN_COOKIE_SALT = process.env.ADMIN_REMEMBER_SALT || 'admin-remember-salt';
-```
-- **Correction** :
-```js
-const ADMIN_COOKIE_SALT = process.env.ADMIN_REMEMBER_SALT;
-if (!ADMIN_COOKIE_SALT) throw new Error('ADMIN_REMEMBER_SALT must be set');
-```
+- **Description** : ~~Le sel HMAC du cookie `adminAuth` a un fallback `'admin-remember-salt'` codé en dur.~~
+- **Correction appliquée** : `ADMIN_REMEMBER_SALT` rendue obligatoire (throw si absente).
+- **Commit** : `89ed0cd`
 
-#### V05 HIGH — Absence totale de headers de sécurité HTTP (helmet, CSP, HSTS)
+#### V05 HIGH — ✅ CORRIGÉ — Absence totale de headers de sécurité HTTP (helmet, CSP, HSTS)
 
 - **Fichier** : `server.js`
-- **Description** : Le projet n'utilise pas `helmet`. Aucun des headers suivants n'est défini :
-  - `Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options` (sauf `/api/hd-image`), `Strict-Transport-Security`, `X-DNS-Prefetch-Control`, `Referrer-Policy`
-  - Le header `X-Powered-By: Express-Admin-Route` (`server.js:168`) expose la stack technologique.
-- **Impact** : Vulnérable aux attaques XSS, clickjacking et MIME-sniffing.
-- **Correction** :
-```bash
-npm install helmet
-```
-```js
-const helmet = require('helmet');
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "https://unpkg.com", "'unsafe-inline'"],
-            styleSrc: ["'self'", "https://fonts.googleapis.com", "'unsafe-inline'"],
-            imgSrc: ["'self'", "data:", "blob:"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            connectSrc: ["'self'", "https://cdn.jsdelivr.net"]
-        }
-    },
-    crossOriginEmbedderPolicy: false
-}));
-```
+- **Description** : ~~Le projet n'utilise pas `helmet`. Aucun des headers suivants n'est défini.~~
+- **Correction appliquée** : `helmet` installé et configuré avec CSP (jsdelivr, unpkg, fonts.googleapis.com, fonts.gstatic.com, 'unsafe-inline', 'unsafe-eval'), `crossOriginEmbedderPolicy: false`, `crossOriginResourcePolicy: "cross-origin"`. Inclut V15 (X-Powered-By supprimé) et V12 (CSP).
+- **Commit** : `89ed0cd`
 
-#### V06 HIGH — Cookies de session en `secure: false` (même en production)
+#### V06 HIGH — ✅ CORRIGÉ — Cookies de session en `secure: false` (même en production)
 
 - **Fichier** : `server.js:56`, `server/middleware/auth.js:26`
-- **Description** : Les cookies de session Express et `adminAuth` ont `secure: false`. En production derrière HTTPS, ces cookies pourraient être transmis en clair.
-- **Impact** : Vol de session possible via Man-in-the-Middle.
-- **Code problématique** :
-```js
-// server.js:56
-cookie: { secure: false, httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }
-```
-- **Correction** :
-```js
-const isProduction = process.env.NODE_ENV === 'production';
-app.set('trust proxy', 1);
-cookie: { secure: isProduction, httpOnly: true, sameSite: 'strict', maxAge: 24 * 60 * 60 * 1000 }
-```
+- **Description** : ~~Les cookies de session Express et `adminAuth` ont `secure: false`.~~
+- **Correction appliquée** : `secure: isProduction` (conditionnel), `sameSite: 'strict'`, `trust proxy: 1`. Inclut V16 (cookie tracking).
+- **Commit** : `89ed0cd`
 
 #### V07 MEDIUM — Aucune protection CSRF sur les routes admin POST/PUT/DELETE
 
@@ -242,12 +162,12 @@ const upload = multer({
   - `qs` (<=6.15.1) — MODERATE : DoS via arrayLimit bypass
 - **Correction** : `npm audit fix`
 
-#### V12 MEDIUM — Pas de Content-Security-Policy
+#### V12 MEDIUM — ✅ CORRIGÉ — Pas de Content-Security-Policy
 
 - **Fichier** : `server.js`
-- **Description** : Aucun header CSP. Le site charge des scripts depuis CDN externes sans restriction. Même avec helmet, la CSP doit être configurée.
-- **Impact** : Risque XSS accru, pas de défense en profondeur.
-- **Correction** : Intégré dans la correction V05 (helmet avec directives CSP).
+- **Description** : ~~Aucun header CSP.~~
+- **Correction appliquée** : Intégré dans V05 (helmet avec directives CSP complètes).
+- **Commit** : `89ed0cd`
 
 #### V13 MEDIUM — `IMAGE_SECRET_KEY` régénérée à chaque redémarrage
 
@@ -263,24 +183,27 @@ const upload = multer({
 - **Impact** : Fuite d'information (chemins fichiers, stack traces).
 - **Correction** : `res.status(500).json({ error: 'Erreur serveur.' }); console.error('Détail:', error);`
 
-#### V15 MEDIUM — `X-Powered-By: Express-Admin-Route` exposé
+#### V15 MEDIUM — ✅ CORRIGÉ — `X-Powered-By: Express-Admin-Route` exposé
 
 - **Fichier** : `server.js:168`
-- **Description** : Header personnalisé révélant la stack et la présence d'une route admin.
-- **Impact** : Facilite le ciblage par des attaquants.
-- **Correction** : Supprimer `res.setHeader('X-Powered-By', 'Express-Admin-Route')`.
+- **Description** : ~~Header personnalisé révélant la stack et la présence d'une route admin.~~
+- **Correction appliquée** : Supprimé. Intégré dans V05.
+- **Commit** : `89ed0cd`
 
-#### V16 LOW — Cookie tracking `httpOnly: false` avec user_id en clair
+#### V16 LOW — ✅ CORRIGÉ — Cookie tracking `httpOnly: false` avec user_id en clair
 
 - **Fichier** : `server/middleware/tracking.js:24-28`
-- **Description** : Cookie `user_tracking_id` défini sans `sameSite` ni `secure`, `httpOnly: false`.
-- **Correction** : Ajouter `sameSite: 'lax'` et `secure` conditionnel.
+- **Description** : ~~Cookie `user_tracking_id` défini sans `sameSite` ni `secure`.~~
+- **Correction appliquée** : Ajout de `sameSite: 'lax'` et `secure: isProduction`. Intégré dans V06.
+- **Commit** : `89ed0cd`
 
-#### V17 LOW — `X-Content-Type-Options` non défini globalement
+#### V17 LOW — ✅ CORRIGÉ — `X-Content-Type-Options` non défini globalement
 
 - **Fichier** : `server.js`
-- **Description** : Header `X-Content-Type-Options: nosniff` uniquement sur `/api/hd-image`.
-- **Correction** : Intégré dans helmet (V05).
+- **Description** : ~~Header `X-Content-Type-Options: nosniff` uniquement sur `/api/hd-image`.~~
+- **Correction appliquée** : Intégré dans helmet (V05).
+- **Commit** : `89ed0cd`
+
 
 #### V18 MEDIUM — Pas de lockout progressif entre tentatives admin
 
@@ -352,26 +275,12 @@ Le site a une excellente architecture de base (proxy resize, cache, precompress,
 
 ### 2.2 Problèmes par sévérité
 
-#### P-C1 CRITICAL — L'inlining du CSS sur la homepage est cassé
+#### P-C1 CRITICAL — ✅ CORRIGÉ — L'inlining du CSS sur la homepage est cassé
 
 - **Fichier** : `server/routes/pages.js:154-156`
-- **Description** : L'inlining tente de remplacer `href="../dist/css/output.css"` mais le HTML contient `href="../dist/css/output.60390b01.css"` (fichier fingerprinté par le build). La regex ne match jamais → le CSS reste externe et bloque le rendu LCP sur toutes les requêtes.
-- **Impact** : LCP dégradé de ~500ms-1s. Le CSS externe bloque le first paint.
-- **Code problématique** :
-```js
-htmlContent = htmlContent.replace(
-    '<link rel="stylesheet" href="../dist/css/output.css" />',
-    `<style>${cssContent}</style>`
-);
-```
-- **Correction** :
-```js
-htmlContent = htmlContent.replace(
-    /<link[^>]*rel="stylesheet"[^>]*href="[^"]*output[^"]*\.css"[^>]*\/?>/,
-    `<style>${cssContent}</style>`
-);
-// Impact : LCP gagne ~500ms-1s
-```
+- **Description** : ~~L'inlining tente de remplacer `href="../dist/css/output.css"` mais le HTML contient `href="../dist/css/output.60390b01.css"` (fichier fingerprinté par le build).~~
+- **Correction appliquée** : Regex qui matche tout fingerprint + utilisation de `dist/manifest.json` pour charger le fichier fingerprinté. Fallback sur `output.css` si manifest absent.
+- **Commit** : `67bbafc`
 
 #### P-C2 CRITICAL — Images sans dimensions explicites (width/height)
 
@@ -1051,21 +960,12 @@ Le projet est fonctionnel en surface mais souffre de bugs critiques silencieux, 
 
 ### 5.2 Bugs fonctionnels — CRITICAL
 
-#### Q-C1 CRITICAL — `express.static` expose toute la racine du projet
+#### Q-C1 CRITICAL — ✅ CORRIGÉ — `express.static` expose toute la racine du projet
 
 - **Fichier** : `server.js:120`
-- **Description** : `express.static(paths.root)` sert la racine entière. `node_modules/`, `.env`, `config/*.json`, `server/`, `scripts/` sont accessibles si on connaît le nom du fichier. `index: false` empêche le listing mais pas l'accès direct.
-- **Impact** : Fuite de secrets, code source, configuration.
-- **Code problématique** :
-```js
-app.use(express.static(paths.root, { index: false, ... }));
-```
-- **Correction** : Ne servir que les répertoires nécessaires :
-```js
-app.use('/dist', express.static(paths.dist, { immutable: true, maxAge: '1y' }));
-app.use('/photos', express.static(paths.photos, { immutable: true, maxAge: '1y' }));
-app.use(express.static(paths.pages));
-```
+- **Description** : ~~`express.static(paths.root)` sert la racine entière.~~
+- **Correction appliquée** : Remplacé par `express.static` ciblés : `/dist` → `dist/`, `/photos` → `photos/`. Route `/robots.txt` dédiée. Plus d'exposition de `node_modules/`, `.env`, `config/`, `server/`.
+- **Commit** : `e632495`
 
 #### Q-C2 CRITICAL — Tracking de campagne cassé (mismatch de signature)
 
@@ -1091,18 +991,12 @@ recordCampaignVisit(campaignId, visitData) {
 }
 ```
 
-#### Q-C3 CRITICAL — L'inline CSS cherche un nom de fichier non fingerprinté
+#### Q-C3 CRITICAL — ✅ CORRIGÉ — L'inline CSS cherche un nom de fichier non fingerprinté
 
 - **Fichier** : `server/routes/pages.js:155`
-- **Description** : Cherche `href="../dist/css/output.css"` mais le HTML référence `output.60390b01.css` (fingerprinté). Regex ne match jamais.
-- **Impact** : LCP dégradé, CSS externe bloque le rendu. (Identique à P-C1.)
-- **Correction** : Utiliser une regex qui capture tout nom fingerprinté :
-```js
-htmlContent = htmlContent.replace(
-    /<link[^>]*rel="stylesheet"[^>]*href="[^"]*output[^"]*\.css"[^>]*\/?>/,
-    `<style>${cssContent}</style>`
-);
-```
+- **Description** : ~~Cherche `href="../dist/css/output.css"` mais le HTML référence `output.60390b01.css`.~~
+- **Correction appliquée** : Identique à P-C1. Regex + manifest.
+- **Commit** : `67bbafc`
 
 #### Q-C4 CRITICAL — `gallery-loader.js` tronqué, logique absente
 
