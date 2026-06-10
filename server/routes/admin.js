@@ -166,7 +166,6 @@ router.get(['/', '/'], (req, res) => {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     res.setHeader('Surrogate-Control', 'no-store');
-    res.setHeader('X-Powered-By', 'Express-Admin-Route');
 
     const filePath = path.join(paths.adminPages, 'admin.html');
     console.log('🔍 Serveur admin: Fichier servi depuis:', filePath);

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const compression = require('compression');
+const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const path = require('path');
@@ -46,6 +47,26 @@ const paths = serverConfig.getPaths();
 
 // Activer la compression Gzip/Brotli pour toutes les réponses
 app.use(compression());
+
+// Headers de sécurité HTTP (CSP, X-Frame-Options, HSTS, etc.)
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "https://unpkg.com", "'unsafe-inline'", "'unsafe-eval'"],
+            styleSrc: ["'self'", "https://fonts.googleapis.com", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "blob:"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            connectSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            frameSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"]
+        }
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // Configuration des sessions
 app.use(session({
