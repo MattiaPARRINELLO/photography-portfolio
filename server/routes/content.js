@@ -76,8 +76,9 @@ router.put('/admin/texts/:key', requireAdminSession, (req, res) => {
 
 // Route admin : page de gestion des campagnes
 router.get('/admin/campaigns', requireAdminPage, (req, res) => {
-    console.log('🎯 Route campaigns appelée - session:', req.session.isAdmin);
-    res.sendFile(path.join(paths.adminPages, 'campaigns.html'));
+    res.sendFile(path.join(paths.adminPages, 'campaigns.html'), (err) => {
+        if (err) res.status(500).send('Erreur interne');
+    });
 });
 
 // Route admin API : créer une nouvelle campagne

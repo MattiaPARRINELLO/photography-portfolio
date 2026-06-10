@@ -226,14 +226,6 @@ describe('Route contact POST /send-mail', function () {
   });
 
   // ================================================================
-  // Rate limit
-  // ================================================================
-  it.skip('[Q-RATE-1] Test rate limit — 6ème requête reçoit 429 quand le quota est atteint', function (done) {
-    // Le quota de 5 requêtes par IP est atteint, test non fiable sans reset du store
-    done();
-  });
-
-  // ================================================================
   // Honeypot
   // ================================================================
   it('retourne 200 fake si honeypot rempli', function (done) {

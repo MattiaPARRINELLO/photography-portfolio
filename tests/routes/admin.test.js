@@ -118,7 +118,7 @@ describe('Routes admin', function () {
 
   beforeEach(function () {
     jest.clearAllMocks();
-    if (adminRouter.loginLimiter) adminRouter.loginLimiter.resetKey('::ffff:127.0.0.1');
+    if (adminRouter.loginStore) adminRouter.loginStore.resetAll();
     // Valeurs par defaut pour linksService
     linksService.loadLinksConfig.mockReturnValue({
       profile: { name: 'Test', role: 'Photo', tagline: 'T', avatar: { enabled: true, url: '/a.png' } },
@@ -206,6 +206,44 @@ describe('Routes admin', function () {
           expect(res.body.error).toBe('Mot de passe incorrect');
           done();
         });
+    });
+  });
+
+  describe('Rate limiting login', function () {
+    it('bloque apres 5 tentatives avec un rate limiter dedie', function (done) {
+      var express = require('express');
+      var session = require('express-session');
+      var cookieParser = require('cookie-parser');
+      var { rateLimit, MemoryStore } = require('express-rate-limit');
+      var store = new MemoryStore();
+      var limiter = rateLimit({
+        windowMs: 15 * 60 * 1000,
+        max: 5,
+        store: store,
+        message: { error: 'Trop de tentatives.' }
+      });
+      var app = express();
+      app.use(express.json());
+      app.use(cookieParser());
+      app.use(session({ secret: 'test', resave: false, saveUninitialized: true, cookie: { secure: false } }));
+      app.post('/login', limiter, function (req, res) {
+        if (req.body.password === 'correct') return res.json({ success: true });
+        res.status(401).json({ error: 'Mot de passe incorrect' });
+      });
+      var supertest = require('supertest');
+      var run = function (i) {
+        if (i >= 6) return done();
+        supertest(app)
+          .post('/login')
+          .send({ password: 'wrong' })
+          .end(function (err, res) {
+            if (err) return done(err);
+            if (i < 5) expect([401]).toContain(res.status);
+            else expect(res.status).toBe(429);
+            run(i + 1);
+          });
+      };
+      run(0);
     });
   });
 

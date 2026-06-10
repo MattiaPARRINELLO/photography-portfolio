@@ -266,6 +266,18 @@ describe('server.js — push couverture', function () {
         .end(done);
     });
 
-    it.skip('[GET-EVENT] Bug mock linksService dans handler GET', function () {});
+    it('GET → 200', function (done) {
+      var supertest = require('supertest');
+      supertest(app)
+        .get('/api/links/event')
+        .expect(200)
+        .end(function (err, res) {
+          if (err) return done(err);
+          expect(res.body).toBeDefined();
+          expect(res.body).toHaveProperty('event');
+          expect(res.body).toHaveProperty('isActive');
+          done();
+        });
+    });
   });
 });

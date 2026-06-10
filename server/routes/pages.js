@@ -372,14 +372,13 @@ router.get('/links/', (req, res) => {
 
 // Route pour les mentions légales
 router.get('/mentions-legales', (req, res) => {
-    console.log('🚀 Route /mentions-legales appelée');
-    try {
-        const htmlPath = path.join(paths.pages, 'mentions.html');
-        res.sendFile(htmlPath);
-    } catch (error) {
-        console.error('❌ Erreur lors du chargement de mentions.html:', error);
-        res.status(404).send('Page non trouvée');
-    }
+    const htmlPath = path.join(paths.pages, 'mentions.html');
+    res.sendFile(htmlPath, (err) => {
+        if (err) {
+            console.error('❌ Erreur lors du chargement de mentions.html:', err);
+            res.status(404).send('Page non trouvée');
+        }
+    });
 });
 
 // Redirection pour /mentions-legales/ vers /mentions-legales

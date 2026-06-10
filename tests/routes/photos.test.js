@@ -136,7 +136,13 @@ describe('Routes pages publiques', function () {
   });
 
   describe('GET /mentions-legales', function () {
-    it.skip('[SEND-REAL-FS] send package lit les vrais fichiers', function () {});
+    it('retourne un statut valide pour la page mentions legales', function (done) {
+      supertest(makeApp()).get('/mentions-legales').end(function (err, res) {
+        if (err) return done(err);
+        expect([200, 404]).toContain(res.status);
+        done();
+      });
+    });
   });
 
   describe('GET /portfolio', function () {

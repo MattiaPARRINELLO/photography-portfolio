@@ -170,7 +170,10 @@ describe('server.js', function () {
   });
 
   describe('404 handler', function () {
-    it.skip('[SEND-REAL-FS] sendFile monkey-patch non fonctionnel sur ce test', function () {});
+    it('retourne 404 pour une route inexistante', function (done) {
+      var supertest = require('supertest');
+      supertest(app).get('/route-inexistante-12345').expect(404).end(done);
+    });
   });
 
   describe('intégration services', function () {

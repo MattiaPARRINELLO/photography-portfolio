@@ -1,7 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const rateLimit = require('express-rate-limit');
+const { rateLimit, MemoryStore } = require('express-rate-limit');
 const serverConfig = require('../config');
 const {
     requireAdminSession,
@@ -214,11 +214,13 @@ router.get('/session-status', (req, res) => {
 });
 
 // Rate limiting pour le login admin (5 tentatives par 15 minutes)
+const loginStore = new MemoryStore();
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
     standardHeaders: true,
     legacyHeaders: false,
+    store: loginStore,
     message: { error: 'Trop de tentatives. Réessayez dans 15 minutes.' },
     skip: () => process.env.NODE_ENV === 'test'
 });
@@ -519,4 +521,5 @@ router.delete('/api/galleries/:id', requireAdminSession, (req, res) => {
 });
 
 module.exports = router;
+router.loginStore = loginStore;
 router.loginLimiter = loginLimiter;
