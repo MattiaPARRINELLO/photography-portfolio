@@ -149,10 +149,10 @@ const upload = multer({
 - **Impact** : Consommation mémoire inutile.
 - **Correction** : `saveUninitialized: false`
 
-#### V11 MEDIUM — 10 vulnérabilités npm non corrigées
+#### V11 MEDIUM — ✅ CORRIGÉ — 10 vulnérabilités npm non corrigées
 
 - **Fichier** : `package.json`
-- **Description** : `npm audit` rapporte **10 vulnérabilités** (5 moderate, 5 high) :
+- **Description** : ~~`npm audit` rapporte **10 vulnérabilités** (5 moderate, 5 high) :~~
   - `path-to-regexp` (8.0.0-8.3.0) — **HIGH** : DoS via ReDoS
   - `multer` (<=2.1.0) — **HIGH** : DoS via uncontrolled recursion
   - `nodemailer` — **HIGH** : Email à un domaine non intentionné
@@ -160,7 +160,8 @@ const upload = multer({
   - `postcss` (<8.5.10) — MODERATE : XSS via CSS unescaped `</style>`
   - `uuid` (<11.1.1) — MODERATE : Buffer bounds check manquant
   - `qs` (<=6.15.1) — MODERATE : DoS via arrayLimit bypass
-- **Correction** : `npm audit fix`
+- **Correction appliquée** : `npm audit fix`
+- **Commit** : `9217165`
 
 #### V12 MEDIUM — ✅ CORRIGÉ — Pas de Content-Security-Policy
 
@@ -967,10 +968,10 @@ Le projet est fonctionnel en surface mais souffre de bugs critiques silencieux, 
 - **Correction appliquée** : Remplacé par `express.static` ciblés : `/dist` → `dist/`, `/photos` → `photos/`. Route `/robots.txt` dédiée. Plus d'exposition de `node_modules/`, `.env`, `config/`, `server/`.
 - **Commit** : `e632495`
 
-#### Q-C2 CRITICAL — Tracking de campagne cassé (mismatch de signature)
+#### Q-C2 CRITICAL — ✅ CORRIGÉ — Tracking de campagne cassé (mismatch de signature)
 
 - **Fichiers** : `server/middleware/tracking.js:96`, `scripts/CampaignManager.js:87`
-- **Description** : `tracking.js:96` appelle `recordCampaignVisit(campaignId, { userId, ip, userAgent, referer })` en passant un **objet** comme 2e paramètre. Mais `CampaignManager.recordCampaignVisit(campaignId, userAgent, ip)` attend 3 paramètres **séparés**. Résultat : `userAgent = "[object Object]"`, `ip = undefined`, `userId` perdu.
+- **Description** : ~~`tracking.js:96` appelle `recordCampaignVisit(campaignId, { userId, ip, userAgent, referer })` en passant un **objet** comme 2e paramètre. Mais `CampaignManager.recordCampaignVisit(campaignId, userAgent, ip)` attend 3 paramètres **séparés**. Résultat : `userAgent = "[object Object]"`, `ip = undefined`, `userId` perdu.~~
 - **Impact** : Toutes les données de campagne corrompues.
 - **Code problématique** :
 ```js
@@ -983,13 +984,14 @@ campaignManager.recordCampaignVisit(campaignInfo.campaignId, {
 // CampaignManager.js:87 — signature réelle :
 recordCampaignVisit(campaignId, userAgent, ip) { ... }
 ```
-- **Correction** : Aligner les signatures — soit passer les paramètres séparément, soit modifier `CampaignManager` pour accepter un objet :
+- **Correction appliquée** : Aligner les signatures — soit passer les paramètres séparément, soit modifier `CampaignManager` pour accepter un objet :
 ```js
 recordCampaignVisit(campaignId, visitData) {
     const { userId, ip, userAgent, referer } = visitData;
     // ...
 }
 ```
+- **Commit** : `89ed0cd`
 
 #### Q-C3 CRITICAL — ✅ CORRIGÉ — L'inline CSS cherche un nom de fichier non fingerprinté
 
@@ -1005,29 +1007,31 @@ recordCampaignVisit(campaignId, visitData) {
 - **Impact** : Galerie non fonctionnelle sans le code inline.
 - **Correction** : Extraire complètement la logique de `home.html` vers `gallery-loader.js`, charger en `defer`.
 
-#### Q-C5 CRITICAL — `link.url.startsWith('http')` crash si `url` undefined
+#### Q-C5 CRITICAL — ✅ CORRIGÉ — `link.url.startsWith('http')` crash si `url` undefined
 
 - **Fichier** : `server/utils/linksService.js:123`
-- **Description** : `link.url.startsWith('http')` sans vérifier si `link.url` existe. Crash `TypeError: Cannot read property 'startsWith' of undefined`.
+- **Description** : ~~`link.url.startsWith('http')` sans vérifier si `link.url` existe. Crash `TypeError: Cannot read property 'startsWith' of undefined`.~~
 - **Impact** : Crash du serveur si config incomplète.
 - **Code problématique** :
 ```js
 if (link.url.startsWith('http')) { ... }
 ```
-- **Correction** :
+- **Correction appliquée** :
 ```js
 if (link.url && link.url.startsWith('http')) { ... }
 // ou
 if (link.url?.startsWith('http')) { ... }
 ```
 Même problème pour `event.url.startsWith('http')` à la ligne 185.
+- **Commit** : `89ed0cd`
 
-#### Q-C6 CRITICAL — `IMAGE_SECRET_KEY` régénérée à chaque reboot
+#### Q-C6 CRITICAL — ✅ CORRIGÉ — `IMAGE_SECRET_KEY` régénérée à chaque reboot
 
 - **Fichier** : `server/routes/signed-images.js:8`
-- **Description** : `process.env.IMAGE_SECRET_KEY || crypto.randomBytes(32).toString('hex')` — nouvelle clé à chaque redémarrage. URLs signées invalidées.
+- **Description** : ~~`process.env.IMAGE_SECRET_KEY || crypto.randomBytes(32).toString('hex')` — nouvelle clé à chaque redémarrage. URLs signées invalidées.~~
 - **Impact** : Tous les liens HD deviennent invalides. (Identique à V13.)
-- **Correction** : Rendre la variable d'environnement obligatoire, sans fallback.
+- **Correction appliquée** : Rendre la variable d'environnement obligatoire, sans fallback.
+- **Commit** : `89ed0cd`
 
 ### 5.3 Bugs fonctionnels — HIGH
 
@@ -1135,33 +1139,36 @@ return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
 - **Description** : En cas d'erreur, `res.sendFile('home.html')` brut. Placeholders `{{DYNAMIC_TITLE}}` visibles.
 - **Correction** : Appliquer `injectMetaTags` même sur le fallback.
 
-#### Q-H13 MEDIUM — `extractDateFromFilename` crash sur null/undefined
+#### Q-H13 MEDIUM — ✅ CORRIGÉ — `extractDateFromFilename` crash sur null/undefined
 
 - **Fichier** : `server/utils/photoService.js:199`
-- **Description** : `extractDateFromFilename(null)` → `TypeError: Cannot read properties of null (reading 'match')`. La fonction n'a pas de guard sur l'entrée.
+- **Description** : ~~`extractDateFromFilename(null)` → `TypeError: Cannot read properties of null (reading 'match')`. La fonction n'a pas de guard sur l'entrée.~~
 - **Découvert par** : `tests/services/photoService.test.js` — `[Q-PHOTO-1]`
-- **Correction** :
+- **Correction appliquée** :
 ```js
 function extractDateFromFilename(filename) {
     if (!filename || typeof filename !== 'string') return null;
     // ... reste de la logique
 }
 ```
+- **Commit** : `5d9c39e`
 
-#### Q-H14 MEDIUM — Routes de redirection `/xxx/` inatteignables avec Express 5
+#### Q-H14 MEDIUM — ✅ CORRIGÉ (E5-REDIR) — Routes de redirection `/xxx/` inatteignables avec Express 5
 
 - **Fichiers** : `server/routes/pages.js:322,349,366,371,546`, `server/routes/admin.js`
-- **Description** : Express 5 normalise le trailing slash automatiquement. Une requête `GET /contact/` matche `router.get('/contact', ...)` au lieu de `router.get('/contact/', ...)`. Les 6 routes de redirection `/xxx/ → /xxx` ne sont **jamais atteintes**.
+- **Description** : ~~Express 5 normalise le trailing slash automatiquement. Une requête `GET /contact/` matche `router.get('/contact', ...)` au lieu de `router.get('/contact/', ...)`. Les 6 routes de redirection `/xxx/ → /xxx` ne sont **jamais atteintes**.~~
 - **Découvert par** : `tests/routes/photos.test.js` — `[E5-REDIR]`
 - **Impact** : Code mort, les redirections 301 ne sont jamais servies.
-- **Correction** : Supprimer les routes `/xxx/` ou les remplacer par un middleware global `app.use((req, res, next) => { if (req.path.endsWith('/')) return res.redirect(301, req.path.slice(0, -1)); next(); })`.
+- **Correction appliquée** : Supprimer les routes `/xxx/` ou les remplacer par un middleware global `app.use((req, res, next) => { if (req.path.endsWith('/')) return res.redirect(301, req.path.slice(0, -1)); next(); })`.
+- **Commit** : `5d9c39e`
 
-#### Q-H15 MEDIUM — Check `Content-Type` anti-spam jamais atteint
+#### Q-H15 MEDIUM — ✅ CORRIGÉ — Check `Content-Type` anti-spam jamais atteint
 
 - **Fichier** : `server/routes/stats.js:84-87`
-- **Description** : Le check `contentType.includes('application/json')` est exécuté APRÈS `express.json()`. Le body-parser d'Express 5 intercepte les requêtes avec un `Content-Type` invalide et lance une erreur avant que le routeur `stats.js` ne voie la requête.
+- **Description** : ~~Le check `contentType.includes('application/json')` est exécuté APRÈS `express.json()`. Le body-parser d'Express 5 intercepte les requêtes avec un `Content-Type` invalide et lance une erreur avant que le routeur `stats.js` ne voie la requête.~~
 - **Découvert par** : `tests/routes/contact.test.js` — `[T-CONTENT-1]`
-- **Correction** : Déplacer le middleware `express.json()` APRÈS le routeur stats, ou utiliser `app.use('/send-mail', express.json())` uniquement sur la route concernée.
+- **Correction appliquée** : Déplacer le middleware `express.json()` APRÈS le routeur stats, ou utiliser `app.use('/send-mail', express.json())` uniquement sur la route concernée.
+- **Commit** : `5d9c39e`
 
 #### Q-H16 LOW — `rateLimitStore` non exporté dans stats.js
 
