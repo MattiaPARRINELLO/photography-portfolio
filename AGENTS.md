@@ -61,6 +61,35 @@ Required in `.env` (see `.env.example`):
 - `photos/thumbnails/` must exist for uploads to work.
 - Config JSON files in `config/` that contain real data are gitignored. Only `*.example` files are tracked. Copy an example and remove `.example` suffix to use.
 - The old CSS was built with Tailwind v3 but the build pipeline no longer uses Tailwind — the frozen Tailwind utility classes live in `src/input.css`/`output.css` as plain CSS.
+- **CSS inlining** in `server/routes/pages.js` uses a regex to match any fingerprinted CSS file + `dist/manifest.json` to resolve the fingerprinted path. Never hardcode a fingerprinted filename — it changes at every build.
+- **Env vars are mandatory** — no hardcoded fallbacks. Missing vars throw at startup. Tests use `tests/setup.js` to inject them (loaded via `jest.config.js` → `setupFiles`).
+
+## Security & CSP (Helmet 8)
+
+Helmet 8 avec `contentSecurityPolicy` ajoute des directives restrictives par défaut. Après toute modification de la CSP, **tester dans un vrai navigateur** — les tests Jest ne couvrent pas le rendu client.
+
+### Directives à maintenir explicitement
+
+| Directive | Valeur | Raison |
+|---|---|---|
+| `scriptSrcAttr` | `["'unsafe-inline'"]` | Les pages utilisent des attributs inline : `onclick`, `onerror`, `onload` (menu, modale photo, fallback images, fonts). Sans ça, tout est cassé. |
+| `styleSrc` | inclure `https://cdn.jsdelivr.net` | Fancybox charge son CSS depuis jsdelivr. Sans ça, la lightbox n'a pas de styles. |
+| `scriptSrc` | inclure `https://cdn.jsdelivr.net`, `https://unpkg.com` | Alpine.js, Fancybox, Masonry, exifr viennent de ces CDN. |
+| `styleSrc` | inclure `'unsafe-inline'` | Les pages ont du CSS inline (critical CSS, styles dynamiques). |
+| `connectSrc` | inclure `https://cdn.jsdelivr.net` | Certains scripts CDN font des fetch/XMLHttpRequest. |
+
+### Pièges Helmet 8 connus
+
+- Si `scriptSrcAttr` n'est pas dans `directives`, Helmet 8 le définit à `'none'` → **tous** les événements inline (`onclick`, `onerror`…) sont bloqués silencieusement.
+- `upgrade-insecure-requests` est ajouté automatiquement (transforme `http://` en `https://`). OK en localhost, indispensable en production.
+- `crossOriginEmbedderPolicy: false` est nécessaire car le site charge des ressources cross-origin (CDN, fonts).
+
+## Static files
+
+- **`express.static` est ciblé** — `/dist` et `/photos` uniquement. Plus de `express.static(root)` qui exposait tout le projet.
+- Les pages HTML sont servies exclusivement par les routes Express (`server/routes/pages.js`).
+- `/robots.txt` a une route dédiée dans `server.js` (plus servi en statique).
+- Si un nouveau dossier de ressources statiques est créé, ajouter un `app.use('/prefix', express.static(...))` ciblé — ne pas revenir à `express.static(root)`.
 
 ## graphify
 
