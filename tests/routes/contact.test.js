@@ -251,14 +251,6 @@ describe('Route contact POST /send-mail', function () {
       });
   });
 
-  // ================================================================
-  // Content-Type invalide
-  // ================================================================
-  it.skip('[T-CONTENT-1] Contournement Content-Type bloqué par Express 5 body-parser — test ajusté en attente', function (done) {
-    // Express 5 json() middleware intercepte avant que le routeur ne voie la requête
-    done();
-  });
-
   it('retourne 403 si Origin invalide', function (done) {
     var body = makeValidBody();
 

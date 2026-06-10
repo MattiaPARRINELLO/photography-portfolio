@@ -78,19 +78,11 @@ router.post('/send-mail', async (req, res) => {
     // Ces vérifications empêchent l'utilisation directe
     // de l'API via curl, Postman ou scripts.
 
-    // VÉRIFICATION A : Headers requis
-    // Le formulaire envoie ces headers, pas les appels directs
-    const contentType = req.headers['content-type'];
+    // VÉRIFICATION A : Origin/Referer
+    // Doit venir de notre propre domaine
     const origin = req.headers['origin'];
     const referer = req.headers['referer'];
 
-    if (!contentType || !contentType.includes('application/json')) {
-        console.warn('🚫 API abuse: Content-Type invalide depuis IP:', clientIP);
-        return res.status(400).json({ error: 'Requête invalide' });
-    }
-
-    // VÉRIFICATION B : Origin/Referer
-    // Doit venir de notre propre domaine
     const allowedOrigins = [
         'http://localhost:3000',
         'http://127.0.0.1:3000',

@@ -117,7 +117,6 @@ describe('Routes pages publiques', function () {
         done();
       });
     });
-    it.skip('[E5-REDIR] Express 5 normalise le trailing slash', function (done) { done(); });
   });
 
   describe('GET /a-propos', function () {
@@ -128,14 +127,12 @@ describe('Routes pages publiques', function () {
         done();
       });
     });
-    it.skip('[E5-REDIR] Express 5 normalise le trailing slash', function (done) { done(); });
   });
 
   describe('GET /links', function () {
     it('retourne la page links', function (done) {
       supertest(makeApp()).get('/links').expect(200).end(function (err) { done(err); });
     });
-    it.skip('[E5-REDIR] Express 5 normalise le trailing slash', function (done) { done(); });
   });
 
   describe('GET /mentions-legales', function () {
@@ -166,7 +163,6 @@ describe('Routes pages publiques', function () {
         done();
       });
     });
-    it.skip('[E5-REDIR] Express 5 normalise le trailing slash', function (done) { done(); });
   });
 
   describe('GET /galeries/:slug', function () {
