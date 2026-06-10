@@ -118,6 +118,7 @@ describe('Routes admin', function () {
 
   beforeEach(function () {
     jest.clearAllMocks();
+    if (adminRouter.loginLimiter) adminRouter.loginLimiter.resetKey('::ffff:127.0.0.1');
     // Valeurs par defaut pour linksService
     linksService.loadLinksConfig.mockReturnValue({
       profile: { name: 'Test', role: 'Photo', tagline: 'T', avatar: { enabled: true, url: '/a.png' } },

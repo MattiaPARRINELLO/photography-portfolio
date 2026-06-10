@@ -167,6 +167,7 @@ describe('Routes admin - couverture complementaire', function () {
 
   beforeEach(function () {
     jest.clearAllMocks();
+    if (adminRouter.loginLimiter) adminRouter.loginLimiter.resetKey('::ffff:127.0.0.1');
 
     // --- fs defaults ---
     fs.existsSync.mockReturnValue(true);
