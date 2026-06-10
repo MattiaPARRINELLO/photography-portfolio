@@ -179,7 +179,7 @@ describe('Middleware auth', () => {
         expect.any(String),
         expect.objectContaining({
           httpOnly: true,
-          sameSite: 'lax'
+          sameSite: 'strict'
         })
       );
     });

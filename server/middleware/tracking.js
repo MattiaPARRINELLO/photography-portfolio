@@ -24,6 +24,8 @@ function userTrackingMiddleware(userLogger, campaignManager) {
             res.cookie('user_tracking_id', userId, {
                 maxAge: 365 * 24 * 60 * 60 * 1000, // 1 an
                 httpOnly: false, // Permettre l'accès côté client
+                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production',
                 path: '/' // Disponible sur tout le site
             });
             console.log(`🆕 Nouvel utilisateur créé: ${userId}`);

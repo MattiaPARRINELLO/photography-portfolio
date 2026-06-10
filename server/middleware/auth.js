@@ -23,10 +23,11 @@ function restoreAdminSessionFromCookie(req) {
 }
 
 function setAdminAuthCookie(res) {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie(ADMIN_COOKIE_NAME, computeAdminToken(), {
         httpOnly: true,
-        sameSite: 'lax',
-        secure: false,
+        sameSite: 'strict',
+        secure: isProduction,
         maxAge: ADMIN_COOKIE_MAX_AGE
     });
 }

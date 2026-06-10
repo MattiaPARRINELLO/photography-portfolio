@@ -69,12 +69,14 @@ app.use(helmet({
 }));
 
 // Configuration des sessions
+const isProduction = process.env.NODE_ENV === 'production';
+app.set('trust proxy', 1);
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: false, // Mettre à true en HTTPS
+        secure: isProduction,
         maxAge: 24 * 60 * 60 * 1000, // 24h
         httpOnly: true,
         sameSite: 'lax'
