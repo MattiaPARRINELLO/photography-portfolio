@@ -114,7 +114,14 @@ class TextUtils {
         // SEO: Open Graph tags optimisés
         const ogTitle = pageSeo.og_title || title;
         const ogDescription = pageSeo.og_description || description;
-        const ogImage = (texts.meta && texts.meta.og_image) ? `${baseUrl}${texts.meta.og_image}` : `${baseUrl}/dist/assets/og-image.jpg`;
+        // og:image : valeur centralisée en code (og-image.jpg). La surcharge texts.json
+        // reste possible, sauf si elle pointe encore vers l'ancien Avatar.png par défaut
+        // (config de prod non versionnée) — dans ce cas, l'og-image prend le relais.
+        const legacyOgImage = '/dist/assets/Avatar.png';
+        const ogImageRef = (texts.meta && texts.meta.og_image && texts.meta.og_image !== legacyOgImage)
+            ? texts.meta.og_image
+            : '/dist/assets/og-image.jpg';
+        const ogImage = `${baseUrl}${ogImageRef}`;
 
         additionalMetas += `    <meta property="og:title" content="${ogTitle}">\n`;
         additionalMetas += `    <meta property="og:description" content="${ogDescription}">\n`;
