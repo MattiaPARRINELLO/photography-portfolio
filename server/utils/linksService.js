@@ -7,6 +7,18 @@ const fs = require('fs');
 const path = require('path');
 
 const LINKS_CONFIG_PATH = path.join(__dirname, '../../config/links.json');
+const SEO_CONFIG_PATH = path.join(__dirname, '../../config/seo.json');
+
+// URL canonique du site (cohérent avec les autres pages : seo.json › site.url)
+function getCanonicalBaseUrl() {
+    try {
+        if (fs.existsSync(SEO_CONFIG_PATH)) {
+            const seo = JSON.parse(fs.readFileSync(SEO_CONFIG_PATH, 'utf-8'));
+            if (seo.site && seo.site.url) return seo.site.url;
+        }
+    } catch (e) { /* fallback ci-dessous */ }
+    return null;
+}
 
 // Icons SVG pour les différents types de liens
 const ICONS = {
@@ -301,9 +313,11 @@ function injectLinksData(html, config, req) {
     const { profile, links, appearance, seo, event } = config;
     const activeLinks = links.filter(l => l.enabled).sort((a, b) => a.order - b.order);
 
-    // Générer l'URL canonique
-    const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
-    const canonicalUrl = `${protocol}://${req.get('host')}/links`;
+    // Générer l'URL canonique : base fixe (seo.json) pour éviter le contenu dupliqué entre domaines
+    const baseUrl = getCanonicalBaseUrl();
+    const canonicalUrl = baseUrl
+        ? `${baseUrl}/links`
+        : `${req.protocol}://${req.get('host')}/links`;
 
     // SEO
     html = html.replace(/\{\{SEO_TITLE\}\}/g, seo.title || profile.name);
