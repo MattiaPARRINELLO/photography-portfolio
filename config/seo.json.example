@@ -1,0 +1,73 @@
+{
+  "site": {
+    "name": "Votre nom - Photographe de Concert",
+    "url": "https://www.example.com",
+    "locale": "fr_FR",
+    "author": "Votre nom",
+    "phone": "",
+    "email": "",
+    "address": {
+      "region": "Île-de-France",
+      "city": "Paris",
+      "country": "FR"
+    },
+    "social": {
+      "instagram": "",
+      "tiktok": ""
+    }
+  },
+  "pages": {
+    "home": {
+      "title": "Votre nom - Photographe de Concert à Paris | Portfolio",
+      "description": "Photographe de concert basé à Paris. Portfolio et contact.",
+      "h1": "Votre nom - Photographe de Concert à Paris",
+      "keywords": "photographe concert Paris"
+    },
+    "about": {
+      "title": "À propos - Votre nom, Photographe de Concert Paris",
+      "description": "Parcours de votre nom, photographe de concert à Paris.",
+      "h1": "Votre nom - Photographe de Concert",
+      "keywords": "photographe concert Paris"
+    },
+    "contact": {
+      "title": "Contact - Votre nom, Photographe de Concert Paris",
+      "description": "Contactez votre nom pour vos projets photo : concerts, festivals, showcases.",
+      "h1": "Contactez-moi",
+      "keywords": "contacter photographe concert"
+    },
+    "mentions": {
+      "title": "Mentions Légales - Votre nom Photographie",
+      "description": "Mentions légales du site - votre nom, photographe de concert à Paris.",
+      "keywords": ""
+    },
+    "links": {
+      "title": "Liens - Votre nom, Photographe de Concert Paris",
+      "description": "Tous les liens de votre nom : portfolio, réseaux sociaux, contact.",
+      "keywords": ""
+    },
+    "galleries": {
+      "title": "Galeries de concerts - Votre nom, Photographe à Paris",
+      "description": "Galeries photo par artiste et par concert.",
+      "h1": "Galeries de concerts",
+      "keywords": "galerie photo concert, photographe concert Paris"
+    }
+  },
+  "artists": [
+    {
+      "name": "Artiste",
+      "slug": "artiste",
+      "genre": "Rap",
+      "description": "Photos d'Artiste en concert."
+    }
+  ],
+  "venues": [
+    {
+      "name": "Salle",
+      "slug": "salle",
+      "city": "Paris",
+      "description": "Photos de concerts à Salle."
+    }
+  ],
+  "intro_text": "Photographe de concert basé à Paris, je capture l'énergie brute des artistes sur scène.",
+  "footer_seo": "Votre nom - Photographe de concert à Paris · Disponible en Île-de-France"
+}

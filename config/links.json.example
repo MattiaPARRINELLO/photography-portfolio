@@ -1,0 +1,60 @@
+{
+  "profile": {
+    "name": "Votre nom",
+    "role": "Photographe",
+    "tagline": "Concert • Live • Backstage",
+    "avatar": {
+      "enabled": true,
+      "url": "/dist/assets/Avatar.png"
+    }
+  },
+  "event": {
+    "enabled": false,
+    "message": "",
+    "url": "",
+    "icon": "star",
+    "createdAt": null,
+    "expiresAt": null
+  },
+  "links": [
+    {
+      "id": "portfolio",
+      "label": "Voir mon Portfolio",
+      "url": "/",
+      "icon": "camera",
+      "enabled": true,
+      "order": 1,
+      "style": "primary",
+      "tracking": true
+    },
+    {
+      "id": "instagram",
+      "label": "Instagram",
+      "url": "https://instagram.com/",
+      "icon": "instagram",
+      "enabled": true,
+      "order": 2,
+      "style": "default",
+      "tracking": true
+    },
+    {
+      "id": "email",
+      "label": "Me contacter",
+      "url": "mailto:contact@example.com",
+      "icon": "mail",
+      "enabled": true,
+      "order": 3,
+      "style": "default",
+      "tracking": true
+    }
+  ],
+  "appearance": {
+    "theme": "dark",
+    "accentColor": "#667eea",
+    "showWatermark": true
+  },
+  "seo": {
+    "title": "Votre nom | Photographe Concert & Live",
+    "description": "Photographe spécialisé concerts, lives et backstage. Contactez-moi pour vos événements."
+  }
+}

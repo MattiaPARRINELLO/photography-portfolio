@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": null,
+    "migrated": false
+  },
+  "galleries": [
+    {
+      "id": "g_exemple",
+      "slug": "artiste-a-paris",
+      "title": "Artiste à Paris",
+      "artist": "Artiste",
+      "venue": "La Salle",
+      "date": "2026-01-01",
+      "description": "Retour en images sur le concert d'Artiste à La Salle.",
+      "cover": "20260101_200000__MG_0001.jpg",
+      "photos": ["20260101_200000__MG_0001.jpg"],
+      "published": true,
+      "createdAt": null,
+      "updatedAt": null,
+      "excludeFromMain": false,
+      "galleryOnlyPhotos": []
+    }
+  ]
+}
