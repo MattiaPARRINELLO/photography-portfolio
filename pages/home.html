@@ -1128,7 +1128,12 @@
             } catch (e) {
               /* ignore */
             }
-            img.alt = photo.filename;
+            img.alt =
+              "Photo de concert par Mattia Parrinello - " +
+              photo.filename
+                .replace(/^\d+_*/, "")
+                .replace(/\.[^.]+$/, "")
+                .replace(/_/g, " ");
 
             // LCP OPTIMIZATION: Eager load first images and remove animation delay
             if (index < 4) {

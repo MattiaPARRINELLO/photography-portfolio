@@ -400,8 +400,11 @@ function renderArtistLinksSection(gallery) {
 }
 
 function renderGalleryCard(g) {
+    const coverAlt = g.artist
+        ? `${g.artist} en concert${g.venue ? ' - ' + g.venue : ''}, photo par Mattia Parrinello`
+        : `${g.title} - photo par Mattia Parrinello`;
     const cover = g.cover
-        ? `<img class="cover" src="/photos/resize?file=${encodeURIComponent(g.cover)}&amp;w=800" alt="${escapeAttr(g.title)} - photo par Mattia Parrinello" loading="lazy" />`
+        ? `<img class="cover" src="/photos/resize?file=${encodeURIComponent(g.cover)}&amp;w=800" srcset="/photos/resize?file=${encodeURIComponent(g.cover)}&amp;w=400 400w, /photos/resize?file=${encodeURIComponent(g.cover)}&amp;w=800 800w, /photos/resize?file=${encodeURIComponent(g.cover)}&amp;w=1200 1200w" sizes="(max-width:768px) 94vw, (max-width:1024px) 48vw, 31vw" alt="${escapeAttr(coverAlt)}" loading="lazy" />`
         : '<div class="cover" style="background:#111"></div>';
     const metaParts = [g.venue, formatGalleryDate(g.date)].filter(Boolean);
     const meta = metaParts.join(' · ');
@@ -610,13 +613,16 @@ router.get('/galeries/:slug', async (req, res) => {
         htmlContent = htmlContent.replace('<!-- GALLERY_DESCRIPTION_PLACEHOLDER -->', introHtml);
 
         // Photos (masonry via CSS columns + Fancybox)
+        const altContext = artistName
+            ? `Concert de ${artistName}${gallery.venue ? ' à ' + gallery.venue : ''}`
+            : gallery.title;
         const photosHtml = (gallery.photos || []).map((filename, i) => {
             const file = encodeURIComponent(filename);
             const full = `/photos/resize?file=${file}&w=1600`;
             const thumb = `/photos/resize?file=${file}&w=640`;
             const srcset = `/photos/resize?file=${file}&w=320 320w, /photos/resize?file=${file}&w=480 480w, /photos/resize?file=${file}&w=640 640w, /photos/resize?file=${file}&w=960 960w`;
             const loading = i < 6 ? 'eager' : 'lazy';
-            const alt = `${gallery.title} - photo ${i + 1} par Mattia Parrinello`;
+            const alt = `${altContext} - photo ${i + 1} par Mattia Parrinello`;
             return `<a href="${full}" data-fancybox="gallery"><img src="${thumb}" srcset="${srcset}" sizes="(max-width:768px) 50vw, (max-width:1440px) 33vw, 25vw" alt="${escapeAttr(alt)}" loading="${loading}" /></a>`;
         }).join('');
         const masonryHtml = photosHtml
