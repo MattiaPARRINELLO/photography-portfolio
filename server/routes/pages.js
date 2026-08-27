@@ -271,7 +271,7 @@ router.get('/contact', (req, res) => {
 
 // Redirection pour /contact/ vers /contact
 router.get('/contact/', (req, res) => {
-    res.redirect('/contact');
+    res.redirect(301, '/contact');
 });
 
 // Route pour la page À propos
@@ -286,7 +286,7 @@ router.get('/a-propos', (req, res) => {
 
 // Redirection pour /a-propos/ vers /a-propos
 router.get('/a-propos/', (req, res) => {
-    res.redirect('/a-propos');
+    res.redirect(301, '/a-propos');
 });
 
 // Route pour la page Links (carte de visite digitale / QR code)
@@ -312,7 +312,7 @@ router.get('/links', (req, res) => {
 
 // Redirection pour /links/ vers /links
 router.get('/links/', (req, res) => {
-    res.redirect('/links');
+    res.redirect(301, '/links');
 });
 
 // Route pour les mentions légales (meta/JSON-LD injectés comme les autres pages)
@@ -327,12 +327,12 @@ router.get('/mentions-legales', (req, res) => {
 
 // Redirection pour /mentions-legales/ vers /mentions-legales
 router.get('/mentions-legales/', (req, res) => {
-    res.redirect('/mentions-legales');
+    res.redirect(301, '/mentions-legales');
 });
 
 // Redirection pour /portfolio vers /
 router.get('/portfolio', (req, res) => {
-    res.redirect('/');
+    res.redirect(301, '/');
 });
 
 // =============================================
@@ -490,7 +490,7 @@ router.get('/galeries', (req, res) => {
         res.status(500).send('Erreur lors du chargement des galeries');
     });
 });
-router.get('/galeries/', (req, res) => res.redirect('/galeries'));
+router.get('/galeries/', (req, res) => res.redirect(301, '/galeries'));
 
 router.get('/galeries/:slug', async (req, res) => {
     try {
@@ -717,28 +717,36 @@ router.get('/sitemap.xml', async (req, res) => {
             }
         ];
 
-        // Add published galleries
+        // Add published galleries (avec extension image pour le référencement des photos)
         try {
             const galleries = galleryService.listGalleries().filter(g => g.published !== false);
             galleries.forEach(g => {
                 const lastmod = (g.updatedAt || g.createdAt || new Date().toISOString()).slice(0, 10);
+                const imageUrls = (g.photos || []).slice(0, 20).map(f => ({
+                    url: `https://www.photo.mprnl.fr/photos/resize?file=${encodeURIComponent(f)}&w=1600`,
+                    title: g.title
+                }));
                 staticPages.push({
                     loc: `/galeries/${g.slug}`,
                     lastmod,
                     changefreq: 'monthly',
-                    priority: '0.8'
+                    priority: '0.8',
+                    images: imageUrls
                 });
             });
         } catch (e) {
             console.warn('Could not add galleries to sitemap:', e.message);
         }
 
-        // Build XML
-        const urls = staticPages.map((p) =>
-            `  <url>\n    <loc>${baseUrl}${p.loc}</loc>\n    <lastmod>${p.lastmod}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>\n`
-        ).join('');
+        // Build XML (avec xml:image pour les galeries)
+        const urls = staticPages.map((p) => {
+            const imageTags = (p.images || [])
+                .map(img => `\n      <image:image>\n        <image:loc>${img.url}</image:loc>\n        <image:title>${escapeAttr(img.title)}</image:title>\n      </image:image>`)
+                .join('');
+            return `  <url>\n    <loc>${baseUrl}${p.loc}</loc>\n    <lastmod>${p.lastmod}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>${imageTags}\n  </url>\n`;
+        }).join('');
 
-        const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}</urlset>`;
+        const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls}</urlset>`;
 
         res.header('Content-Type', 'application/xml');
         res.send(xml);

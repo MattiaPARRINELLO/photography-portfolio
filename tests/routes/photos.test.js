@@ -147,7 +147,7 @@ describe('Routes pages publiques', function () {
 
   describe('GET /portfolio', function () {
     it('redirige vers /', function (done) {
-      supertest(makeApp()).get('/portfolio').expect(302).end(done);
+      supertest(makeApp()).get('/portfolio').expect(301).end(done);
     });
   });
 
