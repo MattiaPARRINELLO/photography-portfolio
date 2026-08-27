@@ -149,146 +149,146 @@ class TextUtils {
     }
 
     // SEO: Génère le JSON-LD Schema.org pour une page donnée
+    // Graphe unique (@graph) avec des @id stables : les entités Person,
+    // ProfessionalService et WebSite sont définies une seule fois et référencées.
     generateSchemaJsonLd(pageType, req) {
         const seo = this.loadSeoData();
         const siteSeo = seo.site || {};
         const baseUrl = siteSeo.url || 'https://www.photo.mprnl.fr';
-        const schemas = [];
-
-        // SEO: Schema WebSite (présent sur toutes les pages)
-        schemas.push({
-            '@context': 'https://schema.org',
-            '@type': 'WebSite',
-            'name': siteSeo.name || 'Mattia Parrinello - Photographe de Concert',
-            'url': baseUrl,
-            'inLanguage': 'fr',
-            'author': {
-                '@type': 'Person',
-                'name': siteSeo.author || 'Mattia Parrinello'
-            }
-        });
-
-        // SEO: Schema ProfessionalService (photographe - présent sur toutes les pages)
-        const professionalService = {
-            '@context': 'https://schema.org',
-            '@type': 'ProfessionalService',
-            'name': 'Mattia Parrinello - Photographe de Concert',
-            'url': baseUrl,
-            'image': `${baseUrl}/dist/assets/Avatar.png`,
-            'description': 'Photographe de concert professionnel basé à Paris, spécialisé dans la captation de concerts, festivals, showcases et backstage. Musique rap et tous genres.',
-            'telephone': siteSeo.phone || '',
-            'address': {
-                '@type': 'PostalAddress',
-                'addressLocality': 'Paris',
-                'addressRegion': 'Île-de-France',
-                'addressCountry': 'FR'
-            },
-            'areaServed': [
-                {
-                    '@type': 'City',
-                    'name': 'Paris'
-                },
-                {
-                    '@type': 'AdministrativeArea',
-                    'name': 'Île-de-France'
-                },
-                {
-                    '@type': 'Country',
-                    'name': 'France'
-                }
-            ],
-            'priceRange': '€€',
-            'sameAs': [
-                siteSeo.social && siteSeo.social.instagram,
-                siteSeo.social && siteSeo.social.tiktok
-            ].filter(Boolean),
-            'knowsAbout': [
-                'Photographie de concert',
-                'Photographie de festival',
-                'Photographie de backstage',
-                'Photographie événementielle musicale',
-                'Photographie de spectacle'
-            ]
-        };
-        schemas.push(professionalService);
-
-        // SEO: Schema Person (photographe)
-        schemas.push({
-            '@context': 'https://schema.org',
-            '@type': 'Person',
-            'name': siteSeo.author || 'Mattia Parrinello',
-            'url': baseUrl,
-            'image': `${baseUrl}/dist/assets/Avatar.png`,
-            'jobTitle': 'Photographe de concert',
-            'worksFor': {
-                '@type': 'Organization',
-                'name': 'Mattia Parrinello Photographie'
-            },
-            'address': {
-                '@type': 'PostalAddress',
-                'addressLocality': 'Paris',
-                'addressRegion': 'Île-de-France',
-                'addressCountry': 'FR'
-            },
-            'sameAs': [
-                siteSeo.social && siteSeo.social.instagram,
-                siteSeo.social && siteSeo.social.tiktok
-            ].filter(Boolean)
-        });
-
-        // SEO: Schema spécifique par page
+        const author = siteSeo.author || 'Mattia Parrinello';
         const pageKey = this._resolvePageKey(pageType);
 
+        const social = [
+            siteSeo.social && siteSeo.social.instagram,
+            siteSeo.social && siteSeo.social.tiktok
+        ].filter(Boolean);
+
+        // @id stables (une seule identité, reliée partout)
+        const personId = `${baseUrl}/#person`;
+        const serviceId = `${baseUrl}/#service`;
+        const websiteId = `${baseUrl}/#website`;
+        const pagePath = this._pagePath(pageKey);
+        const pageId = `${baseUrl}${pagePath}#webpage`;
+
+        const address = {
+            '@type': 'PostalAddress',
+            'addressLocality': 'Paris',
+            'addressRegion': 'Île-de-France',
+            'addressCountry': 'FR'
+        };
+
+        const graph = [
+            {
+                '@type': 'WebSite',
+                '@id': websiteId,
+                'name': siteSeo.name || 'Mattia Parrinello - Photographe de Concert',
+                'url': baseUrl,
+                'inLanguage': 'fr',
+                'publisher': { '@id': personId }
+            },
+            {
+                '@type': 'Person',
+                '@id': personId,
+                'name': author,
+                'alternateName': 'MPRNL',
+                'url': baseUrl,
+                'image': `${baseUrl}/dist/assets/og-image.jpg`,
+                'jobTitle': 'Photographe de concert',
+                'description': 'Photographe de concert basé à Paris, spécialisé dans la musique rap et les événements live. Captation de concerts, festivals, showcases et backstage.',
+                'address': address,
+                'sameAs': social,
+                'knowsAbout': [
+                    'Photographie de concert',
+                    'Photographie de festival',
+                    'Photographie de backstage',
+                    'Photographie événementielle musicale',
+                    'Photographie de spectacle'
+                ]
+            },
+            {
+                '@type': 'ProfessionalService',
+                '@id': serviceId,
+                'name': 'Mattia Parrinello - Photographe de Concert',
+                'url': baseUrl,
+                'image': `${baseUrl}/dist/assets/og-image.jpg`,
+                'description': 'Photographe de concert professionnel basé à Paris, spécialisé dans la captation de concerts, festivals, showcases et backstage. Musique rap et tous genres.',
+                'telephone': siteSeo.phone || '',
+                'address': address,
+                'areaServed': [
+                    { '@type': 'City', 'name': 'Paris' },
+                    { '@type': 'AdministrativeArea', 'name': 'Île-de-France' },
+                    { '@type': 'Country', 'name': 'France' }
+                ],
+                'priceRange': '€€',
+                'founder': { '@id': personId },
+                'sameAs': social,
+                'knowsAbout': [
+                    'Photographie de concert',
+                    'Photographie de festival',
+                    'Photographie de backstage',
+                    'Photographie événementielle musicale',
+                    'Photographie de spectacle'
+                ]
+            },
+            {
+                '@type': 'WebPage',
+                '@id': pageId,
+                'url': `${baseUrl}${pagePath}`,
+                'isPartOf': { '@id': websiteId },
+                'about': { '@id': personId },
+                'inLanguage': 'fr'
+            }
+        ];
+
+        // SEO: Schema spécifique par page
         if (pageKey === 'home') {
-            // ImageGallery pour la page d'accueil
-            schemas.push({
-                '@context': 'https://schema.org',
+            graph.push({
                 '@type': 'ImageGallery',
                 'name': 'Portfolio - Photos de concert par Mattia Parrinello',
                 'description': 'Galerie de photographies de concerts, festivals et événements musicaux à Paris et en France.',
                 'url': baseUrl,
-                'author': {
-                    '@type': 'Person',
-                    'name': 'Mattia Parrinello'
-                }
+                'author': { '@id': personId }
             });
         }
 
         if (pageKey === 'contact') {
-            schemas.push({
-                '@context': 'https://schema.org',
+            graph.push({
                 '@type': 'ContactPage',
                 'name': 'Contacter Mattia Parrinello - Photographe de Concert',
                 'url': `${baseUrl}/contact`,
-                'mainEntity': {
-                    '@type': 'Person',
-                    'name': 'Mattia Parrinello',
-                    'telephone': siteSeo.phone || '',
-                    'contactType': 'Photographe de concert'
-                }
+                'mainEntity': { '@id': personId }
             });
         }
 
         if (pageKey === 'about') {
-            schemas.push({
-                '@context': 'https://schema.org',
+            graph.push({
                 '@type': 'AboutPage',
                 'name': 'À propos de Mattia Parrinello - Photographe de Concert',
                 'url': `${baseUrl}/a-propos`,
-                'mainEntity': {
-                    '@type': 'Person',
-                    'name': 'Mattia Parrinello'
-                }
+                'mainEntity': { '@id': personId }
             });
         }
 
         // SEO: BreadcrumbList
         const breadcrumbs = this._generateBreadcrumbs(pageKey, baseUrl);
         if (breadcrumbs) {
-            schemas.push(breadcrumbs);
+            graph.push(breadcrumbs);
         }
 
-        return schemas.map(s => `<script type="application/ld+json">${JSON.stringify(s)}</script>`).join('\n    ');
+        return `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })}</script>`;
+    }
+
+    // SEO: Chemin d'URL canonique par clé de page
+    _pagePath(pageKey) {
+        const paths = {
+            'home': '/',
+            'about': '/a-propos',
+            'contact': '/contact',
+            'mentions': '/mentions-legales',
+            'links': '/links',
+            'galleries': '/galeries'
+        };
+        return paths[pageKey] || '/';
     }
 
     // SEO: Génère le breadcrumb Schema.org

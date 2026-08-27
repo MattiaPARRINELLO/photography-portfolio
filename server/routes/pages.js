@@ -559,6 +559,7 @@ router.get('/galeries/:slug', async (req, res) => {
             ...(artistName ? { about: { '@type': 'MusicGroup', name: artistName, ...(artistSameAs.length ? { sameAs: artistSameAs } : {}) } } : {}),
             author: {
                 '@type': 'Person',
+                '@id': 'https://www.photo.mprnl.fr/#person',
                 name: 'Mattia Parrinello',
                 url: 'https://www.photo.mprnl.fr'
             },
@@ -566,7 +567,7 @@ router.get('/galeries/:slug', async (req, res) => {
                 '@type': 'ImageObject',
                 contentUrl: `https://www.photo.mprnl.fr/photos/resize?file=${encodeURIComponent(f)}&w=1600`,
                 thumbnailUrl: `https://www.photo.mprnl.fr/photos/resize?file=${encodeURIComponent(f)}&w=640`,
-                creator: { '@type': 'Person', name: 'Mattia Parrinello' }
+                creator: { '@type': 'Person', '@id': 'https://www.photo.mprnl.fr/#person', name: 'Mattia Parrinello' }
             }))
         };
 
