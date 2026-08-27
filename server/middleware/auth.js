@@ -51,11 +51,9 @@ function checkAdminPassword(req, res, next) {
  * Middleware de vérification de session admin (pour les API)
  */
 function requireAdminSession(req, res, next) {
-    console.log('Vérification session admin:', req.session.isAdmin);
     if (req.session.isAdmin || restoreAdminSessionFromCookie(req)) {
         return next();
     }
-    console.log('Session non autorisée, retour de 401');
     return res.status(401).json({ error: 'Session non autorisée' });
 }
 
@@ -63,11 +61,9 @@ function requireAdminSession(req, res, next) {
  * Middleware de vérification de session admin (pour les pages HTML)
  */
 function requireAdminPage(req, res, next) {
-    console.log('Vérification session admin (page):', req.session.isAdmin);
     if (req.session.isAdmin || restoreAdminSessionFromCookie(req)) {
         return next();
     }
-    console.log('Session non autorisée, redirection vers /admin');
     return res.redirect('/admin');
 }
 

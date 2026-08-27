@@ -39,10 +39,7 @@ router.post('/request-hd-access', (req, res) => {
     try {
         const { imagePath } = req.body;
 
-        console.log('📸 Demande d\'accès HD reçue:', imagePath);
-
         if (!imagePath) {
-            console.log('❌ Erreur: imagePath manquant');
             return res.status(400).json({ error: 'imagePath est requis' });
         }
 
@@ -59,23 +56,18 @@ router.post('/request-hd-access', (req, res) => {
                 }
             }
         } catch (e) {
-            console.log('⚠️ Erreur parsing URL:', e.message);
+            // URL invalide: garder le chemin tel quel
         }
-
-        console.log('📁 Chemin relatif extrait:', relativePath);
 
         // Validation basique du chemin (éviter path traversal)
         const normalized = path.normalize(relativePath).replace(/^(\.\.(\/|\\|$))+/, '');
 
         // Vérifier que le fichier existe dans le dossier photos
         const fullPath = path.join(process.cwd(), 'photos', normalized);
-        console.log('🔍 Vérification existence:', fullPath);
 
         if (!fs.existsSync(fullPath)) {
-            console.log('❌ Fichier non trouvé:', fullPath);
             // En mode dev, retourner l'URL originale sans signature
             if (process.env.NODE_ENV !== 'production') {
-                console.log('🔧 Mode dev: retour URL originale');
                 return res.json({
                     success: true,
                     url: imagePath,
@@ -90,8 +82,6 @@ router.post('/request-hd-access', (req, res) => {
         const signature = generateSignature(normalized, expiresAt);
 
         const signedUrl = `/api/hd-image?path=${encodeURIComponent(normalized)}&expires=${expiresAt}&signature=${signature}`;
-
-        console.log('✅ URL signée générée:', signedUrl);
 
         res.json({
             success: true,

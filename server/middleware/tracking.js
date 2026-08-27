@@ -28,9 +28,6 @@ function userTrackingMiddleware(userLogger, campaignManager) {
                 secure: process.env.NODE_ENV === 'production',
                 path: '/' // Disponible sur tout le site
             });
-            console.log(`🆕 Nouvel utilisateur créé: ${userId}`);
-        } else if (userId && isPageRequest) {
-            console.log(`👤 Utilisateur existant: ${userId}`);
         }
 
         // Ajouter l'userId à la requête pour usage ultérieur
@@ -50,7 +47,7 @@ function userTrackingMiddleware(userLogger, campaignManager) {
                     // Sauvegarder dans le cache pour les prochaines requêtes
                     campaignService.associateUserToCampaign(userId, campaignInfo);
                 } catch (e) {
-                    console.log('⚠️ Erreur parsing campaign info dans HTTP request:', e.message);
+                    // Cookie de campagne invalide: ignorer
                 }
             }
 
@@ -75,7 +72,6 @@ function userTrackingMiddleware(userLogger, campaignManager) {
                     medium: campaignInfo.medium,
                     campaignTimestamp: campaignInfo.timestamp
                 };
-                console.log(`🎯 Log HTTP avec campagne: ${req.method} ${req.url} - ${campaignInfo.campaignName} (${campaignInfo.campaignId})`);
             }
 
             userLogger.log(userId, 'http_request', logDetails);
@@ -110,8 +106,6 @@ function campaignMiddleware(campaignManager) {
                 httpOnly: false,
                 path: '/'
             });
-
-            console.log(`🎯 Campagne détectée: ${campaignInfo.campaignId} pour utilisateur ${req.userId}`);
         }
 
         next();

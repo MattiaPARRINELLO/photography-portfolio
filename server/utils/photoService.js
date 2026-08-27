@@ -10,43 +10,17 @@ const paths = serverConfig.getPaths();
 function extractDateFromFilename(filename) {
     if (!filename || typeof filename !== 'string') return null;
 
-    // Pattern pour YYYYMMDD_HHMMSS_
-    const pattern1 = /^(\d{8})_(\d{6})_/;
-    const match1 = filename.match(pattern1);
-    if (match1) {
-        const dateStr = match1[1]; // YYYYMMDD
-        const timeStr = match1[2]; // HHMMSS
-        const year = dateStr.substring(0, 4);
-        const month = dateStr.substring(4, 6);
-        const day = dateStr.substring(6, 8);
-        const hour = timeStr.substring(0, 2);
-        const minute = timeStr.substring(2, 4);
-        const second = timeStr.substring(4, 6);
-
-        return new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+    // Pattern YYYYMMDD_HHMMSS (avec ou sans underscore final)
+    const match = filename.match(/(\d{8})_(\d{6})/);
+    if (match) {
+        const [, dateStr, timeStr] = match;
+        return new Date(`${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}T${timeStr.slice(0, 2)}:${timeStr.slice(2, 4)}:${timeStr.slice(4, 6)}`);
     }
 
-    // Pattern pour YYYYMMDD_HHMMSS
-    const pattern2 = /(\d{8})_(\d{6})/;
-    const match2 = filename.match(pattern2);
-    if (match2) {
-        const dateStr = match2[1];
-        const timeStr = match2[2];
-        const year = dateStr.substring(0, 4);
-        const month = dateStr.substring(4, 6);
-        const day = dateStr.substring(6, 8);
-        const hour = timeStr.substring(0, 2);
-        const minute = timeStr.substring(2, 4);
-        const second = timeStr.substring(4, 6);
-
-        return new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
-    }
-
-    // Pattern pour IMG_XXXX avec timestamp au début
-    const pattern3 = /^(\d{13})_/;
-    const match3 = filename.match(pattern3);
-    if (match3) {
-        return new Date(parseInt(match3[1]));
+    // Pattern timestamp en millisecondes (13 chiffres) en préfixe
+    const msMatch = filename.match(/^(\d{13})_/);
+    if (msMatch) {
+        return new Date(parseInt(msMatch[1]));
     }
 
     return null;
@@ -103,7 +77,7 @@ async function getPhotosList() {
                             dateSource = 'exif_datetime';
                         }
                     } catch (exifError) {
-                        // console.log(`⚠️ Pas de données EXIF pour ${f}:`, exifError.message);
+                        // Pas de données EXIF: on essaiera le nom de fichier puis le mtime
                     }
 
                     // Si pas de date EXIF, essayer d'extraire du nom de fichier

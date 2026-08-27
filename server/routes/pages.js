@@ -27,6 +27,29 @@ function setCache(key, value, ttlMs) {
     pageCache.set(key, { value, expiresAt: Date.now() + ttlMs });
 }
 
+// Rend une page: cache → lecture fichier → meta → JSON-LD → transform → cache → envoi.
+// En cas d'erreur, fallback sur le fichier statique (comportement historique des routes).
+async function renderPage(req, res, { cacheKey, file, pageType, ttlMs, campaignInfo, transform }) {
+    const cached = getCached(cacheKey);
+    if (cached) return res.send(cached);
+
+    const texts = textUtils.loadTexts();
+    let htmlContent = await fsp.readFile(path.join(paths.pages, file), 'utf-8');
+    htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, pageType, campaignInfo);
+    htmlContent = htmlContent.replace('</head>', `    ${textUtils.generateSchemaJsonLd(pageType, req)}\n  </head>`);
+    if (transform) htmlContent = await transform(htmlContent);
+
+    setCache(cacheKey, htmlContent, ttlMs);
+    res.send(htmlContent);
+}
+
+function servePage(req, res, opts) {
+    renderPage(req, res, opts).catch((error) => {
+        console.error(`Erreur lors du chargement de ${opts.file}:`, error);
+        res.sendFile(path.join(paths.pages, opts.file));
+    });
+}
+
 // SEO: Charge les données SEO pour l'injection de contenu dynamique
 const seoDataPath = path.join(__dirname, '..', '..', 'config', 'seo.json');
 function loadSeoData() {
@@ -118,88 +141,63 @@ function generateGalleryItemHtml(photo, index) {
 }
 
 // Route pour la page d'accueil
-router.get('/', async (req, res) => {
-    console.log('🚀 Route / (accueil) appelée - DEBUG SPÉCIAL');
-    console.log('📍 URL demandée:', req.url);
-    console.log('📍 Original URL:', req.originalUrl);
+router.get('/', (req, res) => {
+    const campaignRef = req.query.ref || req.query.utm_campaign;
+    const campaignInfo = campaignRef ? campaignService.processCampaignFromQuery(req.query) : null;
 
-    try {
-        // Détecter si c'est une visite avec campagne
-        const campaignRef = req.query.ref || req.query.utm_campaign;
-        let campaignInfo = null;
+    servePage(req, res, {
+        cacheKey: 'page:home',
+        file: 'home.html',
+        pageType: 'Portfolio',
+        ttlMs: 60 * 1000,
+        campaignInfo,
+        transform: async (htmlContent) => {
+            // INLINE CSS OPTIMIZATION — utilise le manifest pour matcher le fichier fingerprinté
+            try {
+                let cssContent = null;
+                const manifestPath = path.join(paths.root, 'dist/manifest.json');
 
-        if (campaignRef) {
-            campaignInfo = campaignService.processCampaignFromQuery(req.query);
-            console.log(`🎯 Campagne détectée via URL: ${campaignRef}`);
-        }
-
-        // Try cache (cache key ignores common tracking params)
-        const cacheKey = 'page:home';
-        const cached = getCached(cacheKey);
-        if (cached) return res.send(cached);
-
-        const texts = textUtils.loadTexts();
-        console.log('📖 Textes chargés pour /');
-
-        const htmlPath = path.join(paths.pages, 'home.html');
-        let htmlContent = await fsp.readFile(htmlPath, 'utf-8');
-        console.log('📄 HTML lu, taille:', htmlContent.length, 'caractères');
-
-        // INLINE CSS OPTIMIZATION — utilise le manifest pour matcher le fichier fingerprinté
-        try {
-            let cssContent = null;
-            const manifestPath = path.join(paths.root, 'dist/manifest.json');
-
-            // Essayer le CSS fingerprinté d'abord (via manifest)
-            if (fs.existsSync(manifestPath)) {
-                try {
-                    const manifest = JSON.parse(await fsp.readFile(manifestPath, 'utf-8'));
-                    const fingerprinted = manifest['dist/css/output.css'];
-                    if (fingerprinted) {
-                        const fpPath = path.join(paths.root, fingerprinted);
-                        if (fs.existsSync(fpPath)) {
-                            cssContent = await fsp.readFile(fpPath, 'utf-8');
+                // Essayer le CSS fingerprinté d'abord (via manifest)
+                if (fs.existsSync(manifestPath)) {
+                    try {
+                        const manifest = JSON.parse(await fsp.readFile(manifestPath, 'utf-8'));
+                        const fingerprinted = manifest['dist/css/output.css'];
+                        if (fingerprinted) {
+                            const fpPath = path.join(paths.root, fingerprinted);
+                            if (fs.existsSync(fpPath)) {
+                                cssContent = await fsp.readFile(fpPath, 'utf-8');
+                            }
                         }
-                    }
-                } catch (_) { /* manifest invalide, ignorer */ }
-            }
-
-            // Fallback: output.css non-fingerprinté
-            if (!cssContent) {
-                const defaultCssPath = path.join(paths.root, 'dist/css/output.css');
-                if (fs.existsSync(defaultCssPath)) {
-                    cssContent = await fsp.readFile(defaultCssPath, 'utf-8');
+                    } catch (_) { /* manifest invalide, ignorer */ }
                 }
+
+                // Fallback: output.css non-fingerprinté
+                if (!cssContent) {
+                    const defaultCssPath = path.join(paths.root, 'dist/css/output.css');
+                    if (fs.existsSync(defaultCssPath)) {
+                        cssContent = await fsp.readFile(defaultCssPath, 'utf-8');
+                    }
+                }
+
+                if (cssContent) {
+                    // Regex qui matche tout <link> vers output*.css quel que soit le fingerprint
+                    htmlContent = htmlContent.replace(
+                        /<link\s+rel=["']stylesheet["'][^>]*href=["'][^"']*dist\/css\/output[^"' ]*\.css["'][^>]*\/?>/,
+                        `<style>${cssContent}</style>`
+                    );
+                }
+            } catch (e) {
+                console.error('CSS Inline Error:', e);
             }
 
-            if (cssContent) {
-                // Regex qui matche tout <link> vers output*.css quel que soit le fingerprint
-                htmlContent = htmlContent.replace(
-                    /<link\s+rel=["']stylesheet["'][^>]*href=["'][^"']*dist\/css\/output[^"' ]*\.css["'][^>]*\/?>/,
-                    `<style>${cssContent}</style>`
-                );
-                console.log('🎨 CSS inlined successfully');
-            }
-        } catch (e) {
-            console.error('CSS Inline Error:', e);
-        }
+            // SEO: Injecter le bloc hero (H1, intro, artistes, lieux, CTA)
+            htmlContent = htmlContent.replace('<!-- SEO_HERO_PLACEHOLDER -->', generateHomeHeroHtml());
 
-        // Injecter les meta tags ET les informations de campagne
-        htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, 'Portfolio', campaignInfo);
-
-        // SEO: Injecter le Schema.org JSON-LD
-        const schemaJsonLd = textUtils.generateSchemaJsonLd('Portfolio', req);
-        htmlContent = htmlContent.replace('</head>', `    ${schemaJsonLd}\n  </head>`);
-
-        // SEO: Injecter le bloc hero (H1, intro, artistes, lieux, CTA)
-        const heroHtml = generateHomeHeroHtml();
-        htmlContent = htmlContent.replace('<!-- SEO_HERO_PLACEHOLDER -->', heroHtml);
-
-        // SEO: Injecter le bloc post-galerie (collaborations + CTA secondaire)
-        const seoBottom = loadSeoData();
-        const bottomArtists = (seoBottom.artists || []).map(a => a.name).join(', ');
-        const bottomVenues = (seoBottom.venues || []).map(v => v.name).join(', ');
-        const bottomHtml = `
+            // SEO: Injecter le bloc post-galerie (collaborations + CTA secondaire)
+            const seoBottom = loadSeoData();
+            const bottomArtists = (seoBottom.artists || []).map(a => a.name).join(', ');
+            const bottomVenues = (seoBottom.venues || []).map(v => v.name).join(', ');
+            const bottomHtml = `
     <div class="container mx-auto px-5 md:px-0 py-12">
     <!-- SEO: Section collaborations - renforce les mots-clés et le maillage -->
       <section class="max-w-3xl mb-10">
@@ -209,58 +207,39 @@ router.get('/', async (req, res) => {
         <a href="/contact" class="cta-contact inline-block px-6 py-3 text-sm font-signika font-bold rounded-lg transition duration-300">Discutons de votre projet</a>
       </section>
     </div>`;
-        htmlContent = htmlContent.replace('<!-- SEO_BOTTOM_PLACEHOLDER -->', bottomHtml);
+            htmlContent = htmlContent.replace('<!-- SEO_BOTTOM_PLACEHOLDER -->', bottomHtml);
 
-        // --- LCP OPTIMIZATION: Server-Side Rendering of first images ---
-        try {
-            const photos = await photoService.getPhotosList();
-            // Render first 4 images server-side
-            const initialPhotos = photos.slice(0, 4);
-            const galleryHtml = initialPhotos.map((p, i) => generateGalleryItemHtml(p, i)).join('');
+            // --- LCP OPTIMIZATION: Server-Side Rendering of first images ---
+            try {
+                const photos = await photoService.getPhotosList();
+                // Render first 4 images server-side
+                const galleryHtml = photos.slice(0, 4).map((p, i) => generateGalleryItemHtml(p, i)).join('');
+                htmlContent = htmlContent.replace('<!-- SERVER_RENDERED_GALLERY -->', galleryHtml);
 
-            // Inject into placeholder
-            htmlContent = htmlContent.replace('<!-- SERVER_RENDERED_GALLERY -->', galleryHtml);
+                // Inject full data to avoid client-side fetch
+                const dataScript = `<script>window.INJECTED_PHOTOS = ${JSON.stringify(photos)};</script>`;
 
-            // Inject full data to avoid client-side fetch
-            const dataScript = `<script>window.INJECTED_PHOTOS = ${JSON.stringify(photos)};</script>`;
-
-            // Inject earlier in head (after meta tags) to ensure it's available before the main script runs
-            // This prevents the client-side fetch('/photos-list') from triggering unnecessarily
-            if (htmlContent.includes('<!-- META_PLACEHOLDER_END -->')) {
-                htmlContent = htmlContent.replace('<!-- META_PLACEHOLDER_END -->', `<!-- META_PLACEHOLDER_END -->${dataScript}`);
-            } else {
-                htmlContent = htmlContent.replace('</head>', `${dataScript}</head>`);
+                // Inject earlier in head (after meta tags) to ensure it's available before the main script runs
+                if (htmlContent.includes('<!-- META_PLACEHOLDER_END -->')) {
+                    htmlContent = htmlContent.replace('<!-- META_PLACEHOLDER_END -->', `<!-- META_PLACEHOLDER_END -->${dataScript}`);
+                } else {
+                    htmlContent = htmlContent.replace('</head>', `${dataScript}</head>`);
+                }
+            } catch (error) {
+                console.error('SSR Error:', error);
+                // Fallback: retirer le placeholder
+                htmlContent = htmlContent.replace('<!-- SERVER_RENDERED_GALLERY -->', '');
             }
 
-            console.log('⚡ SSR: 4 images injected + full data payload');
+            // Si on a une campagne, ajouter un script pour nettoyer l'URL côté client
+            if (campaignRef) {
+                const urlCleanScript = `<script>if (window.location.search.includes('ref=')) history.replaceState(null, null, window.location.pathname);</script>`;
+                htmlContent = htmlContent.replace('</body>', `${urlCleanScript}</body>`);
+            }
 
-            // Cache rendered homepage for a short TTL to reduce CPU on bursts
-            try { setCache(cacheKey, htmlContent, 60 * 1000); } catch (e) { /* ignore */ }
-        } catch (e) {
-            console.error('SSR Error:', e);
-            // Fallback: remove placeholder
-            htmlContent = htmlContent.replace('<!-- SERVER_RENDERED_GALLERY -->', '');
+            return htmlContent;
         }
-
-        // Si on a une campagne, ajouter un script pour nettoyer l'URL côté client
-        if (campaignRef) {
-            const urlCleanScript = `
-    <script>
-        // Nettoyer l'URL côté client après chargement de la page
-        if (window.location.search.includes('ref=')) {
-            console.log('🔄 Nettoyage URL côté client');
-            history.replaceState(null, null, window.location.pathname);
-        }
-    </script>`;
-            htmlContent = htmlContent.replace('</body>', `${urlCleanScript}</body>`);
-            console.log('🔄 Script de nettoyage URL ajouté');
-        }
-
-        res.send(htmlContent);
-    } catch (error) {
-        console.error('❌ Erreur lors du chargement de home.html:', error);
-        res.sendFile(path.join(paths.pages, 'home.html'));
-    }
+    });
 });
 
 // Route pour servir texts.json publiquement
@@ -281,30 +260,13 @@ router.get('/texts.json', async (req, res) => {
 });
 
 // Route pour la page Contact
-router.get('/contact', async (req, res) => {
-    console.log('🚀 Route /contact appelée');
-    try {
-        const cacheKey = 'page:contact';
-        const cached = getCached(cacheKey);
-        if (cached) return res.send(cached);
-
-        const texts = textUtils.loadTexts();
-        console.log('📖 Textes chargés pour /contact');
-        const htmlPath = path.join(paths.pages, 'contact.html');
-        let htmlContent = await fsp.readFile(htmlPath, 'utf-8');
-        htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, 'Contact');
-        // SEO: Injecter le Schema.org JSON-LD
-        const schemaJsonLd = textUtils.generateSchemaJsonLd('Contact', req);
-        htmlContent = htmlContent.replace('</head>', `    ${schemaJsonLd}\n  </head>`);
-
-        // Cache contact page for 5 minutes
-        try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) { }
-
-        res.send(htmlContent);
-    } catch (error) {
-        console.error('❌ Erreur lors du chargement de contact.html:', error);
-        res.sendFile(path.join(paths.pages, 'contact.html'));
-    }
+router.get('/contact', (req, res) => {
+    servePage(req, res, {
+        cacheKey: 'page:contact',
+        file: 'contact.html',
+        pageType: 'Contact',
+        ttlMs: 5 * 60 * 1000
+    });
 });
 
 // Redirection pour /contact/ vers /contact
@@ -313,29 +275,13 @@ router.get('/contact/', (req, res) => {
 });
 
 // Route pour la page À propos
-router.get('/a-propos', async (req, res) => {
-    console.log('🚀 Route /a-propos appelée');
-    try {
-        const cacheKey = 'page:about';
-        const cached = getCached(cacheKey);
-        if (cached) return res.send(cached);
-
-        const texts = textUtils.loadTexts();
-        console.log('📖 Textes chargés pour /a-propos');
-        const htmlPath = path.join(paths.pages, 'about_me.html');
-        let htmlContent = await fsp.readFile(htmlPath, 'utf-8');
-        htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, 'À propos');
-        // SEO: Injecter le Schema.org JSON-LD
-        const schemaJsonLd = textUtils.generateSchemaJsonLd('À propos', req);
-        htmlContent = htmlContent.replace('</head>', `    ${schemaJsonLd}\n  </head>`);
-
-        try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) { }
-
-        res.send(htmlContent);
-    } catch (error) {
-        console.error('❌ Erreur lors du chargement de about_me.html:', error);
-        res.sendFile(path.join(paths.pages, 'about_me.html'));
-    }
+router.get('/a-propos', (req, res) => {
+    servePage(req, res, {
+        cacheKey: 'page:about',
+        file: 'about_me.html',
+        pageType: 'À propos',
+        ttlMs: 5 * 60 * 1000
+    });
 });
 
 // Redirection pour /a-propos/ vers /a-propos
@@ -345,7 +291,6 @@ router.get('/a-propos/', (req, res) => {
 
 // Route pour la page Links (carte de visite digitale / QR code)
 router.get('/links', (req, res) => {
-    console.log('🚀 Route /links appelée - Carte de visite digitale');
     try {
         const htmlPath = path.join(paths.pages, 'links.html');
         let htmlContent = fs.readFileSync(htmlPath, 'utf-8');
@@ -455,11 +400,6 @@ function renderArtistLinksSection(gallery) {
     </section>`;
 }
 
-function buildArtistsSeoIndexHtml(galleries) {
-    // Removed artist index output — keep galleries list clean
-    return '';
-}
-
 function renderGalleryCard(g) {
     const cover = g.cover
         ? `<img class="cover" src="/photos/resize?file=${encodeURIComponent(g.cover)}&amp;w=800" alt="${escapeAttr(g.title)} - photo par Mattia Parrinello" loading="lazy" />`
@@ -482,85 +422,71 @@ function renderGalleryCard(g) {
       </a>`;
 }
 
-router.get('/galeries', async (req, res) => {
-    try {
-        const cacheKey = 'page:galleries';
-        const cached = getCached(cacheKey);
-        if (cached) return res.send(cached);
+router.get('/galeries', (req, res) => {
+    renderPage(req, res, {
+        cacheKey: 'page:galleries',
+        file: 'galleries.html',
+        pageType: 'Galeries',
+        ttlMs: 2 * 60 * 1000,
+        transform: (htmlContent) => {
+            const galleries = galleryService.listGalleries().filter(g => g.published !== false);
 
-        const texts = textUtils.loadTexts();
-        const htmlPath = path.join(paths.pages, 'galleries.html');
-        let htmlContent = await fsp.readFile(htmlPath, 'utf-8');
+            // SEO: Enrichir title/description/keywords avec les artistes effectivement présents
+            const artistNames = Array.from(new Set(galleries.map((g) => (g.artist || '').trim()).filter(Boolean)));
+            if (artistNames.length > 0) {
+                const topArtists = artistNames.slice(0, 3);
+                const seoTitle = `Galeries concerts ${topArtists.join(', ')} - Photos live | Mattia Parrinello`;
+                const seoDescription = `Galeries photo concerts de ${artistNames.slice(0, 10).join(', ')}. Photos live, festivals et showcases par Mattia Parrinello, photographe de concert à Paris.`;
 
-        htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, 'Galeries');
+                htmlContent = htmlContent.replace(/<title>[^<]*<\/title>/i, `<title>${escapeAttr(seoTitle)}</title>`);
+                htmlContent = htmlContent.replace(/<meta name="description" content="[^"]*"\s*\/?\s*>/i, `<meta name="description" content="${escapeAttr(seoDescription)}" />`);
 
-        const schemaJsonLd = textUtils.generateSchemaJsonLd('Galeries', req);
-        htmlContent = htmlContent.replace('</head>', `    ${schemaJsonLd}\n  </head>`);
+                const keywordParts = [
+                    ...artistNames.slice(0, 20).map((a) => `photos ${a}`),
+                    'galerie concert',
+                    'photos live',
+                    'photographe concert paris'
+                ];
 
-        const galleries = galleryService.listGalleries().filter(g => g.published !== false);
+                const itemListSchema = {
+                    '@context': 'https://schema.org',
+                    '@type': 'ItemList',
+                    name: 'Galeries de concerts par artiste',
+                    numberOfItems: galleries.length,
+                    itemListElement: galleries.slice(0, 120).map((g, idx) => ({
+                        '@type': 'ListItem',
+                        position: idx + 1,
+                        name: g.artist ? `${g.artist} - ${g.title}` : g.title,
+                        url: `https://www.photo.mprnl.fr/galeries/${encodeURIComponent(g.slug)}`
+                    }))
+                };
 
-        // SEO: Enrichir title/description/keywords avec les artistes effectivement présents
-        const artistNames = Array.from(new Set(galleries.map((g) => (g.artist || '').trim()).filter(Boolean)));
-        if (artistNames.length > 0) {
-            const topArtists = artistNames.slice(0, 3);
-            const seoTitle = `Galeries concerts ${topArtists.join(', ')} - Photos live | Mattia Parrinello`;
-            const seoDescription = `Galeries photo concerts de ${artistNames.slice(0, 10).join(', ')}. Photos live, festivals et showcases par Mattia Parrinello, photographe de concert à Paris.`;
-            const keywordParts = [
-                ...artistNames.slice(0, 20).map((a) => `photos ${a}`),
-                'galerie concert',
-                'photos live',
-                'photographe concert paris'
-            ];
+                const collectionSchema = {
+                    '@context': 'https://schema.org',
+                    '@type': 'CollectionPage',
+                    name: 'Galeries de concerts',
+                    url: 'https://www.photo.mprnl.fr/galeries',
+                    about: artistNames.slice(0, 40).map((name) => ({ '@type': 'MusicGroup', name }))
+                };
 
-            htmlContent = htmlContent.replace(/<title>[^<]*<\/title>/i, `<title>${escapeAttr(seoTitle)}</title>`);
-            htmlContent = htmlContent.replace(/<meta name="description" content="[^"]*"\s*\/?\s*>/i, `<meta name="description" content="${escapeAttr(seoDescription)}" />`);
+                const seoHead = `\n    <meta name="keywords" content="${escapeAttr(keywordParts.join(', '))}" />\n    <script type="application/ld+json">${JSON.stringify(itemListSchema)}</script>\n    <script type="application/ld+json">${JSON.stringify(collectionSchema)}</script>`;
+                htmlContent = htmlContent.replace('</head>', `${seoHead}\n  </head>`);
+            }
 
-            const itemListSchema = {
-                '@context': 'https://schema.org',
-                '@type': 'ItemList',
-                name: 'Galeries de concerts par artiste',
-                numberOfItems: galleries.length,
-                itemListElement: galleries.slice(0, 120).map((g, idx) => ({
-                    '@type': 'ListItem',
-                    position: idx + 1,
-                    name: g.artist ? `${g.artist} - ${g.title}` : g.title,
-                    url: `https://www.photo.mprnl.fr/galeries/${encodeURIComponent(g.slug)}`
-                }))
-            };
-
-            const collectionSchema = {
-                '@context': 'https://schema.org',
-                '@type': 'CollectionPage',
-                name: 'Galeries de concerts',
-                url: 'https://www.photo.mprnl.fr/galeries',
-                about: artistNames.slice(0, 40).map((name) => ({ '@type': 'MusicGroup', name }))
-            };
-
-            const seoHead = `\n    <meta name="keywords" content="${escapeAttr(keywordParts.join(', '))}" />\n    <script type="application/ld+json">${JSON.stringify(itemListSchema)}</script>\n    <script type="application/ld+json">${JSON.stringify(collectionSchema)}</script>`;
-            htmlContent = htmlContent.replace('</head>', `${seoHead}\n  </head>`);
-        }
-
-        let listHtml;
-        if (galleries.length === 0) {
-            listHtml = `
+            const listHtml = galleries.length === 0
+                ? `
       <div class="empty-state">
         <p class="text-lg">Les premières galeries arrivent bientôt.</p>
         <p class="mt-4"><a href="/contact" class="underline">Me contacter pour un projet</a></p>
-      </div>`;
-        } else {
-            listHtml = `<div class="galleries-grid">${galleries.map(renderGalleryCard).join('')}</div>`;
+      </div>`
+                : `<div class="galleries-grid">${galleries.map(renderGalleryCard).join('')}</div>`;
+
+            return htmlContent.replace('<!-- GALLERIES_LIST_PLACEHOLDER -->', listHtml);
         }
-
-        const artistsSeoIndexHtml = buildArtistsSeoIndexHtml(galleries);
-        htmlContent = htmlContent.replace('<!-- GALLERIES_LIST_PLACEHOLDER -->', `${listHtml}${artistsSeoIndexHtml}`);
-
-        try { setCache(cacheKey, htmlContent, 2 * 60 * 1000); } catch (e) { }
-
-        res.send(htmlContent);
-    } catch (error) {
-        console.error('❌ Erreur /galeries:', error);
+    }).catch((error) => {
+        console.error('Erreur /galeries:', error);
         res.status(500).send('Erreur lors du chargement des galeries');
-    }
+    });
 });
 router.get('/galeries/', (req, res) => res.redirect('/galeries'));
 
@@ -783,15 +709,9 @@ router.get('/sitemap.xml', async (req, res) => {
         }
 
         // Build XML
-        let urls = '';
-        staticPages.forEach(p => {
-            urls += `  <url>\n`;
-            urls += `    <loc>${baseUrl}${p.loc}</loc>\n`;
-            urls += `    <lastmod>${p.lastmod}</lastmod>\n`;
-            urls += `    <changefreq>${p.changefreq}</changefreq>\n`;
-            urls += `    <priority>${p.priority}</priority>\n`;
-            urls += `  </url>\n`;
-        });
+        const urls = staticPages.map((p) =>
+            `  <url>\n    <loc>${baseUrl}${p.loc}</loc>\n    <lastmod>${p.lastmod}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>\n`
+        ).join('');
 
         const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}</urlset>`;
 

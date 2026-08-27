@@ -1,7 +1,7 @@
 {
   "name": "photography-portfolio",
   "version": "1.0.0",
-  "description": "<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->",
+  "description": "Site vitrine de photographie de concert: galeries par artiste, carte de visite digitale, formulaire de contact, administration, tracking et SEO.",
   "main": "server.js",
   "scripts": {
     "test": "jest --coverage --verbose",
@@ -37,15 +37,14 @@
     "helmet": "^8.2.0",
     "multer": "^2.0.2",
     "nodemailer": "^8.0.11",
-    "nodemon": "^3.1.10",
-    "sharp": "^0.34.3",
-    "uuid": "^11.1.0"
+    "sharp": "^0.34.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",
     "autoprefixer": "^10.4.27",
     "csso": "^5.0.5",
     "jest": "^30.4.2",
+    "nodemon": "^3.1.10",
     "postcss": "^8.5.8",
     "supertest": "^7.2.2",
     "tailwindcss": "^4.2.2"

@@ -75,9 +75,8 @@ router.post('/admin/upload', requireAdminSession, upload.array('photos'), async 
             try {
                 originalExifData = await exifr.parse(file.path);
                 originalDate = originalExifData?.DateTimeOriginal || originalExifData?.DateTime;
-                console.log(`📅 Date EXIF trouvée pour ${file.originalname}:`, originalDate);
             } catch (error) {
-                console.log(`⚠️ Impossible de lire EXIF pour ${file.originalname}:`, error.message);
+                // EXIF illisible: le nom sera basé sur le timestamp actuel
             }
 
             // Générer un nom basé sur la date EXIF si disponible, sinon timestamp actuel

@@ -65,13 +65,6 @@ router.post('/send-mail', async (req, res) => {
     const { email, subject, message, _honeypot, _timestamp, _token, _signature } = req.body;
     const clientIP = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-    console.log('📧 Tentative d\'envoi de mail:', {
-        email,
-        subject,
-        messageLength: message ? message.length : 0,
-        ip: clientIP
-    });
-
     // ============================================
     // PROTECTION ANTI-API ABUSE
     // ============================================
@@ -225,7 +218,6 @@ router.post('/send-mail', async (req, res) => {
     if (spamScore >= 3) {
         console.warn('🚫 Message détecté comme spam (score: ' + spamScore + ') depuis IP:', clientIP);
         // On accepte quand même mais on marque pour review
-        console.log('📝 Contenu marqué spam:', { subject, messagePreview: message.substring(0, 100) });
     }
 
     // ============================================
@@ -235,18 +227,10 @@ router.post('/send-mail', async (req, res) => {
         return res.status(400).json({ error: 'Message trop court (minimum 10 caractères)' });
     }
 
-    // Debug credentials (masked)
     const smtpUser = serverConfig.smtpUser;
     const smtpPass = serverConfig.smtpPass;
     const smtpHost = serverConfig.smtpHost;
     const smtpPort = serverConfig.smtpPort;
-
-    console.log('🔑 Credentials:', {
-        host: smtpHost,
-        port: smtpPort,
-        user: smtpUser ? `${smtpUser.substring(0, 3)}...` : 'UNDEFINED',
-        pass: smtpPass ? 'DEFINED' : 'UNDEFINED'
-    });
 
     try {
         let transporter = nodemailer.createTransport({
@@ -265,7 +249,7 @@ router.post('/send-mail', async (req, res) => {
             replyTo: email, // Pour répondre directement au visiteur
             subject: `[Portfolio] ${subject}`,
             text: `Nouveau message de: ${email}\n\n${message}`
-        }); console.log('✅ Mail envoyé avec succès');
+        });
         res.status(200).json({ success: true });
     } catch (err) {
         console.error('❌ Erreur lors de l\'envoi du mail:', err);
@@ -316,10 +300,6 @@ router.post('/log-action', (req, res) => {
         // Pour les requêtes AJAX, utiliser l'userId fourni par le client si disponible
         const finalUserId = userId || req.userId || req.cookies.user_tracking_id;
 
-        if (userId && userId !== req.userId) {
-            console.log(`🆔 Client userId: ${userId}, Server userId: ${req.userId}`);
-        }
-
         // Filtrer les actions selon les pages autorisées
         const allowedPages = ['/', '/a-propos', '/contact'];
         const isAllowedPage = page && allowedPages.includes(page);
@@ -356,13 +336,10 @@ router.post('/log-action', (req, res) => {
                     medium: campaignInfo.medium,
                     campaignTimestamp: campaignInfo.timestamp
                 };
-                console.log(`🎯 Log action avec campagne: ${action} sur ${page} - ${campaignInfo.campaignName} (${campaignInfo.campaignId})`);
             }
 
             // Enregistrer le log (userLogger sera injecté par le serveur principal)
             req.app.locals.userLogger.log(finalUserId, action, logDetails);
-        } else if (isHeartbeat) {
-            console.log(`💓 Heartbeat reçu de ${finalUserId} (non loggé)`);
         }
 
         res.json({ success: true });

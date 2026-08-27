@@ -76,7 +76,6 @@ function loadLinksConfig() {
 function saveLinksConfig(config) {
     try {
         fs.writeFileSync(LINKS_CONFIG_PATH, JSON.stringify(config, null, 2), 'utf-8');
-        console.log('✅ Configuration links.json sauvegardée');
         return true;
     } catch (error) {
         console.error('❌ Erreur lors de la sauvegarde de links.json:', error);
@@ -233,8 +232,6 @@ function setEventBanner(eventData, daysUntilExpiration = 7) {
     };
 
     saveLinksConfig(config);
-    console.log(`📢 Bandeau événement créé, expire le ${expiresAt.toLocaleDateString('fr-FR')}`);
-
     return config;
 }
 
@@ -255,8 +252,6 @@ function clearEventBanner() {
     };
 
     saveLinksConfig(config);
-    console.log('🗑️ Bandeau événement désactivé');
-
     return config;
 }
 

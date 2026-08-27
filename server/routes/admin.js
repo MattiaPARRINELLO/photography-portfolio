@@ -13,6 +13,7 @@ const {
 const linksService = require('../utils/linksService');
 const galleryService = require('../utils/galleryService');
 const multer = require('multer');
+const { handleEventBanner } = require('./event-banner');
 
 const router = express.Router();
 const paths = serverConfig.getPaths();
@@ -156,11 +157,8 @@ function buildGalleryInputFromRequest(req) {
     };
 }
 
-// Route principale d'administration (gère / et /)
-router.get(['/', '/'], (req, res) => {
-    console.log('🚨 ROUTE ADMIN APPELÉE:', req.url, req.originalUrl);
-    console.log('🚨 Headers reçus:', req.headers['user-agent']);
-
+// Route principale d'administration
+router.get('/', (req, res) => {
     // Headers pour éviter le cache en développement
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -168,33 +166,12 @@ router.get(['/', '/'], (req, res) => {
     res.setHeader('Surrogate-Control', 'no-store');
 
     const filePath = path.join(paths.adminPages, 'admin.html');
-    console.log('🔍 Serveur admin: Fichier servi depuis:', filePath);
-    console.log('🔍 Fichier existe?', fs.existsSync(filePath));
-    console.log('🔍 URL demandée:', req.url);
-
-    // Vérifier que le fichier existe
-    if (fs.existsSync(filePath)) {
-        try {
-            const stats = fs.statSync(filePath);
-            console.log('📏 Taille fichier:', stats.size, 'bytes');
-            console.log('📅 Dernière modification:', stats.mtime);
-
-            res.sendFile(filePath, (err) => {
-                if (err) {
-                    console.error('❌ Erreur sendFile:', err);
-                    res.status(500).send('Erreur lors de l\'envoi du fichier');
-                } else {
-                    console.log('✅ Fichier admin.html envoyé avec succès');
-                }
-            });
-        } catch (error) {
-            console.error('❌ Erreur stats fichier:', error);
-            res.status(500).send('Erreur lors de la lecture du fichier');
-        }
-    } else {
-        console.error('❌ Fichier admin.html introuvable:', filePath);
-        res.status(404).send('Page d\'administration non trouvée');
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).send('Page d\'administration non trouvée');
     }
+    res.sendFile(filePath, (err) => {
+        if (err) res.status(500).send('Erreur lors de l\'envoi du fichier');
+    });
 });
 
 // Route pour l'éditeur de texte
@@ -419,42 +396,6 @@ router.get('/api/links/icons', requireAdminSession, (req, res) => {
 // ROUTES POUR LE BANDEAU ÉVÉNEMENT
 // =============================================
 
-function handleEventBanner(req, res) {
-    try {
-        if (req.method === 'POST') {
-            const { message, url, icon, days, daysUntilExpiration } = req.body || {};
-
-            if (!message || message.trim() === '') {
-                return res.status(400).json({ error: 'Le message est requis' });
-            }
-
-            const durationDays = days ?? daysUntilExpiration ?? 7;
-            const config = linksService.setEventBanner(
-                { message: message.trim(), url: url || '', icon: icon || 'camera' },
-                durationDays
-            );
-
-            const timeRemaining = linksService.getEventTimeRemaining(config.event);
-            return res.json({ success: true, event: config.event, timeRemaining });
-        }
-
-        if (req.method === 'DELETE') {
-            const config = linksService.clearEventBanner();
-            return res.json({ success: true, event: config.event });
-        }
-
-        // GET (ou fallback lecture)
-        const config = linksService.loadLinksConfig();
-        const event = config.event || { enabled: false };
-        const isActive = linksService.isEventActive(event);
-        const timeRemaining = linksService.getEventTimeRemaining(event);
-        return res.json({ event, isActive, timeRemaining });
-    } catch (error) {
-        console.error('Erreur bandeau événement:', error);
-        return res.status(500).json({ error: 'Erreur bandeau événement' });
-    }
-}
-
 router.all(['/api/links/event', '/api/links/event/'], requireAdminSession, handleEventBanner);
 
 // =============================================
@@ -493,7 +434,6 @@ router.post('/api/galleries', requireAdminSession, upload.array('uploadedPhotos'
         res.json({ success: true, gallery });
     } catch (error) {
         console.error('Erreur création galerie:', error);
-        console.warn('Payload gallery create keys:', Object.keys(req.body || {}));
         res.status(400).json({ error: error.message || 'Erreur lors de la création' });
     }
 });
@@ -508,7 +448,6 @@ router.put('/api/galleries/:id', requireAdminSession, upload.array('uploadedPhot
         res.json({ success: true, gallery });
     } catch (error) {
         console.error('Erreur maj galerie:', error);
-        console.warn('Payload gallery update keys:', Object.keys(req.body || {}));
         res.status(400).json({ error: error.message || 'Erreur lors de la mise à jour' });
     }
 });

@@ -25,11 +25,9 @@ router.get('/admin/texts', requireAdminSession, (req, res) => {
 
 // Route admin : sauvegarder les textes
 router.post('/admin/texts', requireAdminSession, (req, res) => {
-    console.log('Session admin lors de la sauvegarde:', req.session.isAdmin);
     try {
         const texts = req.body;
         fs.writeFileSync(paths.texts, JSON.stringify(texts, null, 2));
-        console.log('Textes sauvegardés avec succès');
         res.json({ success: true, message: 'Textes sauvegardés avec succès' });
     } catch (error) {
         console.error('Erreur lors de la sauvegarde des textes:', error);

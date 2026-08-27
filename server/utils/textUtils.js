@@ -70,8 +70,6 @@ class TextUtils {
      * @returns {string} HTML avec meta tags injectés
      */
     injectMetaTags(htmlContent, texts, req, pageType = '', campaignInfo = null) {
-        console.log(`🔍 Injection meta tags pour la page: ${pageType || 'Accueil'}`);
-
         // SEO: Charger les données SEO pour des meta uniques par page
         const seo = this.loadSeoData();
         const pageKey = this._resolvePageKey(pageType);
@@ -87,9 +85,6 @@ class TextUtils {
         // Remplacement des placeholders
         injectedHtml = injectedHtml.replace('{{DYNAMIC_TITLE}}', title);
         injectedHtml = injectedHtml.replace('{{DYNAMIC_DESCRIPTION}}', description);
-
-        console.log(`📝 Title injecté: "${title}"`);
-        console.log(`📝 Description injectée: "${description.substring(0, 60)}..."`);
 
         // Construire les meta tags supplémentaires
         const metaPlaceholderEnd = '    <!-- META_PLACEHOLDER_END -->';
@@ -144,12 +139,7 @@ class TextUtils {
         const activeCampaignInfo = campaignInfo || (req.cookies && req.cookies.user_campaign_info ? JSON.parse(req.cookies.user_campaign_info) : null);
 
         if (activeCampaignInfo) {
-            try {
-                campaignScript = `\n    <script>\n        // Informations de campagne injectées\n        window.campaignInfo = ${JSON.stringify(activeCampaignInfo)};\n        console.log('🎯 Informations de campagne chargées:', window.campaignInfo);\n    </script>`;
-                console.log(`🎯 Script de campagne injecté pour: ${activeCampaignInfo.campaignName} (${activeCampaignInfo.campaignId})`);
-            } catch (error) {
-                console.error('⚠️ Erreur lors de l\'injection du script de campagne:', error);
-            }
+            campaignScript = `\n    <script>\n        // Informations de campagne injectées\n        window.campaignInfo = ${JSON.stringify(activeCampaignInfo)};\n    </script>`;
         }
 
         // Injecter les meta tags et le script de campagne

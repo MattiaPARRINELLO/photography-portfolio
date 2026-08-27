@@ -20,7 +20,6 @@ class CampaignService {
         for (const [userId, campaignData] of this.userCampaignCache.entries()) {
             if (now - new Date(campaignData.timestamp).getTime() > twentyFourHours) {
                 this.userCampaignCache.delete(userId);
-                console.log(`🧹 Cache campagne expiré pour utilisateur: ${userId}`);
             }
         }
     }
@@ -33,7 +32,6 @@ class CampaignService {
     associateUserToCampaign(userId, campaignInfo) {
         if (userId && campaignInfo) {
             this.userCampaignCache.set(userId, campaignInfo);
-            console.log(`💾 Association utilisateur-campagne sauvée: ${userId} -> ${campaignInfo.campaignName}`);
         }
     }
 
@@ -95,7 +93,7 @@ class CampaignService {
                     this.associateUserToCampaign(userId, campaignInfo);
                 }
             } catch (e) {
-                console.log('⚠️ Erreur parsing campaign info dans les cookies:', e.message);
+                // Cookie de campagne invalide: ignorer
             }
         }
 
