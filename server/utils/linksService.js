@@ -346,6 +346,32 @@ function injectLinksData(html, config, req) {
     const watermarkHtml = generateWatermarkHtml(appearance);
     html = html.replace('<!-- WATERMARK_PLACEHOLDER -->', watermarkHtml);
 
+    // SEO: JSON-LD avec @id stables cohérents avec le graphe du reste du site
+    const stableBase = getCanonicalBaseUrl() || canonicalUrl.replace(/\/links$/, '');
+    const linksJsonLd = {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'WebPage',
+                '@id': `${canonicalUrl}#webpage`,
+                'url': canonicalUrl,
+                'isPartOf': { '@id': `${stableBase}/#website` },
+                'about': { '@id': `${stableBase}/#person` },
+                'inLanguage': 'fr'
+            },
+            {
+                '@type': 'Person',
+                '@id': `${stableBase}/#person`,
+                'name': profile.name,
+                'url': stableBase,
+                'image': profile.avatar && profile.avatar.url ? `${stableBase}${profile.avatar.url}` : '',
+                'jobTitle': profile.role || 'Photographe',
+                'alternateName': 'MPRNL'
+            }
+        ]
+    };
+    html = html.replace('</head>', `    <script type="application/ld+json">${JSON.stringify(linksJsonLd)}</script>\n  </head>`);
+
     return html;
 }
 
