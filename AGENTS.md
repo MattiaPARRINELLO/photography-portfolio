@@ -21,8 +21,8 @@ Tout ce qui suit est vérifié dans le dépôt sauf mention explicite « À conf
 - `server/config.js` — singleton. Précédence : `CONFIG_FILE` (env) → `config/config.json` → `config/config.local.json` → `config/config.json.example`. Fusion superficielle des overrides locaux.
 - `server/middleware/auth.js` — auth admin : cookie HMAC `adminAuth` (+ session), header `x-admin-password`, `requireAdminSession` / `requireAdminPage`. `ADMIN_REMEMBER_SALT` obligatoire (throw au chargement).
 - `server/middleware/tracking.js` — `userTrackingMiddleware` (logs d'activité) et `campaignMiddleware` (campagnes via `?ref=`/`utm_campaign`).
-- `server/routes/` — `pages.js` (pages publiques + galeries + sitemap), `admin.js` (login, config, liens, uploads…), `photos.js` (`/photos-list`, `/admin/upload`, `/admin/photos`), `image-resize.js` (`/photos/resize?file=X&w=N`), `content.js` (textes + campagnes admin), `stats.js` (`/send-mail`, `/track`, `/stats`, `/log-action`, `/photo-click`, logs admin), `signed-images.js` (`/api/request-hd-access`, `/api/hd-image`, HMAC `IMAGE_SECRET_KEY`, validité 1 h).
-- `server/utils/` — `galleryService.js` (CRUD galeries, slugify), `linksService.js` (liens + bandeau événement), `photoService.js` (liste photos triée par date), `campaignService.js`, `textUtils.js` (textes + injection meta/JSON-LD), `globalErrorManager.js` (vide, ne pas étendre).
+- `server/routes/` — `pages.js` (pages publiques + galeries + sitemap), `admin.js` (login, config, liens, uploads…), `photos.js` (`/photos-list`, `/admin/upload`, `/admin/photos`), `image-resize.js` (`/photos/resize?file=X&w=N`), `content.js` (textes + campagnes admin), `stats.js` (`/send-mail`, `/track`, `/stats`, `/log-action`, `/photo-click`, logs admin), `signed-images.js` (`/api/request-hd-access`, `/api/hd-image`, HMAC `IMAGE_SECRET_KEY`, validité 1 h), `event-banner.js` (handler partagé de l'API bandeau événement, monté par `server.js` et `admin.js`).
+- `server/utils/` — `galleryService.js` (CRUD galeries, slugify), `linksService.js` (liens + bandeau événement), `photoService.js` (liste photos triée par date), `campaignService.js`, `textUtils.js` (textes + injection meta/JSON-LD).
 - `scripts/` — `UserActivityLogger.js`, `PhotoClickTracker.js`, `CampaignManager.js` (instanciés dans `server.js`), `build-css.js`, `build-assets.js`, `convert-thumbnails-to-webp.js`, `generate-placeholders.js`, `migrate-gallery-only-photos.js`, `test-email.js`, `untrack-config.sh`.
 - `pages/` — templates HTML publics + `pages/admin/` (admin.html, campaigns, galleries, links, logs, text-editor). **Refactoring JS inline en cours** : `home.html` fait encore 2282 lignes (voir `REFACTORING_PLAN.md` / `REFACTORING_STATUS.md`). Nouveau JS à placer dans `dist/js/`.
 - `dist/` — sorties de build **partiellement trackées par git** (voir « Fichiers générés »).
@@ -64,7 +64,7 @@ Tout ce qui suit est vérifié dans le dépôt sauf mention explicite « À conf
 - CommonJS : `require`/`module.exports`.
 - Indentation 4 espaces (serveur), style simple quote.
 - Ne pas durcir un nom fingerprinté (`output.<hash>.css`) en dur — il change à chaque build ; toujours passer par `dist/manifest.json` (voir `server/routes/pages.js:154-186` pour le pattern d'inlining CSS).
-- Ne pas ajouter de logs de debug : les routes contiennent déjà beaucoup de `console.log` bruyants (dont « DEBUG SPÉCIAL » dans `pages.js`).
+- Ne pas ajouter de logs de debug par requête : les anciens `console.log` bruyants (dont « DEBUG SPÉCIAL » dans `pages.js`) ont été supprimés en `389a22b` — ne pas les réintroduire ; garder `console.warn`/`console.error` pour les cas d'abus et les chemins d'erreur.
 - Tests : tester l'implémentation réelle (fichiers, vrai serveur via supertest), éviter les mocks. Prolonger `tests/routes/` (routes), `tests/services/` (utils), `tests/security/` (auth/headers), etc.
 
 ## Règles relatives aux pages, styles et contenus
@@ -103,7 +103,7 @@ Les tests injectent leurs propres valeurs via `tests/setup.js` — ne pas y mett
 
 - **Ne jamais modifier** : `dist/manifest.json`, `dist/css/output.<hash>.css(+.br/.gz)` (générés), les refs CSS dans `pages/*.html` (réécrites par le build), `coverage/`, `logs/`, `temp/`, `photos/resized/`, `photos/*.{jpg,jpeg,png,webp,gif}` et `photos/thumbnails/*` (contenu/utilisateur, gitignorés), `server.log`.
 - **Sensibles** : `.env` (non tracké, porteur de secrets — ne jamais afficher ses valeurs), `config/*.json` réels (non trackés), `stats.json` (données de tracking).
-- `dist/output.css` : artefact legacy Tailwind, à la fois tracké et listé dans `.gitignore` — ne pas le confondre avec `dist/css/output.css`.
+- Ancien artefact `dist/output.css` (legacy Tailwind) supprimé en `389a22b` — seul `dist/css/output.css` (pré-fingerprint) existe, ne pas le confondre avec `dist/css/output.<hash>.css`.
 - `AUDIT.md`, `REFACTORING_PLAN.md`, `REFACTORING_STATUS.md`, `photos/README.md`, `CONFIG_README.md`, `server/README.md` : documentation active, à tenir à jour en cas de changement correspondant.
 - `*.local.json` / `*.secret.json` dans `config/` : overrides locaux jamais commités (voir `CONFIG_README.md`).
 
@@ -138,7 +138,7 @@ Identifiable uniquement en partie (À confirmer pour la procédure détaillée) 
 - `sharp` est une dépendance native ; si l'install échoue : `SHARP_IGNORE_INSTALL_ERROR=1`.
 - `photos/thumbnails/` doit exister pour que l'upload fonctionne (`.gitkeep` tracké).
 - Ne pas coder en dur des URLs externes ou domaines dans le code serveur sans raison : canonical et sitemap utilisent `https://www.photo.mprnl.fr` en dur dans `pages.js` (cohérent avec `SITE_URL`).
-- Les routes loguent énormément via `console.log` — ne pas s'étonner du bruit au démarrage ; ne pas en ajouter.
+- Ne pas ajouter de logs de debug dans les routes (les anciens logs bruyants ont été purgés en `389a22b`).
 
 ## Outillage local (agents)
 
