@@ -4,10 +4,12 @@ const fsp = fs.promises;
 const path = require('path');
 const serverConfig = require('../config');
 const textUtils = require('../utils/textUtils');
+const imageMeta = require('../utils/imageMeta');
 const campaignService = require('../utils/campaignService');
 const photoService = require('../utils/photoService');
 const linksService = require('../utils/linksService');
 const galleryService = require('../utils/galleryService');
+const { getPublicGalleries, isManifestlyFake } = require('../utils/dataSanity');
 
 const router = express.Router();
 const paths = serverConfig.getPaths();
@@ -103,7 +105,7 @@ function generateHomeHeroHtml() {
 }
 
 // Helper to generate HTML for a gallery item
-function generateGalleryItemHtml(photo, index) {
+function generateGalleryItemHtml(photo, index, dims) {
     const fileParam = encodeURIComponent(photo.filename);
     const clickWidth = 1600;
     const fullUrl = `/photos/resize?file=${fileParam}&w=${clickWidth}`;
@@ -112,6 +114,11 @@ function generateGalleryItemHtml(photo, index) {
     const thumbUrl = `/photos/resize?file=${fileParam}&w=640`;
     const srcset = `/photos/resize?file=${fileParam}&w=320 320w, /photos/resize?file=${fileParam}&w=400 400w, /photos/resize?file=${fileParam}&w=480 480w, /photos/resize?file=${fileParam}&w=640 640w`;
     const sizes = "(max-width: 480px) 50vw, (max-width: 1024px) 33vw, (max-width: 1440px) 25vw, 20vw";
+
+    // CLS: attributs width/height basés sur le src par défaut (640), aspect préservé (height:auto en CSS)
+    const sizeAttrs = dims && dims.width
+        ? ` width="640" height="${Math.round(640 * dims.height / dims.width)}"`
+        : '';
 
     // LCP Optimization: Eager load first 4 images
     const loading = index < 4 ? 'eager' : 'lazy';
@@ -126,7 +133,7 @@ function generateGalleryItemHtml(photo, index) {
                 <img src="${thumbUrl}" 
                      srcset="${srcset}"
                      sizes="${sizes}"
-                     data-full="${fullUrl}" 
+                     data-full="${fullUrl}" ${sizeAttrs} 
                      alt="Photo de concert par Mattia Parrinello - ${photo.filename.replace(/^\d+_*/, '').replace(/\.[^.]+$/, '').replace(/_/g, ' ')}" 
                      loading="${loading}" 
                      fetchpriority="${fetchPriority}"
@@ -212,8 +219,13 @@ router.get('/', (req, res) => {
             // --- LCP OPTIMIZATION: Server-Side Rendering of first images ---
             try {
                 const photos = await photoService.getPhotosList();
-                // Render first 4 images server-side
-                const galleryHtml = photos.slice(0, 4).map((p, i) => generateGalleryItemHtml(p, i)).join('');
+                // Render first 4 images server-side (avec dimensions pour éviter le CLS)
+                const ssrPhotos = photos.slice(0, 4);
+                const ssrWithDims = await Promise.all(ssrPhotos.map(async (p) => ({
+                    p,
+                    dims: await imageMeta.getImageDimensions(p.filename)
+                })));
+                const galleryHtml = ssrWithDims.map(({ p, dims }, i) => generateGalleryItemHtml(p, i, dims)).join('');
                 htmlContent = htmlContent.replace('<!-- SERVER_RENDERED_GALLERY -->', galleryHtml);
 
                 // Inject full data to avoid client-side fetch
@@ -280,9 +292,48 @@ router.get('/a-propos', (req, res) => {
         cacheKey: 'page:about',
         file: 'about_me.html',
         pageType: 'À propos',
-        ttlMs: 5 * 60 * 1000
+        ttlMs: 5 * 60 * 1000,
+        transform: (htmlContent) => {
+            const lists = renderAboutListsHtml();
+            htmlContent = htmlContent.replace('<!-- ARTISTS_LIST_PLACEHOLDER -->', lists.artists);
+            htmlContent = htmlContent.replace('<!-- VENUES_LIST_PLACEHOLDER -->', lists.venues);
+            return htmlContent;
+        }
     });
 });
+
+// Normalisation pour comparer artistes/lieux entre seo.json et les galeries
+function normalizeMatch(s) {
+    return (s || '').toString().toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '');
+}
+
+// SEO: Listes « artistes photographiés » / « salles & festivals » à partir de seo.json,
+// avec lien vers la galerie correspondante quand l'artiste/la salle y figure.
+function renderAboutListsHtml() {
+    const seo = loadSeoData();
+    const galleries = getPublicGalleries();
+    const artistSlug = new Map();
+    const venueSlug = new Map();
+    galleries.forEach(g => {
+        if (g.artist && !artistSlug.has(normalizeMatch(g.artist))) artistSlug.set(normalizeMatch(g.artist), g.slug);
+        if (g.venue && !venueSlug.has(normalizeMatch(g.venue))) venueSlug.set(normalizeMatch(g.venue), g.slug);
+    });
+    const linkItem = (label, slug) => slug
+        ? `<li><a class="underline hover:opacity-80 transition duration-300" href="/galeries/${encodeURIComponent(slug)}">${escapeAttr(label)}</a></li>`
+        : `<li>${escapeAttr(label)}</li>`;
+
+    const artists = (seo.artists || []).map(a => linkItem(a.name, artistSlug.get(normalizeMatch(a.name)))).join('')
+        || '<li>Aucun artiste pour le moment.</li>';
+    const venues = (seo.venues || []).map(v => {
+        const label = v.city ? `${v.name} - ${v.city}` : v.name;
+        return linkItem(label, venueSlug.get(normalizeMatch(v.name)));
+    }).join('') || '<li>Aucune salle pour le moment.</li>';
+
+    return { artists, venues };
+}
 
 // Redirection pour /a-propos/ vers /a-propos
 router.get('/a-propos/', (req, res) => {
@@ -430,8 +481,8 @@ router.get('/galeries', (req, res) => {
         file: 'galleries.html',
         pageType: 'Galeries',
         ttlMs: 2 * 60 * 1000,
-        transform: (htmlContent) => {
-            const galleries = galleryService.listGalleries().filter(g => g.published !== false);
+        transform: async (htmlContent) => {
+            const galleries = getPublicGalleries();
 
             // SEO: Enrichir title/description/keywords avec les artistes effectivement présents
             const artistNames = Array.from(new Set(galleries.map((g) => (g.artist || '').trim()).filter(Boolean)));
@@ -495,7 +546,8 @@ router.get('/galeries/', (req, res) => res.redirect(301, '/galeries'));
 router.get('/galeries/:slug', async (req, res) => {
     try {
         const gallery = galleryService.getGalleryBySlug(req.params.slug);
-        if (!gallery || gallery.published === false) {
+        if (!gallery || gallery.published === false
+            || (process.env.NODE_ENV === 'production' && isManifestlyFake(gallery))) {
             return res.status(404).sendFile(path.join(paths.pages, '404.html'));
         }
 
@@ -583,6 +635,16 @@ router.get('/galeries/:slug', async (req, res) => {
                 ...(artistSameAs.length ? { sameAs: artistSameAs } : {})
             });
         }
+        // Fil d'Ariane cohérent avec le breadcrumb visible du hero
+        schemaNodes.push({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Accueil', item: 'https://www.photo.mprnl.fr' },
+                { '@type': 'ListItem', position: 2, name: 'Galeries', item: 'https://www.photo.mprnl.fr/galeries' },
+                { '@type': 'ListItem', position: 3, name: gallery.title, item: canonical }
+            ]
+        });
         const schemaScript = schemaNodes.map((node) => `<script type="application/ld+json">${JSON.stringify(node)}</script>`).join('\n    ');
 
         htmlContent = htmlContent.replace('</head>', `${extraHead}\n    ${schemaScript}\n  </head>`);
@@ -597,6 +659,13 @@ router.get('/galeries/:slug', async (req, res) => {
         ${heroCoverUrl ? `<img class="cover" src="${heroCoverUrl}" alt="${escapeAttr(gallery.title)}" />` : ''}
         <div class="overlay"></div>
         <div class="hero-content">
+          <nav class="breadcrumb" aria-label="Fil d'Ariane">
+            <a href="/">Accueil</a>
+            <span aria-hidden="true">›</span>
+            <a href="/galeries">Galeries</a>
+            <span aria-hidden="true">›</span>
+            <span aria-current="page">${escapeAttr(gallery.title)}</span>
+          </nav>
           <h1>${escapeAttr(gallery.title)}</h1>
           ${metaLine ? `<p class="meta">${escapeAttr(metaLine)}</p>` : ''}
         </div>
@@ -616,14 +685,21 @@ router.get('/galeries/:slug', async (req, res) => {
         const altContext = artistName
             ? `Concert de ${artistName}${gallery.venue ? ' à ' + gallery.venue : ''}`
             : gallery.title;
-        const photosHtml = (gallery.photos || []).map((filename, i) => {
+        const photosWithDims = await Promise.all((gallery.photos || []).map(async (filename) => ({
+            filename,
+            dims: await imageMeta.getImageDimensions(filename)
+        })));
+        const photosHtml = photosWithDims.map(({ filename, dims }, i) => {
             const file = encodeURIComponent(filename);
             const full = `/photos/resize?file=${file}&w=1600`;
             const thumb = `/photos/resize?file=${file}&w=640`;
             const srcset = `/photos/resize?file=${file}&w=320 320w, /photos/resize?file=${file}&w=480 480w, /photos/resize?file=${file}&w=640 640w, /photos/resize?file=${file}&w=960 960w`;
             const loading = i < 6 ? 'eager' : 'lazy';
             const alt = `${altContext} - photo ${i + 1} par Mattia Parrinello`;
-            return `<a href="${full}" data-fancybox="gallery"><img src="${thumb}" srcset="${srcset}" sizes="(max-width:768px) 50vw, (max-width:1440px) 33vw, 25vw" alt="${escapeAttr(alt)}" loading="${loading}" /></a>`;
+            const sizeAttrs = dims && dims.width
+                ? ` width="640" height="${Math.round(640 * dims.height / dims.width)}"`
+                : '';
+            return `<a href="${full}" data-fancybox="gallery"><img src="${thumb}" srcset="${srcset}" sizes="(max-width:768px) 50vw, (max-width:1440px) 33vw, 25vw" alt="${escapeAttr(alt)}" loading="${loading}"${sizeAttrs} /></a>`;
         }).join('');
         const masonryHtml = photosHtml
             ? `<div class="gallery-photos-shell"><div class="gallery-divider-grid" aria-hidden="true"></div><section class="masonry">${photosHtml}</section></div>`
@@ -719,7 +795,7 @@ router.get('/sitemap.xml', async (req, res) => {
 
         // Add published galleries (avec extension image pour le référencement des photos)
         try {
-            const galleries = galleryService.listGalleries().filter(g => g.published !== false);
+            const galleries = getPublicGalleries();
             galleries.forEach(g => {
                 const lastmod = (g.updatedAt || g.createdAt || new Date().toISOString()).slice(0, 10);
                 const imageUrls = (g.photos || []).slice(0, 20).map(f => ({
