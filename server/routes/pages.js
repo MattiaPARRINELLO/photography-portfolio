@@ -315,14 +315,13 @@ router.get('/links/', (req, res) => {
     res.redirect('/links');
 });
 
-// Route pour les mentions légales
+// Route pour les mentions légales (meta/JSON-LD injectés comme les autres pages)
 router.get('/mentions-legales', (req, res) => {
-    const htmlPath = path.join(paths.pages, 'mentions.html');
-    res.sendFile(htmlPath, (err) => {
-        if (err) {
-            console.error('❌ Erreur lors du chargement de mentions.html:', err);
-            res.status(404).send('Page non trouvée');
-        }
+    servePage(req, res, {
+        cacheKey: 'page:mentions',
+        file: 'mentions.html',
+        pageType: 'Mentions légales',
+        ttlMs: 5 * 60 * 1000
     });
 });
 
@@ -637,6 +636,25 @@ router.get('/sitemap.xml', async (req, res) => {
     try {
         const baseUrl = 'https://www.photo.mprnl.fr';
 
+        // lastmod réels : date de modification des fichiers (évite les dates factices)
+        function fileLastmod(relativePath) {
+            try {
+                const st = fs.statSync(path.join(paths.root, relativePath));
+                return st.mtime.toISOString().slice(0, 10);
+            } catch (e) {
+                return new Date().toISOString().slice(0, 10);
+            }
+        }
+
+        // Date de dernière mise à jour des galeries (metadata.lastUpdated)
+        let galleriesLastmod = new Date().toISOString().slice(0, 10);
+        try {
+            const gMeta = galleryService.loadGalleries().metadata;
+            if (gMeta && gMeta.lastUpdated) {
+                galleriesLastmod = String(gMeta.lastUpdated).slice(0, 10);
+            }
+        } catch (e) { /* dernière date par défaut */ }
+
         // Determine latest photo date to use as lastmod for homepage
         let latestPhotoDate = null;
         try {
@@ -662,31 +680,31 @@ router.get('/sitemap.xml', async (req, res) => {
             },
             {
                 loc: '/links',
-                lastmod: new Date().toISOString().slice(0, 10),
+                lastmod: fileLastmod('config/links.json'),
                 changefreq: 'weekly',
                 priority: '0.9'
             },
             {
                 loc: '/a-propos',
-                lastmod: '2025-12-31',
+                lastmod: fileLastmod('pages/about_me.html'),
                 changefreq: 'monthly',
                 priority: '0.7'
             },
             {
                 loc: '/contact',
-                lastmod: '2025-12-31',
+                lastmod: fileLastmod('pages/contact.html'),
                 changefreq: 'monthly',
                 priority: '0.6'
             },
             {
                 loc: '/galeries',
-                lastmod: new Date().toISOString().slice(0, 10),
+                lastmod: galleriesLastmod,
                 changefreq: 'weekly',
                 priority: '0.9'
             },
             {
                 loc: '/mentions-legales',
-                lastmod: '2025-12-31',
+                lastmod: fileLastmod('pages/mentions.html'),
                 changefreq: 'yearly',
                 priority: '0.3'
             }
