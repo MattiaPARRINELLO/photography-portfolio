@@ -11,6 +11,7 @@
     "dev": "nodemon server.js",
     "build:css": "node scripts/build-css.js",
     "build:assets": "node scripts/build-assets.js",
+    "build:og-image": "node scripts/generate-og-image.js",
     "convert-thumbnails": "node scripts/convert-thumbnails-to-webp.js",
     "test:email": "node scripts/test-email.js",
     "migrate:gallery-only": "node scripts/migrate-gallery-only-photos.js"

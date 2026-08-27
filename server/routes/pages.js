@@ -521,7 +521,7 @@ router.get('/galeries/:slug', async (req, res) => {
         const canonical = `https://www.photo.mprnl.fr/galeries/${encodeURIComponent(gallery.slug)}`;
         const ogImage = gallery.cover
             ? `https://www.photo.mprnl.fr/photos/resize?file=${encodeURIComponent(gallery.cover)}&w=1200`
-            : 'https://www.photo.mprnl.fr/dist/assets/Logo_MP.svg';
+            : 'https://www.photo.mprnl.fr/dist/assets/og-image.jpg';
 
         const artistLinks = gallery.artistLinks || {};
         const artistSameAs = [

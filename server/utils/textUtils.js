@@ -114,7 +114,7 @@ class TextUtils {
         // SEO: Open Graph tags optimisés
         const ogTitle = pageSeo.og_title || title;
         const ogDescription = pageSeo.og_description || description;
-        const ogImage = (texts.meta && texts.meta.og_image) ? `${baseUrl}${texts.meta.og_image}` : `${baseUrl}/dist/assets/Avatar.png`;
+        const ogImage = (texts.meta && texts.meta.og_image) ? `${baseUrl}${texts.meta.og_image}` : `${baseUrl}/dist/assets/og-image.jpg`;
 
         additionalMetas += `    <meta property="og:title" content="${ogTitle}">\n`;
         additionalMetas += `    <meta property="og:description" content="${ogDescription}">\n`;
