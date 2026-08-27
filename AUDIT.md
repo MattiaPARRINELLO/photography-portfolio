@@ -436,29 +436,29 @@ async function getPhotosList() {
 
 ---
 
-## 3. SEO (13/20)
+## 3. SEO (15/20)
 
 ### 3.1 Vue d'ensemble
 
-**Forces :** SSR avec inlining CSS critique, `srcset` + `fetchpriority` sur LCP, `sitemap.xml` dynamique avec `lastmod` des photos, JSON-LD Schema.org riche (6 types), canonical URLs partout, URLs propres sans paramètres, `robots.txt` bien configuré.
+**Forces :** SSR avec inlining CSS critique, `srcset` + `fetchpriority` sur LCP, `sitemap.xml` dynamique avec `lastmod` réels et extension `xml:image`, JSON-LD Schema.org en `@graph` avec `@id` stables (Person/ProfessionalService/WebSite + alternateName MPRNL), canonical URLs partout, URLs propres sans paramètres, `robots.txt` bien configuré.
 
-**Faiblesses :** La page Mentions légales n'a **aucune injection SEO**. Toutes les redirections sont en 302 temporaires au lieu de 301 permanentes. Liens externes avec `rel="noreferrer"` sans `noopener`. Pas de `<main>` sur 4 pages. Pas de `hreflang`. `user-scalable=no` sur la page /links.
+**Faiblesses :** Pas de `<main>` sur home, contact, about et links. Pas de `hreflang` (site monolingue fr — non applicable). `twitter:card=summary` sur /links (choix design).
 
 ### 3.2 Audit par page
 
 | Page | Title | Description | OG | Twitter Card | Canonical | JSON-LD | `<main>` | `<h1>` |
 |------|-------|-------------|-----|-------------|-----------|---------|----------|--------|
-| `/` | Oui (seo.json) | Oui | Complet | summary_large_image | Oui | 4 schemas | **Absent** | Injecté |
+| `/` | Oui (seo.json) | Oui | Complet | summary_large_image | Oui | @graph (WebSite, ProfessionalService, Person, WebPage, ImageGallery) | **Absent** | Injecté |
 | `/galeries` | Oui (dynamique) | Oui | Complet | summary_large_image | Oui | ItemList+CollectionPage | Oui | Oui |
-| `/galeries/:slug` | Oui | Oui/auto | Complet | summary_large_image | Oui | ImageGallery+MusicGroup | Oui | Injecté |
-| `/a-propos` | Oui (seo.json) | Oui | Complet | summary_large_image | Oui | 4 schemas | **Absent** | Oui |
-| `/contact` | Oui (seo.json) | Oui | Complet | summary_large_image | Oui | 4 schemas + ContactPage | **Absent** | Oui |
-| `/links` | Oui (links.json) | Oui | Complet | **summary** (petit) | Oui | 3 schemas | **Absent** | Oui |
-| `/mentions-legales` | **Statique uniquement** | **Aucune** | **Aucun** | **Absent** | **Aucun** | **Aucun** | Oui | Oui |
+| `/galeries/:slug` | Oui | Oui/auto | Complet | summary_large_image | Oui | ImageGallery+MusicGroup (@id personne) | Oui | Injecté |
+| `/a-propos` | Oui (seo.json) | Oui | Complet | summary_large_image | Oui | @graph (WebSite, ProfessionalService, Person, WebPage, AboutPage) | **Absent** | Oui |
+| `/contact` | Oui (seo.json) | Oui | Complet | summary_large_image | Oui | @graph + ContactPage | **Absent** | Oui |
+| `/links` | Oui (links.json) | Oui | Complet | **summary** (petit) | Oui | @graph (WebPage+Person) | **Absent** | Oui |
+| `/mentions-legales` | Oui (seo.json) | Oui | Complet | summary_large_image | Oui | @graph | Oui | Oui |
 
 ### 3.3 Problèmes par sévérité
 
-#### SEO-C1 CRITICAL — `/mentions-legales` sans aucune injection SEO
+#### SEO-C1 CRITICAL — ✅ CORRIGÉ — `/mentions-legales` sans aucune injection SEO
 
 - **Fichier** : `server/routes/pages.js:354`
 - **Description** : La route `/mentions-legales` fait un `res.sendFile()` brut sans passer par `textUtils.injectMetaTags()`. La page n'a pas de description meta, pas d'OG, pas de canonical, pas de JSON-LD. Le mapping `_resolvePageKey` contient `'Mentions légales': 'mentions'` mais n'est **jamais appelé** pour cette route.
@@ -471,10 +471,11 @@ html = textUtils.injectSchemaJsonLd(html, { pageKey: 'mentions', canonicalPath: 
 res.send(html);
 ```
 
-#### SEO-C2 CRITICAL — Toutes les redirections en 302 au lieu de 301
+#### SEO-C2 CRITICAL — ✅ CORRIGÉ — Toutes les redirections en 302 au lieu de 301
 
-- **Fichier** : `server/routes/pages.js:291,322,349,366,371,546`
+- **Fichier** : `server/routes/pages.js`
 - **Description** : Les 6 redirections du site utilisent `res.redirect(url)` qui envoie un 302 par défaut. Les 302 ne transfèrent pas le "link juice" aux moteurs de recherche.
+- **Note 2026-08-27** : En Express 5, les patterns `/contact/` etc. sont inertes (slashes finaux ignorés → la page est servie directement). La seule redirection réellement exercée (`/portfolio`) passe en `301` ; les autres ont été converties en 301 par cohérence. Le canonical gère la duplication de slashes.
 - **Routes concernées :**
 
 | Route | Ligne | Actuel | Devrait être |
@@ -507,7 +508,7 @@ res.send(html);
 <a href="https://www.instagram.com/..." target="_blank" rel="noopener noreferrer">
 ```
 
-#### SEO-H3 HIGH — `user-scalable=no` sur la page `/links`
+#### SEO-H3 HIGH — ✅ CORRIGÉ — `user-scalable=no` sur la page `/links`
 
 - **Fichier** : `pages/links.html:7`
 - **Description** : La meta viewport inclut `user-scalable=no`, interdisant le zoom. Google peut pénaliser, violation WCAG 1.4.4 AA.
