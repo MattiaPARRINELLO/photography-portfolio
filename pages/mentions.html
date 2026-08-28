@@ -206,6 +206,13 @@
       }
     </style>
     <script>
+      // Logs conditionnels exposés globalement (utilisés dans les scripts ci-dessous)
+      const isProduction = !window.location.hostname.match(
+        /localhost|127\.0\.0\.1/,
+      );
+      window.devLog = isProduction ? function () {} : console.log.bind(console);
+      window.devWarn = isProduction ? function () {} : console.warn.bind(console);
+      window.devError = isProduction ? function () {} : console.error.bind(console);
       // Dark mode detection for Tailwind CSS
       function updateDarkMode() {
         const prefersDark = window.matchMedia(

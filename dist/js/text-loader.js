@@ -60,6 +60,8 @@ class TextLoader {
         // Tous les éléments avec font-signika qui contiennent le nom
         const titleElements = document.querySelectorAll('.font-signika');
         titleElements.forEach(element => {
+            // Ne pas réécrire les titres (h1-h3) : ils portent des intentions SEO propres
+            if (element.closest('h1, h2, h3')) return;
             if (element.textContent.includes('MATTIA') || element.textContent.includes('PARRINELLO')) {
                 // Si c'est un lien, mettre à jour le texte directement
                 if (element.tagName === 'A') {
@@ -80,6 +82,7 @@ class TextLoader {
         // Double vérification pour tous les éléments bold qui contiennent le nom
         const boldElements = document.querySelectorAll('b, strong');
         boldElements.forEach(element => {
+            if (element.closest('h1, h2, h3')) return;
             if (element.textContent.includes('MATTIA') || element.textContent.includes('PARRINELLO')) {
                 element.textContent = this.texts.main.nom.toUpperCase();
             }

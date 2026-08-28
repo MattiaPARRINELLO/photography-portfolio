@@ -58,7 +58,7 @@ app.use(helmet({
             styleSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "blob:"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            connectSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            connectSrc: ["'self'", "https://cdn.jsdelivr.net", "https://broker.litlyx.com"],
             frameSrc: ["'self'"],
             objectSrc: ["'none'"],
             baseUri: ["'self'"],

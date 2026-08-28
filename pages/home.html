@@ -240,18 +240,27 @@
         }
       }
     </style>
+    <script>
+      // Shims précoces : visibles dès le parse (le script defer les redéfinit ensuite)
+      window.devLog = window.devLog || function () {};
+      window.devWarn = window.devWarn || function () {};
+      window.devError = window.devError || function () {};
+    </script>
     <script defer>
       // Protection et logs conditionnels
       const isProduction = !window.location.hostname.match(
         /localhost|127\.0\.0\.1/,
       );
       const devLog = isProduction ? function () {} : console.log.bind(console);
+      window.devLog = devLog;
       const devWarn = isProduction
         ? function () {}
         : console.warn.bind(console);
+      window.devWarn = devWarn;
       const devError = isProduction
         ? function () {}
         : console.error.bind(console);
+      window.devError = devError;
 
       if (isProduction) {
         console.log(

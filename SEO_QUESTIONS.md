@@ -70,10 +70,13 @@ information manquante.
     prioritaires (ex. presse, maisons de disques, festivals, artistes).
     → Bio, page contact, CTA.
 
-12. **Biographie courte** — Valider les 3 paragraphes actuels de la page À propos
+12. **Biographie courte** — Valider les paragraphes actuels de la page À propos
     (véridiques ? à ajuster ?), avec : parcours (comment tu as débuté), années
     d'expérience si pertinent, formations éventuelles.
-    → Page À propos.
+    → Page À propos. **NB technique** : le texte visible de la bio est servi par
+    `config/texts.json` (`applyAboutTexts` dans `dist/js/text-loader.js`), pas par le
+    HTML statique — une validation de la bio doit donc être reportée dans `texts.json`
+    (local + production), sinon le rendu visible et le HTML servi divergent.
 
 13. **Approche artistique et matériel** — La bio évoque « lumière de scène,
     images cinématiques ». Peux-tu confirmer 1-2 phrases sur ta signature visuelle
