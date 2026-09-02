@@ -422,18 +422,25 @@ function generatePressKitHtml(gallery, canonical) {
         const alt = `${artist} en concert - photo ${i + 1} par Mattia Parrinello`;
         return `<div class="press-kit-card"><img src="${thumb}" alt="${escapeAttr(alt)}" loading="lazy" /><button type="button" onclick="pressKitDownload('${escapeAttr(filename)}', this)">Télécharger HD ${i + 1}</button></div>`;
     }).join('');
-    return `<section class="press-kit" id="press-kit" aria-label="Kit presse">
-      <p class="press-kit-kicker">Kit presse — gratuit avec crédit</p>
-      <h2>Vous êtes l'artiste, la salle ou un média ?</h2>
-      <p>Téléchargez <strong>3 photos HD</strong> de <strong>${escapeAttr(artist)}${escapeAttr(venue)}</strong> pour vos réseaux, site ou dossier presse. <strong>Usage gratuit contre crédit + lien cliquable.</strong></p>
+    return `<details class="press-kit" id="press-kit" aria-label="Kit presse">
+      <summary>
+        <span class="press-kit-summary-left">
+          <span class="press-kit-summary-icon">⬇</span>
+          <span class="press-kit-summary-text"><strong>Kit presse — 3 photos HD gratuites</strong><span>${escapeAttr(artist)}${escapeAttr(venue)} · crédit obligatoire</span></span>
+        </span>
+        <span class="press-kit-chevron">⌄</span>
+      </summary>
+      <div class="press-kit-body">
+      <p class="press-kit-desc">Pour l'artiste, la salle ou la presse : 3 HD libres pour réseaux/site contre crédit + lien.</p>
       <div class="press-kit-grid">${cards}</div>
       <div class="press-kit-credit"><code id="press-kit-credit">${escapeAttr(creditLong)}</code><button type="button" class="press-kit-btn" onclick="pressKitCopyCredit()">Copier</button></div>
-      <p style="font-size:0.78rem;color:rgba(100,116,139,1)">Licence : presse &amp; réseaux avec crédit obligatoire. Pas d'usage commercial sans accord. HD livrée via URL signée valable 1h.</p>
+      <p class="press-kit-licence">Usage presse &amp; réseaux avec crédit obligatoire. HD via URL signée valable 1h.</p>
       <div class="press-kit-actions">
-        <a class="press-kit-btn primary" href="${escapeAttr(galleryUrl)}" onclick="pressKitCopyLink(event)">Copier le lien galerie</a>
+        <a class="press-kit-btn primary" href="${escapeAttr(galleryUrl)}" onclick="pressKitCopyLink(event)">Copier le lien</a>
         <button type="button" class="press-kit-btn" onclick="pressKitShare()">Partager</button>
         <a class="press-kit-btn" href="https://wa.me/?text=${encodeURIComponent(galleryUrl)}" target="_blank" rel="noopener">WhatsApp</a>
         <a class="press-kit-btn" href="mailto:?subject=${encodeURIComponent('Photos ' + artist + ' par Mattia Parrinello')}&body=${encodeURIComponent('Galerie : ' + galleryUrl + '\\n\\nCrédit obligatoire : ' + creditLong)}">Email</a>
+      </div>
       </div>
       <script>
       (function(){
@@ -472,7 +479,7 @@ function generatePressKitHtml(gallery, canonical) {
         };
       })();
       </script>
-    </section>`;
+    </details>`;
 }
 
 function artistPlatformIcon(platform) {
