@@ -13,6 +13,7 @@ jest.mock('fs', function () {
   return {
     existsSync: jest.fn(function (p) { return mockFileStore[p] !== undefined; }),
     mkdirSync: jest.fn(function (p) { mockFileStore[p] = 'dir'; }),
+    readFileSync: jest.fn(function () { return Buffer.alloc(64 * 1024); }),
     statSync: jest.fn(function (p) {
       var val = mockFileStore[p];
       return { size: val && val.length ? val.length : 1024, mtime: new Date() };
@@ -28,7 +29,8 @@ jest.mock('fs', function () {
       readFile: jest.fn().mockResolvedValue('{}'),
       access: jest.fn().mockRejectedValue(new Error('ENOENT')),
       stat: jest.fn().mockResolvedValue({ mtimeMs: Date.now() }),
-      readdir: jest.fn().mockResolvedValue([])
+      readdir: jest.fn().mockResolvedValue([]),
+      open: jest.fn().mockResolvedValue({ read: jest.fn().mockResolvedValue({ bytesRead: 100 }), close: jest.fn().mockResolvedValue(undefined) })
     }
   };
 });
@@ -108,8 +110,17 @@ jest.mock('multer', function () {
 });
 
 // ---- photoService ----
+// readExif delegue au mock exifr.parse pour que mockExifrData/mockExifrError
+// et mockResolvedValueOnce restent operationnels.
+var mockPhotoServiceReadExif = jest.fn(function () {
+  var exifrMod = require('exifr');
+  return exifrMod.parse.apply(null, arguments);
+});
 jest.mock('../../server/utils/photoService', function () {
-  return { getPhotosList: jest.fn().mockResolvedValue([]) };
+  return {
+    getPhotosList: jest.fn().mockResolvedValue([]),
+    readExif: mockPhotoServiceReadExif
+  };
 });
 
 // Charger le router APRES tous les mocks (jest les hoiste de toute façon)

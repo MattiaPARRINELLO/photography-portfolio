@@ -2,6 +2,7 @@
 jest.mock('fs', function () {
   var actual = jest.requireActual('fs');
   return Object.assign({}, actual, {
+    readFileSync: jest.fn(function () { return Buffer.alloc(64 * 1024); }),
     readdir: jest.fn(),
     statSync: jest.fn()
   });

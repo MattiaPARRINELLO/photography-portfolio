@@ -3,6 +3,7 @@
 jest.mock('fs', function () {
     var actual = jest.requireActual('fs');
     return Object.assign({}, actual, {
+        readFileSync: jest.fn(function () { return Buffer.alloc(64 * 1024); }),
         readdir: jest.fn(),
         statSync: jest.fn()
     });
@@ -105,12 +106,16 @@ describe('photoService — branches supplementaires', function () {
         });
         fs.statSync.mockReturnValue({ mtime: new Date('2025-02-01'), size: 1024 });
 
-        exifr.parse.mockImplementation(function (filePath) {
-            var filename = filePath.split('/').pop();
-            if (filename === 'a.jpg') return Promise.resolve({ DateTimeOriginal: '2025-06-01T12:00:00' });
-            if (filename === 'b.jpg') return Promise.reject(new Error('EXIF crash'));
-            if (filename === 'c.jpg') return Promise.resolve(null);
-            if (filename === 'd.jpg') return Promise.resolve({ DateTime: '2025-05-01T10:00:00' });
+        // readExif lit un buffer et appelle exifr.parse(buffer) — on ne peut plus
+        // identifier le fichier par le nom dans le mock exifr. On utilise un compteur
+        // d'appels pour mapper l'ordre connu : a.jpg, b.jpg, c.jpg, d.jpg.
+        var callIndex = 0;
+        exifr.parse.mockImplementation(function () {
+            var idx = callIndex++;
+            if (idx === 0) return Promise.resolve({ DateTimeOriginal: '2025-06-01T12:00:00' }); // a.jpg
+            if (idx === 1) throw new Error('EXIF crash');  // b.jpg → readExif catch → null → file_mtime
+            if (idx === 2) return Promise.resolve(null);    // c.jpg
+            if (idx === 3) return Promise.resolve({ DateTime: '2025-05-01T10:00:00' }); // d.jpg
             return Promise.resolve(null);
         });
 

@@ -12,6 +12,7 @@ var mockFsUnlinkError = null;
 jest.mock('fs', function () {
   var actual = jest.requireActual('fs');
   return Object.assign({}, actual, {
+    readFileSync: jest.fn(function () { return Buffer.alloc(64 * 1024); }),
     readdir: jest.fn(function (dir, cb) {
       if (mockFsReaddirError) return cb(mockFsReaddirError);
       var dirSlash = dir + '/';
@@ -48,7 +49,8 @@ jest.mock('fs', function () {
       writeFile: jest.fn().mockResolvedValue(undefined),
       readFile: jest.fn().mockResolvedValue('{}'),
       access: jest.fn().mockRejectedValue(new Error('not found')),
-      stat: jest.fn().mockResolvedValue({ mtimeMs: Date.now(), size: 1024 })
+      stat: jest.fn().mockResolvedValue({ mtimeMs: Date.now(), size: 1024 }),
+      open: jest.fn().mockResolvedValue({ read: jest.fn().mockResolvedValue({ bytesRead: 100 }), close: jest.fn().mockResolvedValue(undefined) })
     })
   });
 });
@@ -89,10 +91,6 @@ var mockPhotoServiceGetPhotosList = jest.fn().mockResolvedValue([
   { url: '/photos/p2.jpg', filename: 'p2.jpg', thumbnailUrl: '/t2.jpg', date: new Date('2025-05-01'), dateSource: 'exif' }
 ]);
 
-jest.mock('../../server/utils/photoService', function () {
-  return { getPhotosList: mockPhotoServiceGetPhotosList };
-});
-
 // ================================================================
 // Mock exifr
 // ================================================================
@@ -100,6 +98,13 @@ var mockExifrParse = jest.fn().mockResolvedValue(null);
 
 jest.mock('exifr', function () {
   return { parse: mockExifrParse };
+});
+
+jest.mock('../../server/utils/photoService', function () {
+  return {
+    getPhotosList: mockPhotoServiceGetPhotosList,
+    readExif: jest.fn(function () { return mockExifrParse.apply(null, arguments); })
+  };
 });
 
 // ================================================================
@@ -382,8 +387,8 @@ describe('Routes photos (admin)', function () {
           expect(res.body.files[0]).toHaveProperty('size');
           // toFile appele 2 fois : photo principale + miniature
           expect(mockSharpToFile).toHaveBeenCalledTimes(2);
-          // exifr parse appele pour lire les metadonnees
-          expect(mockExifrParse).toHaveBeenCalledWith('/fake/temp/upl123');
+          // exifr parse appele via readExif pour lire les metadonnees
+          expect(mockExifrParse).toHaveBeenCalled();
           // fichier temporaire nettoye
           expect(fs.unlinkSync).toHaveBeenCalledWith('/fake/temp/upl123');
           done();

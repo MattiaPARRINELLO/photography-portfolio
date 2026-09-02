@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const sharp = require('sharp');
-const exifr = require('exifr');
 const serverConfig = require('../config');
 const { requireAdminSession } = require('../middleware/auth');
 const photoService = require('../utils/photoService');
@@ -73,7 +72,7 @@ router.post('/admin/upload', requireAdminSession, upload.array('photos'), async 
             let originalDate = null;
 
             try {
-                originalExifData = await exifr.parse(file.path);
+                originalExifData = await photoService.readExif(file.path);
                 originalDate = originalExifData?.DateTimeOriginal || originalExifData?.DateTime;
             } catch (error) {
                 // EXIF illisible: le nom sera basé sur le timestamp actuel
@@ -116,7 +115,7 @@ router.post('/admin/upload', requireAdminSession, upload.array('photos'), async 
                 // on rétablit le fichier original.
                 if (originalExifData) {
                     try {
-                        const newExif = await exifr.parse(finalPath);
+                        const newExif = await photoService.readExif(finalPath);
                         if (!newExif) {
                             console.warn(`⚠️ Sharp a supprimé les métadonnées de ${file.originalname} (probablement dû à une corruption). Rétablissement du fichier original.`);
                             fs.copyFileSync(file.path, finalPath);

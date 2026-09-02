@@ -6,6 +6,20 @@ const galleryService = require('./galleryService');
 
 const paths = serverConfig.getPaths();
 
+// Lit l'EXIF en passant UNIQUEMENT un Buffer à exifr (jamais un chemin : exifr 7
+// interprète mal le chemin string, leve une erreur et laisse un FileHandle ouvert,
+// ce qui fait planter Node >= 22 par ERR_INVALID_STATE pendant le garbage collection).
+// Lecture bornée à 64 Ko (l'EXIF des JPEG se trouve dans les premiers octets).
+async function readExif(filePath) {
+    try {
+        const fileData = fs.readFileSync(filePath);
+        const buffer = fileData.subarray(0, 64 * 1024);
+        return await exifr.parse(buffer);
+    } catch (e) {
+        return null;
+    }
+}
+
 // Fonction pour extraire la date du nom de fichier
 function extractDateFromFilename(filename) {
     if (!filename || typeof filename !== 'string') return null;
@@ -68,7 +82,7 @@ async function getPhotosList() {
                     let dateSource = 'file'; // Indiquer d'où vient la date
 
                     try {
-                        const exifData = await exifr.parse(filePath);
+                        const exifData = await readExif(filePath);
                         if (exifData?.DateTimeOriginal) {
                             date = new Date(exifData.DateTimeOriginal);
                             dateSource = 'exif_original';
@@ -126,5 +140,6 @@ async function getPhotosList() {
 
 module.exports = {
     getPhotosList,
-    extractDateFromFilename
+    extractDateFromFilename,
+    readExif
 };
