@@ -409,6 +409,72 @@ function safeExternalUrl(url) {
     return /^https?:\/\//i.test(raw) ? raw : '';
 }
 
+function generatePressKitHtml(gallery, canonical) {
+    const photos = (gallery.photos || []).slice(0, 3);
+    if (photos.length === 0) return '';
+    const artist = (gallery.artist || '').trim() || 'cet artiste';
+    const venue = gallery.venue ? ` à ${gallery.venue}` : '';
+    const credit = `© Mattia Parrinello — photo.mprnl.fr — ${gallery.title}`;
+    const galleryUrl = canonical;
+    const creditLong = `© Mattia Parrinello — ${galleryUrl} — ${artist}${venue}`;
+    const cards = photos.map((filename, i) => {
+        const thumb = `/photos/resize?file=${encodeURIComponent(filename)}&w=400`;
+        const alt = `${artist} en concert - photo ${i + 1} par Mattia Parrinello`;
+        return `<div class="press-kit-card"><img src="${thumb}" alt="${escapeAttr(alt)}" loading="lazy" /><button type="button" onclick="pressKitDownload('${escapeAttr(filename)}', this)">Télécharger HD ${i + 1}</button></div>`;
+    }).join('');
+    return `<section class="press-kit" id="press-kit" aria-label="Kit presse">
+      <p class="press-kit-kicker">Kit presse — gratuit avec crédit</p>
+      <h2>Vous êtes l'artiste, la salle ou un média ?</h2>
+      <p>Téléchargez <strong>3 photos HD</strong> de <strong>${escapeAttr(artist)}${escapeAttr(venue)}</strong> pour vos réseaux, site ou dossier presse. <strong>Usage gratuit contre crédit + lien cliquable.</strong></p>
+      <div class="press-kit-grid">${cards}</div>
+      <div class="press-kit-credit"><code id="press-kit-credit">${escapeAttr(creditLong)}</code><button type="button" class="press-kit-btn" onclick="pressKitCopyCredit()">Copier</button></div>
+      <p style="font-size:0.78rem;color:rgba(100,116,139,1)">Licence : presse &amp; réseaux avec crédit obligatoire. Pas d'usage commercial sans accord. HD livrée via URL signée valable 1h.</p>
+      <div class="press-kit-actions">
+        <a class="press-kit-btn primary" href="${escapeAttr(galleryUrl)}" onclick="pressKitCopyLink(event)">Copier le lien galerie</a>
+        <button type="button" class="press-kit-btn" onclick="pressKitShare()">Partager</button>
+        <a class="press-kit-btn" href="https://wa.me/?text=${encodeURIComponent(galleryUrl)}" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="press-kit-btn" href="mailto:?subject=${encodeURIComponent('Photos ' + artist + ' par Mattia Parrinello')}&body=${encodeURIComponent('Galerie : ' + galleryUrl + '\\n\\nCrédit obligatoire : ' + creditLong)}">Email</a>
+      </div>
+      <script>
+      (function(){
+        var galleryUrl = ${JSON.stringify(galleryUrl)};
+        var credit = ${JSON.stringify(creditLong)};
+        window.pressKitCopyLink = function(e){
+          if(e) e.preventDefault();
+          var t = galleryUrl;
+          if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){ alert('Lien copié : ' + t); }); } else { prompt('Copiez ce lien :', t); }
+        };
+        window.pressKitCopyCredit = function(){
+          if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(credit).then(function(){ var b=document.getElementById('press-kit-credit'); if(b){ b.textContent='Copié !'; setTimeout(function(){ b.textContent=credit; },1200);} }); } else { prompt('Crédit :', credit); }
+        };
+        window.pressKitShare = function(){
+          if(navigator.share){ navigator.share({title: document.title, url: galleryUrl}).catch(function(){}); } else { window.pressKitCopyLink(); }
+        };
+        window.pressKitDownload = async function(filename, btn){
+          var orig = btn ? btn.textContent : '';
+          if(btn){ btn.textContent='Préparation...'; btn.disabled=true; }
+          try{
+            var res = await fetch('/api/request-hd-access', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({imagePath: 'photos/' + filename})});
+            var data = await res.json();
+            var url = (data && data.url) ? data.url : ('/photos/' + filename);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.rel = 'noopener';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function(){ if(a.parentNode) a.parentNode.removeChild(a); }, 1000);
+            if(btn){ btn.textContent='Téléchargé ✓'; setTimeout(function(){ btn.textContent=orig; btn.disabled=false; }, 1800); }
+          } catch(err){
+            if(btn){ btn.textContent='Erreur'; setTimeout(function(){ btn.textContent=orig; btn.disabled=false; }, 1800); }
+            window.open('/photos/' + filename, '_blank');
+          }
+        };
+      })();
+      </script>
+    </section>`;
+}
+
 function artistPlatformIcon(platform) {
     if (platform === 'instagram') {
         return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" class="artist-platform-svg"><rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg>`;
@@ -705,6 +771,13 @@ router.get('/galeries/:slug', async (req, res) => {
             ? `<div class="gallery-photos-shell"><div class="gallery-divider-grid" aria-hidden="true"></div><section class="masonry">${photosHtml}</section></div>`
             : '<p class="text-center text-gray-500 py-8">Aucune photo dans cette galerie.</p>';
         htmlContent = htmlContent.replace('<!-- GALLERY_PHOTOS_PLACEHOLDER -->', masonryHtml);
+
+        const pressKitHtml = generatePressKitHtml(gallery, canonical);
+        if (htmlContent.includes('<!-- PRESS_KIT_PLACEHOLDER -->')) {
+            htmlContent = htmlContent.replace('<!-- PRESS_KIT_PLACEHOLDER -->', pressKitHtml);
+        } else if (pressKitHtml) {
+            htmlContent = htmlContent.replace('</main>', `${pressKitHtml}\n    </main>`);
+        }
 
         try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) { }
         res.send(htmlContent);

@@ -297,6 +297,108 @@
         }
       }
 
+      .press-kit {
+        margin-top: 2.5rem;
+        border-radius: 16px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(249,250,251,0.9));
+        padding: clamp(1.1rem, 2.5vw, 1.6rem);
+        box-shadow: 0 8px 24px rgba(15,23,42,0.06);
+      }
+      .press-kit h2 {
+        font-family: "Signika", sans-serif;
+        font-weight: 700;
+        font-size: clamp(1.15rem, 2vw, 1.35rem);
+        margin: 0 0 0.35rem;
+      }
+      .press-kit-kicker {
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: rgba(30,41,59,0.55);
+        margin: 0 0 0.6rem;
+      }
+      .press-kit p {
+        color: rgba(31,41,55,0.88);
+        line-height: 1.6;
+        margin: 0.4rem 0;
+      }
+      .press-kit-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0,1fr));
+        gap: 0.7rem;
+        margin: 1rem 0 0.9rem;
+      }
+      .press-kit-card {
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid rgba(15,23,42,0.1);
+        background: #fff;
+      }
+      .press-kit-card img {
+        width: 100%;
+        aspect-ratio: 4/3;
+        object-fit: cover;
+        display: block;
+      }
+      .press-kit-card button {
+        width: 100%;
+        padding: 0.55rem 0.4rem;
+        font-family: "Signika", sans-serif;
+        font-weight: 700;
+        font-size: 0.8rem;
+        background: #0f172a;
+        color: #fff;
+        border: 0;
+        cursor: pointer;
+      }
+      .press-kit-card button:hover { background: #1e293b; }
+      .press-kit-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-top: 1rem;
+      }
+      .press-kit-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.62rem 0.95rem;
+        border-radius: 999px;
+        font-family: "Signika", sans-serif;
+        font-weight: 700;
+        font-size: 0.88rem;
+        border: 1px solid rgba(15,23,42,0.15);
+        background: #fff;
+        color: #0f172a;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .press-kit-btn.primary {
+        background: #0f172a;
+        color: #fff;
+        border-color: #0f172a;
+      }
+      .press-kit-credit {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin-top: 0.9rem;
+        padding: 0.7rem 0.8rem;
+        border-radius: 10px;
+        background: rgba(15,23,42,0.06);
+        border: 1px dashed rgba(15,23,42,0.18);
+        font-size: 0.82rem;
+        word-break: break-all;
+      }
+      .press-kit-credit code {
+        flex: 1;
+        font-family: ui-monospace, monospace;
+      }
+      @media (max-width: 640px) {
+        .press-kit-grid { grid-template-columns: 1fr; }
+      }
       @media (prefers-color-scheme: dark) {
         .artist-links-panel {
           background: rgba(2, 6, 23, 0.74);
@@ -325,6 +427,18 @@
           background: none;
           mask-image: none;
         }
+
+        .press-kit {
+          background: linear-gradient(180deg, rgba(15,23,42,0.9), rgba(2,6,23,0.92));
+          border-color: rgba(148,163,184,0.22);
+          box-shadow: none;
+        }
+        .press-kit p { color: rgba(226,232,240,0.9); }
+        .press-kit-kicker { color: rgba(203,213,225,0.6); }
+        .press-kit-card { background: rgba(15,23,42,0.8); border-color: rgba(148,163,184,0.22); }
+        .press-kit-credit { background: rgba(148,163,184,0.08); border-color: rgba(148,163,184,0.22); color: rgba(226,232,240,0.9); }
+        .press-kit-btn { background: rgba(15,23,42,0.9); color: #fff; border-color: rgba(148,163,184,0.28); }
+        .press-kit-btn.primary { background: #fff; color: #0f172a; }
       }
     </style>
   </head>
@@ -431,6 +545,7 @@
       <!-- GALLERY_HERO_PLACEHOLDER -->
       <!-- GALLERY_DESCRIPTION_PLACEHOLDER -->
       <!-- GALLERY_PHOTOS_PLACEHOLDER -->
+      <!-- PRESS_KIT_PLACEHOLDER -->
     </main>
 
     <footer>
