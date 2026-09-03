@@ -856,17 +856,30 @@ router.get('/galeries/:slug', async (req, res) => {
         });
         const schemaScript = schemaNodes.map((node) => `<script type="application/ld+json">${JSON.stringify(node)}</script>`).join('\n    ');
 
-        htmlContent = htmlContent.replace('</head>', `${extraHead}\n    ${schemaScript}\n  </head>`);
+        // Preload LCP hero cover
+        let heroDims = null;
+        if (gallery.cover) {
+            try { heroDims = await imageMeta.getImageDimensions(gallery.cover); } catch (_) {}
+        }
+        if (heroDims && heroDims.width) {
+            const heroPreload = `<link rel="preload" as="image" href="/photos/resize?file=${encodeURIComponent(gallery.cover)}&w=1600" fetchpriority="high">`;
+            htmlContent = htmlContent.replace('</head>', `${extraHead}\n    ${heroPreload}\n    ${schemaScript}\n  </head>`);
+        } else {
+            htmlContent = htmlContent.replace('</head>', `${extraHead}\n    ${schemaScript}\n  </head>`);
+        }
 
         // Hero
         const heroCoverUrl = gallery.cover
             ? `/photos/resize?file=${encodeURIComponent(gallery.cover)}&w=1600`
             : '';
+        const heroSizeAttrs = heroDims && heroDims.width
+            ? ` width="${heroDims.width}" height="${heroDims.height}" fetchpriority="high"`
+            : '';
         const metaLine = [gallery.artist, gallery.venue, formatGalleryDate(gallery.date)].filter(Boolean).join(' · ');
         const dateLine = gallery.updatedAt ? `<p class="meta" style="font-size:0.8rem;opacity:0.75">Publié le ${escapeAttr(formatGalleryDate(gallery.date))}${gallery.updatedAt !== gallery.createdAt ? ` · Mis à jour le ${escapeAttr(formatGalleryDate(gallery.updatedAt))}` : ''}</p>` : '';
         const heroHtml = `
       <section class="gallery-hero">
-        ${heroCoverUrl ? `<img class="cover" src="${heroCoverUrl}" alt="${escapeAttr(gallery.title)}" />` : ''}
+        ${heroCoverUrl ? `<img class="cover" src="${heroCoverUrl}"${heroSizeAttrs} alt="${escapeAttr(gallery.title)}" />` : ''}
         <div class="overlay"></div>
         <div class="hero-content">
           <nav class="breadcrumb" aria-label="Fil d'Ariane">
@@ -891,6 +904,15 @@ router.get('/galeries/:slug', async (req, res) => {
             ? `<section class="gallery-intro-grid">${descriptionSection}${artistLinksSection}</section>`
             : '';
         htmlContent = htmlContent.replace('<!-- GALLERY_DESCRIPTION_PLACEHOLDER -->', introHtml);
+
+        // Preload first 2 gallery thumbnails (LCP on masonry)
+        const preloadThumbs = (gallery.photos || []).slice(0, 2).map(f => {
+            const fp = encodeURIComponent(f);
+            return `<link rel="preload" as="image" href="/photos/resize?file=${fp}&w=640" imagesrcset="/photos/resize?file=${fp}&w=320 320w, /photos/resize?file=${fp}&w=640 640w" imagesizes="(max-width:480px)50vw,(max-width:1024px)33vw,25vw">`;
+        }).join('');
+        if (preloadThumbs) {
+            htmlContent = htmlContent.replace('</head>', `${preloadThumbs}\n  </head>`);
+        }
 
         // Photos (masonry via CSS columns + Fancybox)
         const altContext = artistName

@@ -58,7 +58,7 @@ const dict = {
     footer: {
       legal: 'Mentions légales',
       copyright: '© Mattia Parrinello, Toutes les photos publiées sur ce site sont protégées. Toute utilisation non autorisée est passible de sanctions.',
-      seo: 'Mattia Parrinello, Photographe de concert à Paris · Disponible en Île-de-France et partout en France',
+      seo: 'Mattia Parrinello - Photographe de concert à Paris · Disponible en Île-de-France et partout en France',
       address: 'Paris · Île-de-France, Disponible partout en France'
     },
     common: {
@@ -153,106 +153,99 @@ function t(lang, path) {
   return cur;
 }
 
+// Dictionnaire FR→EN plat, ordonné long→court (remplace les 80+ appels r() inline)
+const _enDict = {
+  // Nav
+  'GALERIES': 'GALLERIES',
+  'À PROPOS': 'ABOUT',
+  'Ouvrir le menu principal': 'Open main menu',
+  // Footer longs
+  '© Mattia Parrinello, Toutes les photos publiées sur ce site sont protégées. Toute utilisation non autorisée est passible de sanctions.': '© Mattia Parrinello, All photos on this site are protected. Unauthorized use is prohibited.',
+  'Paris · Île-de-France, Disponible partout en France<br />(+33) 6 50 58 62 51 · contact.mprnl@gmail.com': 'Paris · Île-de-France, Available across France<br />(+33) 6 50 58 62 51 · contact.mprnl@gmail.com',
+  'Mattia Parrinello, Photographe de concert à Paris · Disponible en Île-de-France et partout en France': 'Mattia Parrinello, Concert photographer in Paris · Available in Île-de-France and across France',
+  'Paris · Île-de-France, Disponible partout en France': 'Paris · Île-de-France, Available across France',
+  'Mentions légales': 'Legal mentions',
+  'Retour à l\'accueil': 'Back to home',
+  'Photographe de concert à Paris': 'Concert photographer in Paris',
+  'Toutes les photos publiées sur ce site sont protégées.': 'All photos on this site are protected.',
+  'Toute utilisation non autorisée est passible de sanctions.': 'Unauthorized use is prohibited.',
+  // Contact
+  'Contactez Mattia Parrinello, photographe de concert': 'Contact Mattia Parrinello, concert photographer',
+  'Vous cherchez un': 'Looking for a',
+  'salle de concert</strong> ou un <strong>organisateur de festival</strong>, discutons de votre projet.': 'venue</strong> or a <strong>festival organizer</strong>, let\'s talk about your project.',
+  'Je suis disponible pour couvrir vos événements en': 'I\'m available to cover your events in',
+  'Réponse sous 24h · Devis gratuit · Déplacement sur toute la France': 'Reply within 24h · Free quote · Travel across France',
+  'Dites-moi comment je peux vous aider': 'Tell me how I can help',
+  'Laissez un message...': 'Leave a message...',
+  'Votre email': 'Your email',
+  '>Objet<': '>Subject<',
+  'Votre message': 'Your message',
+  // About
+  'Mattia Parrinello, photographe de concert à Paris': 'Mattia Parrinello, concert photographer in Paris',
+  '>Salut, je suis Mattia<': '>Hi, I\'m Mattia<',
+  'Je suis Mattia <span class="animate-wave">': 'Hi, I\'m Mattia <span class="animate-wave">',
+  'Artistes photographiés': 'Artists photographed',
+  'Salles & festivals': 'Venues & festivals',
+  'Mon histoire': 'My story',
+  'Comment j\'ai commencé': 'How it started',
+  // Bio
+  'Je suis Mattia Parrinello, <strong>photographe de concert</strong> basé à <strong>Paris</strong>, <strong>MPRNL</strong> est le nom professionnel sous lequel je signe et diffuse mes images.': 'I\'m Mattia Parrinello, <strong>concert photographer</strong> based in <strong>Paris</strong>, <strong>MPRNL</strong> is the professional name under which I sign and share my work.',
+  'Mon truc, c\'est l\'énergie brute des artistes': 'What drives me is the raw energy of artists',
+  'Spécialisé dans la <strong>musique rap</strong> et les scènes urbaines, j\'ai eu la chance de shooter des artistes comme': 'Specialized in <strong>rap music</strong> and urban scenes, I\'ve had the chance to shoot artists like',
+  'Mon approche : être au plus près de l\'action': 'My approach: being as close as possible to the action',
+  'Je travaille avec des <strong>médias musicaux (Rapstar)</strong>': 'I work with <strong>music media (Rapstar)</strong>',
+  // Galleries
+  'Galeries de concerts': 'Concert galleries',
+  'Les premières galeries arrivent bientôt.': 'First galleries coming soon.',
+  'Me contacter pour un projet': 'Contact me for a project',
+  'Aucune photo dans cette galerie.': 'No photos in this gallery.',
+  '← Toutes les galeries': '← All galleries',
+  // Mentions légales
+  'En vigueur au 09/01/2026': 'Effective as of 09/01/2026',
+  'Édition du site': 'Site Publisher',
+  'Hébergement': 'Hosting',
+  'Accès au site': 'Site Access',
+  'Propriété intellectuelle': 'Intellectual Property',
+  'Données personnelles (RGPD)': 'Personal Data (GDPR)',
+  'Cookies et outils de statistiques': 'Cookies and analytics',
+  'Responsabilité': 'Liability',
+  'Droit applicable et litiges': 'Applicable law and disputes',
+  'Éditeur :': 'Publisher:',
+  'Statut :': 'Status:',
+  'Auto-entrepreneur / Entreprise individuelle': 'Self-employed / Sole proprietorship',
+  'Activité :': 'Activity:',
+  'Photographe indépendant': 'Independent photographer',
+  'Adresse :': 'Address:',
+  'SIRET :': 'Company No.:',
+  'Numéro de TVA intracommunautaire :': 'Intra-community VAT number:',
+  'Non applicable': 'Not applicable',
+  'Directeur de la publication :': 'Publication director:',
+  'Hébergeur :': 'Hosting provider:',
+  'Le Site est normalement accessible à tout moment.': 'The Site is normally accessible at all times.',
+  'Accueil</a>': 'Home</a>',
+  'Galeries</a>': '>Galleries</a>',
+};
+
 function translateHtml(html, lang) {
   if (lang !== 'en') return html;
   let out = html;
   const r = (fr, en) => { out = out.split(fr).join(en); };
-  // Nav, robust (GALERIES appears with whitespace)
-  r('GALERIES', 'GALLERIES');
-  r('À PROPOS', 'ABOUT');
-  r('Ouvrir le menu principal', 'Open main menu');
-  // Footer, robust (long before short, regex for whitespace/newlines)
-  r('Mentions légales', 'Legal mentions');
-  r('Retour à l\'accueil', 'Back to home');
-  // Long footer lines first (regex for · and whitespace)
-  out = out.replace(/Mattia Parrinello\s*-\s*Photographe de concert à Paris\s*·\s*Disponible en\s+Île-de-France et partout en France/g, 'Mattia Parrinello, Concert photographer in Paris · Available in Île-de-France and across France');
-  r('Mattia Parrinello, Photographe de concert à Paris · Disponible en Île-de-France et partout en France', 'Mattia Parrinello, Concert photographer in Paris · Available in Île-de-France and across France');
-  r('Paris · Île-de-France, Disponible partout en France<br />(+33) 6 50 58 62 51 · contact.mprnl@gmail.com', 'Paris · Île-de-France, Available across France<br />(+33) 6 50 58 62 51 · contact.mprnl@gmail.com');
-  out = out.replace(/Paris\s*·\s*Île-de-France\s*-\s*Disponible partout en France/g, 'Paris · Île-de-France, Available across France');
-  r('Paris · Île-de-France, Disponible partout en France', 'Paris · Île-de-France, Available across France');
-  r('© Mattia Parrinello, Toutes les photos publiées sur ce site sont protégées. Toute utilisation non autorisée est passible de sanctions.', '© Mattia Parrinello, All photos on this site are protected. Unauthorized use is prohibited.');
-  // Then short fragments with regex for whitespace/newlines
-  out = out.replace(/Toutes les photos publiées sur ce site sont\s+protégées\./g, 'All photos on this site are protected.');
-  out = out.replace(/Toute utilisation non autorisée est passible de\s+sanctions\./g, 'Unauthorized use is prohibited.');
-  out = out.replace(/Disponible en\s+Île-de-France et partout en France/g, 'Available in Île-de-France and across France');
-  r('Photographe de concert à Paris', 'Concert photographer in Paris');
-  r('Disponible en Île-de-France, Disponible partout en France', 'Available in Île-de-France, Available across France');
-  // Contact
-  r('Contactez Mattia Parrinello, photographe de concert', 'Contact Mattia Parrinello, concert photographer');
-  r('Vous cherchez un', 'Looking for a');
-  r('photographe de concert à Paris', 'concert photographer in Paris');
-  r('média musical', 'music outlet');
-  r('artiste émergent', 'emerging artist');
-  r('salle de concert</strong> ou un <strong>organisateur de festival</strong>, discutons de votre projet.', 'venue</strong> or a <strong>festival organizer</strong>, let\'s talk about your project.');
-  r('Je suis disponible pour couvrir vos événements en', 'I\'m available to cover your events in');
-  r('Île-de-France</strong> et partout en <strong>France</strong> : concerts, festivals, showcases, backstage, soirées de lancement.', 'Île-de-France</strong> and across <strong>France</strong>: concerts, festivals, showcases, backstage, launch parties.');
-  r('Réponse sous 24h · Devis gratuit · Déplacement sur toute la France', 'Reply within 24h · Free quote · Travel across France');
-  r('Votre email', 'Your email');
-  r('<label for="subject"', '<label for="subject"');
-  r('>Objet<', '>Subject<');
-  r('Dites-moi comment je peux vous aider', 'Tell me how I can help');
-  r('Votre message', 'Your message');
-  r('Laissez un message...', 'Leave a message...');
-  r('>Envoyer<', '>Send<');
-  r('example@gmail.com', 'example@gmail.com');
-  // About H1 etc
-  r('Mattia Parrinello, photographe de concert à Paris', 'Mattia Parrinello, concert photographer in Paris');
-  r('>Salut, je suis Mattia<', '>Hi, I\'m Mattia<');
-  r('Je suis Mattia <span class="animate-wave">', 'Hi, I\'m Mattia <span class="animate-wave">');
-  r('Artistes photographiés', 'Artists photographed');
-  r('Salles & festivals', 'Venues & festivals');
-  r('Mon histoire', 'My story');
-  r('Comment j\'ai commencé', 'How it started');
-  // History paragraphs (FR -> EN)
+  // Dictionnaire principal (déjà ordonné long→court)
+  for (const [fr, en] of Object.entries(_enDict)) {
+    r(fr, en);
+  }
+  // Paragraphes histoire (trop longs pour le dictionnaire)
   r('J\'ai toujours été intrigué par la photo depuis petit, sans vraiment m\'y intéresser. À mes <strong>18 ans</strong>, des amis ont découvert la photo et m\'ont offert un appareil. Quelques semaines plus tard, je pars en <strong>Égypte</strong> : je ramène de très belles photos, les retours sont unanimes. Je me suis dit que j\'avais quelque chose à faire si je m\'y mettais sérieusement.', 'I\'ve always been intrigued by photography since I was a kid, without really getting into it. At <strong>18</strong>, some friends discovered photography and gave me a camera. A few weeks later I went to <strong>Egypt</strong>: I came back with great photos and the feedback was unanimous. I told myself I had something to pursue if I took it seriously.');
   r('Avant les concerts, je faisais de la <strong>photo de rue</strong> et je photographiais parfois mes amis à la <strong>danse</strong>. Mon premier vrai concert que j\'ai voulu shooter, c\'était <strong>Jok\'air à Beauvais</strong>. On est en août, juste après l\'Égypte : impossible de trouver des places. J\'ai l\'idée d\'y aller en tant que photographe. Je contacte beaucoup de monde, sans succès, je m\'y prends trop tôt, le concert est en octobre. Je comprends alors qu\'il me faut un <strong>portfolio avec des photos de concert</strong>.', 'Before concerts I was doing <strong>street photography</strong> and sometimes shooting friends who <strong>dance</strong>. The first real concert I wanted to shoot was <strong>Jok\'air in Beauvais</strong>. It was August, right after Egypt: impossible to find tickets. I had the idea to go as a photographer. I contacted a lot of people, with no success, I was too early, the show was in October. I then understood I needed a <strong>portfolio with concert photos</strong>.');
   r('Je contacte la salle à côté de chez moi pour leur prochain concert : ils acceptent gracieusement. J\'y vais, je shoote, et ça me donne mon premier vrai concert. Pour Jok\'air à Beauvais (Élispace), j\'ai la réponse de mon accréditation <strong>la veille du concert</strong> même. C\'est là que je me dis que je veux faire ça : je passe des heures dessus sans voir le temps passer, et ça plaît.', 'I contacted the venue next to my place for their next show: they kindly said yes. I went, I shot, and it became my first real concert. For Jok\'air in Beauvais (Élispace), I got the accreditation answer <strong>the day before the show</strong>. That\'s when I knew I wanted to do this: I could spend hours on it without seeing time pass, and people liked it.');
   r('Je suis <strong>full autodidacte</strong>, j\'ai tout appris seul. Je fais surtout du <strong>rap</strong> parce que c\'est ce que j\'écoute. Pour photographier un concert, il faut comprendre l\'artiste, l\'écouter un minimum. Je pense sincèrement qu\'on voit dans mon portfolio quand j\'écoutais déjà l\'artiste ou non.', 'I\'m <strong>fully self-taught</strong>, I learned everything on my own. I mostly shoot <strong>rap</strong> because that\'s what I listen to. To photograph a concert you need to understand the artist, to listen to them a minimum. I honestly think you can see in my portfolio when I already listened to the artist or not.');
   r('Je n\'ai heureusement jamais eu de vraie galère en fosse. Ma plus grande surprise, c\'est la réaction des gens quand je leur prends leur téléphone en <strong>crash barrière</strong> pour filmer au mieux le concert.', 'Luckily I\'ve never had a real hassle in the pit. My biggest surprise is people\'s reaction when I take their phone at the <strong>crash barrier</strong> to film the show as best as possible.');
   r('Aujourd\'hui j\'aime <strong>absolument tout dans le live</strong> : le stress avant, découvrir la scéno, l\'énergie qui monte, le moment où tout s\'aligne. C\'est pour ça que je continue.', 'Today I love <strong>absolutely everything about live</strong>: the pre-show stress, discovering the stage design, the rising energy, the moment everything aligns. That\'s why I keep going.');
-  // Bio (texts.json) visible fallback in HTML
-  r('Je suis Mattia Parrinello, <strong>photographe de concert</strong> basé à <strong>Paris</strong>, <strong>MPRNL</strong> est le nom professionnel sous lequel je signe et diffuse mes images.', 'I\'m Mattia Parrinello, <strong>concert photographer</strong> based in <strong>Paris</strong>, <strong>MPRNL</strong> is the professional name under which I sign and share my work.');
-  r('Mon truc, c’est l’énergie brute des artistes', 'What drives me is the raw energy of artists');
-  r('Spécialisé dans la <strong>musique rap</strong> et les scènes urbaines, j’ai eu la chance de shooter des artistes comme', 'Specialized in <strong>rap music</strong> and urban scenes, I\'ve had the chance to shoot artists like');
-  r('Mon approche : être au plus près de l’action', 'My approach: being as close as possible to the action');
-  r('Je travaille avec des <strong>médias musicaux (Rapstar)</strong>', 'I work with <strong>music media (Rapstar)</strong>');
-  // Galleries
-  r('Galeries de concerts', 'Concert galleries');
-  r('Les premières galeries arrivent bientôt.', 'First galleries coming soon.');
-  r('Me contacter pour un projet', 'Contact me for a project');
-  r('Accueil</a>', 'Home</a>');
-  r('>Galeries</a>', '>Galleries</a>');
-  r('Aucune photo dans cette galerie.', 'No photos in this gallery.');
-  r('← Toutes les galeries', '← All galleries');
-  // Mentions légales
-  r('En vigueur au 09/01/2026', 'Effective as of 09/01/2026');
-  r('Édition du site', 'Site Publisher');
-  r('Hébergement', 'Hosting');
-  r('Accès au site', 'Site Access');
-  r('Propriété intellectuelle', 'Intellectual Property');
-  r('Données personnelles (RGPD)', 'Personal Data (GDPR)');
-  r('Cookies et outils de statistiques', 'Cookies and analytics');
-  r('Responsabilité', 'Liability');
-  r('Droit applicable et litiges', 'Applicable law and disputes');
+  // Mentions légales (phrases longues)
   r('Conformément à la loi n°2004-575 du 21 juin 2004 pour la Confiance', 'In accordance with French Law No. 2004-575 of 21 June 2004 on Confidence');
   r('en l\'Économie Numérique (LCEN), il est porté à la connaissance des', 'in the Digital Economy (LCEN), users of the site');
   r('utilisateurs du site', 'are hereby informed of these legal mentions');
-  r('Éditeur :', 'Publisher:');
-  r('Statut :', 'Status:');
-  r('Auto-entrepreneur / Entreprise individuelle', 'Self-employed / Sole proprietorship');
-  r('Activité :', 'Activity:');
-  r('Photographe indépendant', 'Independent photographer');
-  r('Adresse :', 'Address:');
-  r('Téléphone :', 'Phone:');
-  r('Email :', 'Email:');
-  r('SIRET :', 'Company No.:');
-  r('Numéro de TVA intracommunautaire :', 'Intra-community VAT number:');
-  r('Non applicable', 'Not applicable');
-  r('Directeur de la publication :', 'Publication director:');
-  r('Hébergeur :', 'Hosting provider:');
-  r('Le Site est normalement accessible à tout moment.', 'The Site is normally accessible at all times.');
   r('L\'Éditeur se', 'The Publisher reserves');
-  r('Propriété intellectuelle', 'Intellectual Property');
   return out;
 }
 
