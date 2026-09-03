@@ -326,6 +326,7 @@ router.get('/contact', (req, res) => {
                 htmlContent = htmlContent.replace('Vous cherchez un', 'Looking for a');
                 htmlContent = htmlContent.replace('photographe de concert à Paris', 'concert photographer in Paris');
             }
+            htmlContent = htmlContent.replace('</main>', `${generateFaqHtml(req.lang)}` + '\n    </main>');
             return htmlContent;
         }
     });
@@ -352,6 +353,7 @@ router.get('/a-propos', (req, res) => {
             const lists = renderAboutListsHtml();
             htmlContent = htmlContent.replace('<!-- ARTISTS_LIST_PLACEHOLDER -->', lists.artists);
             htmlContent = htmlContent.replace('<!-- VENUES_LIST_PLACEHOLDER -->', lists.venues);
+            htmlContent = htmlContent.replace('</main>', `${generateFaqHtml(req.lang)}` + '\n    </main>');
             return htmlContent;
         }
     });
@@ -462,6 +464,24 @@ function safeExternalUrl(url) {
     const raw = (url || '').toString().trim();
     if (!raw) return '';
     return /^https?:\/\//i.test(raw) ? raw : '';
+}
+
+function generateFaqHtml(lang) {
+    const isEn = lang === 'en';
+    const items = isEn ? [
+        { q: 'How much does a concert report in Paris cost?', a: 'From 300€, free quote within 24h. Price depends on duration, number of photos and usage. Press and social networks with credit included, commercial use on request. <a href="/contact?lang=en" class="underline">Contact me</a>.' },
+        { q: 'What is the delivery time?', a: '48 to 72 hours. Online gallery and HD download via link. Available immediately, travel across France.' },
+        { q: 'What usage rights are included?', a: 'Press and social media use with mandatory credit included. Commercial, advertising or print use requires a separate quote. All photos remain protected.' },
+        { q: 'Where do you work?', a: 'Paris, Île-de-France and across France. Based in Paris, I travel everywhere in France for concerts, festivals, showcases and backstage.' }
+    ] : [
+        { q: 'Quel est le tarif d\'un reportage concert à Paris ?', a: 'À partir de 300€, devis gratuit sous 24h. Prix selon durée, nombre de photos et usage. Presse et réseaux avec crédit inclus, commercial sur devis. <a href="/contact" class="underline">Contactez-moi</a>.' },
+        { q: 'Quel est le délai de livraison ?', a: '48 à 72 heures. Galerie en ligne et HD via lien. Disponible immédiatement, déplacement partout en France.' },
+        { q: 'Quels droits d\'usage sont inclus ?', a: 'Usage presse et réseaux sociaux avec crédit obligatoire inclus. Usage commercial, pub ou print sur devis. Toutes les photos restent protégées.' },
+        { q: 'Dans quelles villes tu te déplaces ?', a: 'Paris, Île-de-France et partout en France. Basé à Paris, je me déplace partout en France pour concerts, festivals, showcases et backstage.' }
+    ];
+    const title = isEn ? 'FAQ' : 'Questions fréquentes';
+    const rows = items.map(x => `<details class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-white dark:bg-gray-800"><summary class="font-semibold cursor-pointer">${escapeAttr(x.q)}</summary><p class="mt-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">${x.a}</p></details>`).join('');
+    return `<section class="max-w-3xl mx-auto px-5 md:px-0 mt-12 mb-8"><h2 class="text-2xl font-bold font-signika mb-4">${title}</h2><div class="space-y-3">${rows}</div></section>`;
 }
 
 function generatePressKitHtml(gallery, canonical, lang) {

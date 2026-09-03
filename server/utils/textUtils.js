@@ -318,6 +318,12 @@ class TextUtils {
             graph.push(breadcrumbs);
         }
 
+        // FAQPage for AIO/GEO (about + contact)
+        if (pageKey === 'about' || pageKey === 'contact') {
+            const faq = this._getFaq(lang, baseUrl);
+            if (faq) graph.push(faq);
+        }
+
         return `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': graph })}</script>`;
     }
 
@@ -360,6 +366,30 @@ class TextUtils {
                 'position': i + 1,
                 'name': item.name,
                 'item': item.url
+            }))
+        };
+    }
+
+    _getFaq(lang, baseUrl) {
+        const isEn = lang === 'en';
+        const qs = isEn ? [
+            { q: 'How much does a concert report in Paris cost?', a: 'From 300€, free quote within 24h. Price depends on duration, number of photos and usage. Press and social networks with credit included, commercial use on request. More on ' + baseUrl + '/contact' },
+            { q: 'What is the delivery time?', a: '48 to 72 hours. Online gallery and HD download via link. Available immediately, travel across France.' },
+            { q: 'What usage rights are included?', a: 'Press and social media use with mandatory credit included. Commercial, advertising or print use requires a separate quote. All photos remain protected.' },
+            { q: 'Where do you work?', a: 'Paris, Île-de-France and across France. Based in Paris, I travel everywhere in France for concerts, festivals, showcases and backstage.' }
+        ] : [
+            { q: 'Quel est le tarif d\'un reportage concert à Paris ?', a: 'À partir de 300€, devis gratuit sous 24h. Prix selon durée, nombre de photos et usage. Presse et réseaux avec crédit inclus, commercial sur devis. Détails sur ' + baseUrl + '/contact' },
+            { q: 'Quel est le délai de livraison ?', a: '48 à 72 heures. Galerie en ligne et HD via lien. Disponible immédiatement, déplacement partout en France.' },
+            { q: 'Quels droits d\'usage sont inclus ?', a: 'Usage presse et réseaux sociaux avec crédit obligatoire inclus. Usage commercial, pub ou print sur devis. Toutes les photos restent protégées.' },
+            { q: 'Dans quelles villes tu te déplaces ?', a: 'Paris, Île-de-France et partout en France. Basé à Paris, je me déplace partout en France pour concerts, festivals, showcases et backstage.' }
+        ];
+        return {
+            '@type': 'FAQPage',
+            'inLanguage': lang,
+            'mainEntity': qs.map(x => ({
+                '@type': 'Question',
+                'name': x.q,
+                'acceptedAnswer': { '@type': 'Answer', 'text': x.a }
             }))
         };
     }
