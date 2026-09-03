@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const serverConfig = require('../config');
+const { translateHtml } = require('./i18n');
 
 // SEO: Chargement des données SEO centralisées
 const seoDataPath = path.join(__dirname, '..', '..', 'config', 'seo.json');
@@ -47,6 +48,8 @@ class TextUtils {
     }
 
     _getLang(req) {
+        if (req && req.lang === 'en') return 'en';
+        if (req && req.lang === 'fr') return 'fr';
         return (req && req.query && req.query.lang === 'en') ? 'en' : 'fr';
     }
 
@@ -173,14 +176,16 @@ class TextUtils {
         // Injecter les meta tags et le script de campagne
         injectedHtml = injectedHtml.replace(metaPlaceholderEnd, `${additionalMetas}${campaignScript}\n${metaPlaceholderEnd}`);
 
-        // Lang switcher flottant (anglais partiel)
-        const toggleHref = isEn ? `${pathOnly}` : `${pathOnly}?lang=en`;
+        // Lang switcher flottant (anglais partiel) — persiste via cookie
+        const toggleHref = isEn ? `${pathOnly}?lang=fr` : `${pathOnly}?lang=en`;
         const toggleLabel = isEn ? 'FR' : 'EN';
         const toggleTitle = isEn ? 'Voir en français' : 'View in English';
         const langSwitcher = `\n    <style>.lang-switch{position:fixed;top:14px;right:14px;z-index:50;background:rgba(255,255,255,0.92);border:1px solid rgba(15,23,42,0.12);border-radius:999px;padding:4px 10px;font-family:Signika,sans-serif;font-weight:700;font-size:0.72rem;backdrop-filter:blur(6px);text-decoration:none;color:#0f172a}@media(prefers-color-scheme:dark){.lang-switch{background:rgba(15,23,42,0.9);border-color:rgba(148,163,184,0.22);color:#fff}}</style>\n    <a class="lang-switch" href="${toggleHref}" hreflang="${isEn ? 'fr' : 'en'}" aria-label="${toggleTitle}">${toggleLabel}</a>`;
         if (injectedHtml.includes('</body>')) {
             injectedHtml = injectedHtml.replace('</body>', `${langSwitcher}\n  </body>`);
         }
+
+        injectedHtml = translateHtml(injectedHtml, lang);
 
         return injectedHtml;
     }

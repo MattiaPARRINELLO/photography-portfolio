@@ -10,6 +10,7 @@ const photoService = require('../utils/photoService');
 const linksService = require('../utils/linksService');
 const galleryService = require('../utils/galleryService');
 const { getPublicGalleries, isManifestlyFake } = require('../utils/dataSanity');
+const { translateHtml } = require('../utils/i18n');
 
 const router = express.Router();
 const paths = serverConfig.getPaths();
@@ -32,7 +33,8 @@ function setCache(key, value, ttlMs) {
 // Rend une page: cache → lecture fichier → meta → JSON-LD → transform → cache → envoi.
 // En cas d'erreur, fallback sur le fichier statique (comportement historique des routes).
 async function renderPage(req, res, { cacheKey, file, pageType, ttlMs, campaignInfo, transform }) {
-    const langSuffix = (req && req.query && req.query.lang === 'en') ? ':en' : ':fr';
+    const lang = (req && req.lang === 'en') ? 'en' : 'fr';
+    const langSuffix = `:${lang}`;
     const effectiveKey = `${cacheKey}${langSuffix}`;
     const cached = getCached(effectiveKey);
     if (cached) return res.send(cached);
@@ -66,7 +68,7 @@ function loadSeoData() {
 
 // SEO: Génère le bloc hero HTML pour la page d'accueil (H1 + intro + artistes + lieux + CTA)
 function generateHomeHeroHtml(req) {
-    const isEn = !!(req && req.query && req.query.lang === 'en');
+    const isEn = !!(req && (req.lang === 'en' || (req.query && req.query.lang === 'en')));
     const seo = loadSeoData();
     const pageSeo = (seo.pages && seo.pages.home) || {};
     const artists = seo.artists || [];
@@ -209,7 +211,7 @@ router.get('/', (req, res) => {
 
             // SEO: Injecter le bloc post-galerie (collaborations + CTA secondaire) — lang-aware
             const seoBottom = loadSeoData();
-            const bottomIsEn = !!(req.query && req.query.lang === 'en');
+            const bottomIsEn = req.lang === 'en';
             const bottomArtists = (seoBottom.artists || []).map(a => a.name).join(', ');
             const bottomVenues = (seoBottom.venues || []).map(v => v.name).join(', ');
             const bottomHtml = bottomIsEn ? `
@@ -270,7 +272,7 @@ router.get('/', (req, res) => {
     });
 });
 
-// Route pour servir texts.json publiquement
+// Route pour servir texts.json publiquement (lang-aware)
 router.get('/texts.json', async (req, res) => {
     try {
         let texts = {};
@@ -279,6 +281,27 @@ router.get('/texts.json', async (req, res) => {
             texts = JSON.parse(txt);
         } catch (e) {
             texts = {};
+        }
+        const lang = (req.lang === 'en' || req.query.lang === 'en') ? 'en' : 'fr';
+        if (lang === 'en' && texts['a propos'] && Array.isArray(texts['a propos'].bio)) {
+            texts['a propos'].bio = [
+                "I'm Mattia Parrinello, <strong>concert photographer</strong> based in <strong>Paris</strong> — <strong>MPRNL</strong> is the professional name under which I sign and share my work. What drives me is the raw energy of artists on stage - the moment when light, sound and emotion collide. I capture what the audience feels but doesn't always see: the intensity of a gaze, the sweat under the lights, the controlled chaos of a live show.",
+                "Specialized in <strong>rap music</strong> and urban scenes, I've had the chance to shoot artists like <strong>Jok'air, Arma Jackson, Wallace Cleaver, Cyrus.wrld, Trebiz, Aswell</strong> and <strong>The French Kris</strong> in venues like <strong>La Cigale, La Boule Noire, La Bellevilloise, La Maroquinerie, Élispace, EMB Sannois, Paris La Défense Arena, Reims Arena, Zénith d'Amiens</strong> and the <strong>Pagaille Festival</strong>. From intimate showcase to open-air festival, every event is a new story to tell in images.",
+                "My approach: being as close as possible to the action, anticipating the highlights, playing with stage light to create cinematic and striking images. No poses, no artifice — just the authenticity of live. My style blends strong contrasts, vibrant colors and an energy that oozes from every shot.",
+                "I work with <strong>music media (Rapstar)</strong>, emerging artists, labels and venues. Based in <strong>Île-de-France</strong>, I travel across <strong>France</strong> to cover your events — concerts, festivals, showcases, backstage, promo, making-of, parties. Available immediately. Got a project or a show to cover? <a href=\"/contact?lang=en\">Let's talk.</a>",
+                ""
+            ];
+            texts['a propos'].presentation = "Hi, I'm Mattia";
+            if (texts.main) texts.main.nom = "Mattia PARRINELLO";
+            if (texts.footer) {
+                texts.footer.ligne1 = "Paris · Île-de-France — Available across France";
+            }
+            if (texts.meta) {
+                texts.meta.title = "Mattia PARRINELLO – Concert & Live Photographer";
+                texts.meta.description = "Concert and live photographer based in Paris, capturing authentic moments and strong emotions. Between music scenes, portraits and street photography, I tell unique stories through images.";
+                texts.meta.og_title = "Mattia PARRINELLO – Concert Photographer";
+                texts.meta.og_description = "Concert and live photographer capturing authentic moments and the energy of performances. Between portraits and urban scenes, I share images full of emotion and story.";
+            }
         }
         res.json(texts);
     } catch (error) {
@@ -295,7 +318,7 @@ router.get('/contact', (req, res) => {
         pageType: 'Contact',
         ttlMs: 5 * 60 * 1000,
         transform: (htmlContent) => {
-            const isEn = !!(req.query && req.query.lang === 'en');
+            const isEn = req.lang === 'en';
             if (isEn) {
                 htmlContent = htmlContent.replace('Contactez Mattia Parrinello, photographe de concert', 'Contact Mattia Parrinello, concert photographer');
                 htmlContent = htmlContent.replace('Contactez-moi', 'Get in touch');
@@ -321,7 +344,7 @@ router.get('/a-propos', (req, res) => {
         pageType: 'À propos',
         ttlMs: 5 * 60 * 1000,
         transform: (htmlContent) => {
-            const isEn = !!(req.query && req.query.lang === 'en');
+            const isEn = req.lang === 'en';
             if (isEn) {
                 htmlContent = htmlContent.replace('Mattia Parrinello, photographe de concert à Paris', 'Mattia Parrinello, concert photographer in Paris');
                 htmlContent = htmlContent.replace('À propos', 'About');
@@ -441,37 +464,49 @@ function safeExternalUrl(url) {
     return /^https?:\/\//i.test(raw) ? raw : '';
 }
 
-function generatePressKitHtml(gallery, canonical) {
+function generatePressKitHtml(gallery, canonical, lang) {
+    const isEn = lang === 'en';
     const photos = (gallery.photos || []).slice(0, 3);
     if (photos.length === 0) return '';
-    const artist = (gallery.artist || '').trim() || 'cet artiste';
-    const venue = gallery.venue ? ` à ${gallery.venue}` : '';
+    const artist = (gallery.artist || '').trim() || (isEn ? 'this artist' : 'cet artiste');
+    const venue = gallery.venue ? ` ${isEn ? 'at' : 'à'} ${gallery.venue}` : '';
     const credit = `© Mattia Parrinello — photo.mprnl.fr — ${gallery.title}`;
     const galleryUrl = canonical;
     const creditLong = `© Mattia Parrinello — ${galleryUrl} — ${artist}${venue}`;
     const cards = photos.map((filename, i) => {
         const thumb = `/photos/resize?file=${encodeURIComponent(filename)}&w=400`;
-        const alt = `${artist} en concert - photo ${i + 1} par Mattia Parrinello`;
-        return `<div class="press-kit-card"><img src="${thumb}" alt="${escapeAttr(alt)}" loading="lazy" /><button type="button" onclick="pressKitDownload('${escapeAttr(filename)}', this)">Télécharger HD ${i + 1}</button></div>`;
+        const alt = isEn ? `${artist} live - photo ${i + 1} by Mattia Parrinello` : `${artist} en concert - photo ${i + 1} par Mattia Parrinello`;
+        const dl = isEn ? `Download HD ${i + 1}` : `Télécharger HD ${i + 1}`;
+        return `<div class="press-kit-card"><img src="${thumb}" alt="${escapeAttr(alt)}" loading="lazy" /><button type="button" onclick="pressKitDownload('${escapeAttr(filename)}', this)">${dl}</button></div>`;
     }).join('');
-    return `<details class="press-kit" id="press-kit" aria-label="Kit presse">
+    const aria = isEn ? 'Press kit' : 'Kit presse';
+    const summaryTitle = isEn ? 'Press kit — 3 free HD photos' : 'Kit presse — 3 photos HD gratuites';
+    const summarySub = isEn ? `${escapeAttr(artist)}${escapeAttr(venue)} · credit required` : `${escapeAttr(artist)}${escapeAttr(venue)} · crédit obligatoire`;
+    const desc = isEn ? 'For artists, venues or press: 3 free HD photos for socials/website with credit + link.' : 'Pour l\'artiste, la salle ou la presse : 3 HD libres pour réseaux/site contre crédit + lien.';
+    const copyLabel = isEn ? 'Copy' : 'Copier';
+    const licence = isEn ? 'Press & social use with mandatory credit. HD via signed URL valid 1h.' : 'Usage presse &amp; réseaux avec crédit obligatoire. HD via URL signée valable 1h.';
+    const copyLink = isEn ? 'Copy link' : 'Copier le lien';
+    const shareLabel = isEn ? 'Share' : 'Partager';
+    const mailSubject = isEn ? `Photos of ${artist} by Mattia Parrinello` : `Photos de ${artist} par Mattia Parrinello`;
+    const mailBody = isEn ? `Gallery: ${galleryUrl}\n\nMandatory credit: ${creditLong}` : `Galerie : ${galleryUrl}\n\nCrédit obligatoire : ${creditLong}`;
+    return `<details class="press-kit" id="press-kit" aria-label="${aria}">
       <summary>
         <span class="press-kit-summary-left">
           <span class="press-kit-summary-icon">⬇</span>
-          <span class="press-kit-summary-text"><strong>Kit presse — 3 photos HD gratuites</strong><span>${escapeAttr(artist)}${escapeAttr(venue)} · crédit obligatoire</span></span>
+          <span class="press-kit-summary-text"><strong>${summaryTitle}</strong><span>${summarySub}</span></span>
         </span>
         <span class="press-kit-chevron">⌄</span>
       </summary>
       <div class="press-kit-body">
-      <p class="press-kit-desc">Pour l'artiste, la salle ou la presse : 3 HD libres pour réseaux/site contre crédit + lien.</p>
+      <p class="press-kit-desc">${desc}</p>
       <div class="press-kit-grid">${cards}</div>
-      <div class="press-kit-credit"><code id="press-kit-credit">${escapeAttr(creditLong)}</code><button type="button" class="press-kit-btn" onclick="pressKitCopyCredit()">Copier</button></div>
-      <p class="press-kit-licence">Usage presse &amp; réseaux avec crédit obligatoire. HD via URL signée valable 1h.</p>
+      <div class="press-kit-credit"><code id="press-kit-credit">${escapeAttr(creditLong)}</code><button type="button" class="press-kit-btn" onclick="pressKitCopyCredit()">${copyLabel}</button></div>
+      <p class="press-kit-licence">${licence}</p>
       <div class="press-kit-actions">
-        <a class="press-kit-btn primary" href="${escapeAttr(galleryUrl)}" onclick="pressKitCopyLink(event)">Copier le lien</a>
-        <button type="button" class="press-kit-btn" onclick="pressKitShare()">Partager</button>
+        <a class="press-kit-btn primary" href="${escapeAttr(galleryUrl)}" onclick="pressKitCopyLink(event)">${copyLink}</a>
+        <button type="button" class="press-kit-btn" onclick="pressKitShare()">${shareLabel}</button>
         <a class="press-kit-btn" href="https://wa.me/?text=${encodeURIComponent(galleryUrl)}" target="_blank" rel="noopener">WhatsApp</a>
-        <a class="press-kit-btn" href="mailto:?subject=${encodeURIComponent('Photos ' + artist + ' par Mattia Parrinello')}&body=${encodeURIComponent('Galerie : ' + galleryUrl + '\\n\\nCrédit obligatoire : ' + creditLong)}">Email</a>
+        <a class="press-kit-btn" href="mailto:?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}">Email</a>
       </div>
       </div>
       <script>
@@ -656,7 +691,7 @@ router.get('/galeries/:slug', async (req, res) => {
             return res.status(404).sendFile(path.join(paths.pages, '404.html'));
         }
 
-        const lang = (req.query && req.query.lang === 'en') ? 'en' : 'fr';
+        const lang = req.lang === 'en' ? 'en' : 'fr';
         const isEn = lang === 'en';
         const cacheKey = `page:gallery:${gallery.slug}:${lang}`;
         const cached = getCached(cacheKey);
@@ -824,21 +859,23 @@ router.get('/galeries/:slug', async (req, res) => {
             : '<p class="text-center text-gray-500 py-8">Aucune photo dans cette galerie.</p>';
         htmlContent = htmlContent.replace('<!-- GALLERY_PHOTOS_PLACEHOLDER -->', masonryHtml);
 
-        const pressKitHtml = generatePressKitHtml(gallery, canonical);
+        const pressKitHtml = generatePressKitHtml(gallery, canonical, lang);
         if (htmlContent.includes('<!-- PRESS_KIT_PLACEHOLDER -->')) {
             htmlContent = htmlContent.replace('<!-- PRESS_KIT_PLACEHOLDER -->', pressKitHtml);
         } else if (pressKitHtml) {
             htmlContent = htmlContent.replace('</main>', `${pressKitHtml}\n    </main>`);
         }
 
-        // Lang switcher flottant pour galeries (anglais partiel)
+        // Lang switcher flottant pour galeries (anglais partiel) — cookie persistant
         {
-            const toggleHref = isEn ? `/galeries/${encodeURIComponent(gallery.slug)}` : `/galeries/${encodeURIComponent(gallery.slug)}?lang=en`;
+            const toggleHref = isEn ? `/galeries/${encodeURIComponent(gallery.slug)}?lang=fr` : `/galeries/${encodeURIComponent(gallery.slug)}?lang=en`;
             const toggleLabel = isEn ? 'FR' : 'EN';
             const toggleTitle = isEn ? 'Voir en français' : 'View in English';
             const langSwitcher = `\n    <style>.lang-switch{position:fixed;top:14px;right:14px;z-index:50;background:rgba(255,255,255,0.92);border:1px solid rgba(15,23,42,0.12);border-radius:999px;padding:4px 10px;font-family:Signika,sans-serif;font-weight:700;font-size:0.72rem;backdrop-filter:blur(6px);text-decoration:none;color:#0f172a}@media(prefers-color-scheme:dark){.lang-switch{background:rgba(15,23,42,0.9);border-color:rgba(148,163,184,0.22);color:#fff}}</style>\n    <a class="lang-switch" href="${toggleHref}" hreflang="${isEn ? 'fr' : 'en'}" aria-label="${toggleTitle}">${toggleLabel}</a>`;
             if (htmlContent.includes('</body>')) htmlContent = htmlContent.replace('</body>', `${langSwitcher}\n  </body>`);
         }
+
+        htmlContent = translateHtml(htmlContent, lang);
 
         try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) { }
         res.send(htmlContent);

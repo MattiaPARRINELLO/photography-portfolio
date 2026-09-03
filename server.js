@@ -16,6 +16,7 @@ const campaignService = require('./server/utils/campaignService');
 
 // Middleware
 const { userTrackingMiddleware, campaignMiddleware } = require('./server/middleware/tracking');
+const languageMiddleware = require('./server/middleware/language');
 
 // Routes
 const pagesRouter = require('./server/routes/pages');
@@ -87,6 +88,7 @@ app.use(session({
 // Middleware de base
 app.use(express.json());
 app.use(cookieParser());
+app.use(languageMiddleware);
 
 // Sert les fichiers statiques, mais exclut le dossier /admin pour éviter les conflits
 // Middleware: servir les versions pré-compressées si elles existent (.br/.gz)
