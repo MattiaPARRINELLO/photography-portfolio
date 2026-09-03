@@ -808,6 +808,7 @@ router.get('/galeries/:slug', async (req, res) => {
             description: metaDesc,
             url: canonical,
             ...(gallery.date ? { datePublished: gallery.date } : {}),
+            ...(gallery.updatedAt ? { dateModified: gallery.updatedAt } : {}),
             ...(gallery.venue ? { contentLocation: { '@type': 'Place', name: gallery.venue } } : {}),
             ...(artistName ? { about: { '@type': 'MusicGroup', name: artistName, ...(artistSameAs.length ? { sameAs: artistSameAs } : {}) } } : {}),
             author: {
@@ -820,7 +821,14 @@ router.get('/galeries/:slug', async (req, res) => {
                 '@type': 'ImageObject',
                 contentUrl: `https://www.photo.mprnl.fr/photos/resize?file=${encodeURIComponent(f)}&w=1600`,
                 thumbnailUrl: `https://www.photo.mprnl.fr/photos/resize?file=${encodeURIComponent(f)}&w=640`,
-                creator: { '@type': 'Person', '@id': 'https://www.photo.mprnl.fr/#person', name: 'Mattia Parrinello' }
+                creator: { '@type': 'Person', '@id': 'https://www.photo.mprnl.fr/#person', name: 'Mattia Parrinello' },
+                copyrightHolder: { '@id': 'https://www.photo.mprnl.fr/#person' },
+                creditText: '© Mattia Parrinello / photo.mprnl.fr',
+                license: 'https://www.photo.mprnl.fr/mentions-legales',
+                acquireLicensePage: 'https://www.photo.mprnl.fr/contact',
+                caption: `${gallery.title} - photo par Mattia Parrinello`,
+                keywords: [gallery.artist, gallery.venue].filter(Boolean).join(', '),
+                contentLocation: gallery.venue ? { '@type': 'Place', name: gallery.venue, address: { '@type': 'PostalAddress', addressLocality: 'Paris', addressCountry: 'FR' } } : undefined
             }))
         };
 
@@ -852,6 +860,7 @@ router.get('/galeries/:slug', async (req, res) => {
             ? `/photos/resize?file=${encodeURIComponent(gallery.cover)}&w=1600`
             : '';
         const metaLine = [gallery.artist, gallery.venue, formatGalleryDate(gallery.date)].filter(Boolean).join(' · ');
+        const dateLine = gallery.updatedAt ? `<p class="meta" style="font-size:0.8rem;opacity:0.75">Publié le ${escapeAttr(formatGalleryDate(gallery.date))}${gallery.updatedAt !== gallery.createdAt ? ` · Mis à jour le ${escapeAttr(formatGalleryDate(gallery.updatedAt))}` : ''}</p>` : '';
         const heroHtml = `
       <section class="gallery-hero">
         ${heroCoverUrl ? `<img class="cover" src="${heroCoverUrl}" alt="${escapeAttr(gallery.title)}" />` : ''}
@@ -866,6 +875,7 @@ router.get('/galeries/:slug', async (req, res) => {
           </nav>
           <h1>${escapeAttr(gallery.title)}</h1>
           ${metaLine ? `<p class="meta">${escapeAttr(metaLine)}</p>` : ''}
+          ${dateLine}
         </div>
       </section>`;
         htmlContent = htmlContent.replace('<!-- GALLERY_HERO_PLACEHOLDER -->', heroHtml);
