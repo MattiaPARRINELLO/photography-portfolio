@@ -161,12 +161,22 @@ function translateHtml(html, lang) {
   r('GALERIES', 'GALLERIES');
   r('À PROPOS', 'ABOUT');
   r('Ouvrir le menu principal', 'Open main menu');
-  // Footer
+  // Footer — robust (long before short, regex for whitespace/newlines)
   r('Mentions légales', 'Legal mentions');
-  r('© Mattia Parrinello – Toutes les photos publiées sur ce site sont protégées. Toute utilisation non autorisée est passible de sanctions.', '© Mattia Parrinello – All photos on this site are protected. Unauthorized use is prohibited.');
+  r('Retour à l\'accueil', 'Back to home');
+  // Long footer lines first (regex for · and whitespace)
+  out = out.replace(/Mattia Parrinello\s*-\s*Photographe de concert à Paris\s*·\s*Disponible en\s+Île-de-France et partout en France/g, 'Mattia Parrinello - Concert photographer in Paris · Available in Île-de-France and across France');
   r('Mattia Parrinello - Photographe de concert à Paris · Disponible en Île-de-France et partout en France', 'Mattia Parrinello - Concert photographer in Paris · Available in Île-de-France and across France');
-  r('Paris · Île-de-France — Disponible partout en France', 'Paris · Île-de-France — Available across France');
   r('Paris · Île-de-France — Disponible partout en France<br />(+33) 6 50 58 62 51 · contact.mprnl@gmail.com', 'Paris · Île-de-France — Available across France<br />(+33) 6 50 58 62 51 · contact.mprnl@gmail.com');
+  out = out.replace(/Paris\s*·\s*Île-de-France\s*—\s*Disponible partout en France/g, 'Paris · Île-de-France — Available across France');
+  r('Paris · Île-de-France — Disponible partout en France', 'Paris · Île-de-France — Available across France');
+  r('© Mattia Parrinello – Toutes les photos publiées sur ce site sont protégées. Toute utilisation non autorisée est passible de sanctions.', '© Mattia Parrinello – All photos on this site are protected. Unauthorized use is prohibited.');
+  // Then short fragments with regex for whitespace/newlines
+  out = out.replace(/Toutes les photos publiées sur ce site sont\s+protégées\./g, 'All photos on this site are protected.');
+  out = out.replace(/Toute utilisation non autorisée est passible de\s+sanctions\./g, 'Unauthorized use is prohibited.');
+  out = out.replace(/Disponible en\s+Île-de-France et partout en France/g, 'Available in Île-de-France and across France');
+  r('Photographe de concert à Paris', 'Concert photographer in Paris');
+  r('Disponible en Île-de-France — Disponible partout en France', 'Available in Île-de-France — Available across France');
   // Contact
   r('Contactez Mattia Parrinello, photographe de concert', 'Contact Mattia Parrinello, concert photographer');
   r('Vous cherchez un', 'Looking for a');
