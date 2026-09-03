@@ -1,0 +1,17 @@
+# Mattia Parrinello — Photographe de concert à Paris (MPRNL)
+
+> Photographe de concert à Paris, spécialisé rap et live. De La Boule Noire à Paris La Défense Arena, du festival intimiste au show XXL : chaque concert est une histoire de lumière et d'énergie. Disponible partout en France.
+
+- [Site](https://www.photo.mprnl.fr/) — Portfolio et contact
+- [À propos](https://www.photo.mprnl.fr/a-propos) — Bio, Mon histoire (Égypte, Jok'air Beauvais), approche
+- [Galeries](https://www.photo.mprnl.fr/galeries) — Séries par artiste/salle
+- [Contact](https://www.photo.mprnl.fr/contact) — Devis gratuit, réponse 24h
+- [FAQ](https://www.photo.mprnl.fr/a-propos#faq) — Tarifs, délais, droits, villes
+
+Artistes : Arma Jackson, Aswell, Cyrus.wrld, Damso, Jok'air, Romsii, The French Kris, Trebiz, Wallace Cleaver
+Salles : Dock B, L'Antipode, La Bellevilloise, La Boule Noire, La Cigale, La Maroquinerie, Pagaille Festival - Bordeaux, Paris La Défense Arena, Reims Arena, Zénith d'Amiens, Élispace, EMB Sannois
+
+Contact : contact.mprnl@gmail.com — (+33) 6 50 58 62 51 — Paris, Île-de-France
+
+Full context : /llms-full.md
+Sitemap : /sitemap.xml

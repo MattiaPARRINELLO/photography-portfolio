@@ -156,11 +156,21 @@ app.use('/photos', express.static(path.join(__dirname, 'photos'), {
     immutable: true
 }));
 
-// Servir /robots.txt depuis la racine
+// Servir /robots.txt / llms.txt depuis la racine
 app.get('/robots.txt', (req, res) => {
     const robotsPath = path.join(paths.root, 'robots.txt');
     res.setHeader('Cache-Control', 'public, max-age=86400');
     res.sendFile(robotsPath);
+});
+app.get('/llms.txt', (req, res) => {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.sendFile(path.join(paths.root, 'llms.txt'));
+});
+app.get('/llms-full.md', (req, res) => {
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.sendFile(path.join(paths.root, 'llms-full.md'));
 });
 
 // Rendre les services disponibles dans les routes
