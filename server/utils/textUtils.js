@@ -145,6 +145,9 @@ class TextUtils {
         additionalMetas += `    <meta property="og:title" content="${ogTitle}">\n`;
         additionalMetas += `    <meta property="og:description" content="${ogDescription}">\n`;
         additionalMetas += `    <meta property="og:image" content="${ogImage}">\n`;
+        additionalMetas += `    <meta property="og:image:width" content="1200">\n`;
+        additionalMetas += `    <meta property="og:image:height" content="1200">\n`;
+        additionalMetas += `    <meta property="og:image:type" content="image/jpeg">\n`;
         additionalMetas += `    <meta property="og:type" content="website">\n`;
         additionalMetas += `    <meta property="og:url" content="${canonicalUrl}">\n`;
         additionalMetas += `    <meta property="og:locale" content="${isEn ? 'en_US' : 'fr_FR'}">\n`;
@@ -239,14 +242,19 @@ class TextUtils {
                 'jobTitle': 'Photographe de concert',
                 'description': 'Photographe de concert basé à Paris, spécialisé dans la musique rap et les événements live. Captation de concerts, festivals, showcases et backstage.',
                 'address': address,
+                'email': siteSeo.email || 'contact.mprnl@gmail.com',
+                'telephone': siteSeo.phone || '',
                 'sameAs': social,
+                'brand': { '@type': 'Brand', 'name': 'MPRNL' },
+                'hasOfferCatalog': { '@type': 'OfferCatalog', 'name': 'Reportages concerts', 'itemListElement': [{ '@type': 'Offer', 'name': 'Reportage concert Paris', 'price': '300', 'priceCurrency': 'EUR' }] },
                 'knowsAbout': [
                     'Photographie de concert',
                     'Photographie de festival',
                     'Photographie de backstage',
                     'Photographie événementielle musicale',
                     'Photographie de spectacle'
-                ]
+                ],
+                'knowsLanguage': ['fr', 'en']
             },
             {
                 '@type': 'ProfessionalService',

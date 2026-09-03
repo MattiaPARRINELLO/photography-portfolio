@@ -794,6 +794,9 @@ router.get('/galeries/:slug', async (req, res) => {
     <meta property="og:description" content="${escapeAttr(metaDesc)}" />
     <meta property="og:url" content="${isEn ? canonicalEn : canonical}" />
     <meta property="og:image" content="${ogImage}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeAttr(metaTitle)}" />
     <meta name="twitter:description" content="${escapeAttr(metaDesc)}" />
@@ -943,7 +946,8 @@ router.get('/galeries/:slug', async (req, res) => {
 // Dynamic sitemap.xml generation optimized for portfolio (static pages only)
 router.get('/sitemap.xml', async (req, res) => {
     try {
-        const baseUrl = 'https://www.photo.mprnl.fr';
+        const seo = loadSeoData();
+        const baseUrl = (seo.site && seo.site.url) || 'https://www.photo.mprnl.fr';
 
         // lastmod réels : date de modification des fichiers (évite les dates factices)
         function fileLastmod(relativePath) {
@@ -1040,15 +1044,18 @@ router.get('/sitemap.xml', async (req, res) => {
             console.warn('Could not add galleries to sitemap:', e.message);
         }
 
-        // Build XML (avec xml:image pour les galeries)
+        // Build XML (avec xml:image pour les galeries + hreflang pour i18n)
         const urls = staticPages.map((p) => {
             const imageTags = (p.images || [])
                 .map(img => `\n      <image:image>\n        <image:loc>${img.url}</image:loc>\n        <image:title>${escapeAttr(img.title)}</image:title>\n      </image:image>`)
                 .join('');
-            return `  <url>\n    <loc>${baseUrl}${p.loc}</loc>\n    <lastmod>${p.lastmod}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>${imageTags}\n  </url>\n`;
+            const frUrl = `${baseUrl}${p.loc}`;
+            const enUrl = `${baseUrl}${p.loc}?lang=en`;
+            const hreflangs = `\n    <xhtml:link rel="alternate" hreflang="fr" href="${frUrl}" />\n    <xhtml:link rel="alternate" hreflang="en" href="${enUrl}" />\n    <xhtml:link rel="alternate" hreflang="x-default" href="${frUrl}" />`;
+            return `  <url>\n    <loc>${frUrl}</loc>\n    <lastmod>${p.lastmod}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>${hreflangs}${imageTags}\n  </url>\n`;
         }).join('');
 
-        const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls}</urlset>`;
+        const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls}</urlset>`;
 
         res.header('Content-Type', 'application/xml');
         res.send(xml);
