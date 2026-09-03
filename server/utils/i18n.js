@@ -224,6 +224,35 @@ function translateHtml(html, lang) {
   r('>Galeries</a>', '>Galleries</a>');
   r('Aucune photo dans cette galerie.', 'No photos in this gallery.');
   r('← Toutes les galeries', '← All galleries');
+  // Mentions légales
+  r('En vigueur au 09/01/2026', 'Effective as of 09/01/2026');
+  r('Édition du site', 'Site Publisher');
+  r('Hébergement', 'Hosting');
+  r('Accès au site', 'Site Access');
+  r('Propriété intellectuelle', 'Intellectual Property');
+  r('Données personnelles (RGPD)', 'Personal Data (GDPR)');
+  r('Cookies et outils de statistiques', 'Cookies and analytics');
+  r('Responsabilité', 'Liability');
+  r('Droit applicable et litiges', 'Applicable law and disputes');
+  r('Conformément à la loi n°2004-575 du 21 juin 2004 pour la Confiance', 'In accordance with French Law No. 2004-575 of 21 June 2004 on Confidence');
+  r('en l\'Économie Numérique (LCEN), il est porté à la connaissance des', 'in the Digital Economy (LCEN), users of the site');
+  r('utilisateurs du site', 'are hereby informed of these legal mentions');
+  r('Éditeur :', 'Publisher:');
+  r('Statut :', 'Status:');
+  r('Auto-entrepreneur / Entreprise individuelle', 'Self-employed / Sole proprietorship');
+  r('Activité :', 'Activity:');
+  r('Photographe indépendant', 'Independent photographer');
+  r('Adresse :', 'Address:');
+  r('Téléphone :', 'Phone:');
+  r('Email :', 'Email:');
+  r('SIRET :', 'Company No.:');
+  r('Numéro de TVA intracommunautaire :', 'Intra-community VAT number:');
+  r('Non applicable', 'Not applicable');
+  r('Directeur de la publication :', 'Publication director:');
+  r('Hébergeur :', 'Hosting provider:');
+  r('Le Site est normalement accessible à tout moment.', 'The Site is normally accessible at all times.');
+  r('L\'Éditeur se', 'The Publisher reserves');
+  r('Propriété intellectuelle', 'Intellectual Property');
   return out;
 }
 
