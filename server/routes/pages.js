@@ -326,7 +326,9 @@ router.get('/contact', (req, res) => {
                 htmlContent = htmlContent.replace('Vous cherchez un', 'Looking for a');
                 htmlContent = htmlContent.replace('photographe de concert à Paris', 'concert photographer in Paris');
             }
-            htmlContent = htmlContent.replace('</main>', `${generateFaqHtml(req.lang)}` + '\n    </main>');
+            const faqContact = generateFaqHtml(req.lang);
+            if (htmlContent.includes('<!-- Footer -->')) htmlContent = htmlContent.replace('<!-- Footer -->', `${faqContact}\n    <!-- Footer -->`);
+            else htmlContent = htmlContent.replace('</div>\n    <!-- Footer -->', `${faqContact}\n    </div>\n    <!-- Footer -->`);
             return htmlContent;
         }
     });
@@ -353,7 +355,9 @@ router.get('/a-propos', (req, res) => {
             const lists = renderAboutListsHtml();
             htmlContent = htmlContent.replace('<!-- ARTISTS_LIST_PLACEHOLDER -->', lists.artists);
             htmlContent = htmlContent.replace('<!-- VENUES_LIST_PLACEHOLDER -->', lists.venues);
-            htmlContent = htmlContent.replace('</main>', `${generateFaqHtml(req.lang)}` + '\n    </main>');
+            const faqAbout = generateFaqHtml(req.lang);
+            if (htmlContent.includes('<!-- Footer -->')) htmlContent = htmlContent.replace('<!-- Footer -->', `${faqAbout}\n    <!-- Footer -->`);
+            else htmlContent = htmlContent.replace('</div>\n    <!-- Footer -->', `${faqAbout}\n    </div>\n    <!-- Footer -->`);
             return htmlContent;
         }
     });
