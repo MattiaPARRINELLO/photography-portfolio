@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
     <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
-    <title>Logs - Administration</title>
+    <title>Logs, Administration</title>
     <link rel="icon" type="image/svg+xml" href="../../dist/assets/Logo_MP.svg" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -753,7 +753,7 @@
         const trafficSourcesDetail = document.getElementById("traffic-sources-detail");
         if (Object.keys(trafficSources).length > 0) {
           trafficSourcesDetail.innerHTML = "";
-          Object.entries(trafficSources).sort(([, a], [, b]) => b - a).forEach(([source, count]) => {
+          Object.entries(trafficSources).sort(([, a], [, b]) => b, a).forEach(([source, count]) => {
             const div = document.createElement("div");
             div.className = "bar-item";
             div.innerHTML = `<span>${source}</span><span class="bar-item-value green">${count} visites</span>`;
@@ -851,12 +851,12 @@
           return;
         }
 
-        const sortedLogs = [...logs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const sortedLogs = [...logs].sort((a, b) => new Date(b.timestamp), new Date(a.timestamp));
         sortedLogs.forEach((log) => {
           const logDiv = document.createElement("div");
           logDiv.className = "log-entry";
           const time = new Date(log.timestamp).toLocaleTimeString("fr-FR");
-          const userInitial = log.userId.charAt(log.userId.length - 1).toUpperCase();
+          const userInitial = log.userId.charAt(log.userId.length, 1).toUpperCase();
           const actionBadgeClass = `badge-${log.action.replace("-", "_")}`;
           const photoInfo = getPhotoInfo(log);
           const photoPreview = photoInfo ? createPhotoPreview(photoInfo) : "";

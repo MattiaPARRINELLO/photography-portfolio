@@ -5,7 +5,7 @@
     <meta name="google-adsense-account" content="ca-pub-8723504394639114" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>Galeries - Administration</title>
+    <title>Galeries, Administration</title>
     <link rel="icon" type="image/svg+xml" href="../../dist/assets/Logo_MP.svg" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -803,7 +803,7 @@
             for (const file of filesToUpload) {
               setUploadProgress(
                 Math.round((uploaded / total) * 80),
-                `Upload ${uploaded + 1}/${total} - ${file.name}`
+                `Upload ${uploaded + 1}/${total}, ${file.name}`
               );
               try {
                 const result = await uploadSinglePhoto(file);

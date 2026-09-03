@@ -5,7 +5,7 @@
     <meta name="google-adsense-account" content="ca-pub-8723504394639114" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
-    <title>Liens - Administration</title>
+    <title>Liens, Administration</title>
     <link rel="icon" type="image/svg+xml" href="../../dist/assets/Logo_MP.svg" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -574,7 +574,7 @@
             </div>
             <div class="form-full">
               <label>Tagline</label>
-              <input type="text" x-model="config.profile.tagline" placeholder="Concerts - Lives - Backstage" />
+              <input type="text" x-model="config.profile.tagline" placeholder="Concerts, Lives, Backstage" />
             </div>
             <div class="toggle-row">
               <div style="display:flex;align-items:center;gap:0.6rem;">
@@ -751,7 +751,7 @@
           newEvent: { message: "", url: "", icon: "camera", days: 7 },
 
           get linksUrl() { return globalThis.location.origin + "/links"; },
-          get sortedLinks() { return [...this.config.links].sort((a, b) => (a.order || 0) - (b.order || 0)); },
+          get sortedLinks() { return [...this.config.links].sort((a, b) => (a.order || 0), (b.order || 0)); },
 
           async init() {
             try {

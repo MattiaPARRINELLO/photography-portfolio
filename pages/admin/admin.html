@@ -12,7 +12,7 @@
       name="googlebot"
       content="noindex, nofollow, noarchive, nosnippet, noimageindex"
     />
-    <title>Administration - Portfolio</title>
+    <title>Administration, Portfolio</title>
     <link
       rel="icon"
       type="image/svg+xml"
@@ -762,7 +762,7 @@
         uploadArea.style.pointerEvents = "none";
 
         for (const file of imageFiles) {
-          uploadStatus.textContent = `Upload ${completed + 1}/${total} - ${file.name}`;
+          uploadStatus.textContent = `Upload ${completed + 1}/${total}, ${file.name}`;
           try {
             await uploadSingleFile(file);
             completed++;
@@ -776,9 +776,9 @@
 
         uploadArea.style.pointerEvents = "";
         if (failed === 0) {
-          uploadStatus.textContent = `Upload terminé - ${completed} fichier${completed > 1 ? "s" : ""}`;
+          uploadStatus.textContent = `Upload terminé, ${completed} fichier${completed > 1 ? "s" : ""}`;
         } else {
-          uploadStatus.textContent = `Upload terminé - ${completed} OK, ${failed} erreur${failed > 1 ? "s" : ""}`;
+          uploadStatus.textContent = `Upload terminé, ${completed} OK, ${failed} erreur${failed > 1 ? "s" : ""}`;
         }
         setTimeout(() => {
           uploadProgress.classList.add("hidden");
