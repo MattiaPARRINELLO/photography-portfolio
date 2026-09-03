@@ -473,19 +473,40 @@ function safeExternalUrl(url) {
 function generateFaqHtml(lang) {
     const isEn = lang === 'en';
     const items = isEn ? [
-        { q: 'How much does a concert report in Paris cost?', a: 'From 300€, free quote within 24h. Price depends on duration, number of photos and usage. Press and social networks with credit included, commercial use on request. <a href="/contact?lang=en" class="underline">Contact me</a>.' },
+        { q: 'How much does a concert report in Paris cost?', a: 'From 300€, free quote within 24h. Price depends on duration, number of photos and usage. Press and social networks with credit included, commercial use on request. <a href="/contact?lang=en">Contact me</a>.' },
         { q: 'What is the delivery time?', a: '48 to 72 hours. Online gallery and HD download via link. Available immediately, travel across France.' },
         { q: 'What usage rights are included?', a: 'Press and social media use with mandatory credit included. Commercial, advertising or print use requires a separate quote. All photos remain protected.' },
         { q: 'Where do you work?', a: 'Paris, Île-de-France and across France. Based in Paris, I travel everywhere in France for concerts, festivals, showcases and backstage.' }
     ] : [
-        { q: 'Quel est le tarif d\'un reportage concert à Paris ?', a: 'À partir de 300€, devis gratuit sous 24h. Prix selon durée, nombre de photos et usage. Presse et réseaux avec crédit inclus, commercial sur devis. <a href="/contact" class="underline">Contactez-moi</a>.' },
+        { q: 'Quel est le tarif d\'un reportage concert à Paris ?', a: 'À partir de 300€, devis gratuit sous 24h. Prix selon durée, nombre de photos et usage. Presse et réseaux avec crédit inclus, commercial sur devis. <a href="/contact">Contactez-moi</a>.' },
         { q: 'Quel est le délai de livraison ?', a: '48 à 72 heures. Galerie en ligne et HD via lien. Disponible immédiatement, déplacement partout en France.' },
         { q: 'Quels droits d\'usage sont inclus ?', a: 'Usage presse et réseaux sociaux avec crédit obligatoire inclus. Usage commercial, pub ou print sur devis. Toutes les photos restent protégées.' },
         { q: 'Dans quelles villes tu te déplaces ?', a: 'Paris, Île-de-France et partout en France. Basé à Paris, je me déplace partout en France pour concerts, festivals, showcases et backstage.' }
     ];
     const title = isEn ? 'FAQ' : 'Questions fréquentes';
-    const rows = items.map(x => `<details class="border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-white dark:bg-gray-800"><summary class="font-semibold cursor-pointer">${escapeAttr(x.q)}</summary><p class="mt-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">${x.a}</p></details>`).join('');
-    return `<section class="max-w-3xl mx-auto px-5 md:px-0 mt-12 mb-8"><h2 class="text-2xl font-bold font-signika mb-4">${title}</h2><div class="space-y-3">${rows}</div></section>`;
+    const rows = items.map(x => `<details class="faq-item"><summary>${escapeAttr(x.q)}<span class="faq-chevron">⌄</span></summary><p>${x.a}</p></details>`).join('');
+    return `<style>
+      .faq-section { max-width: 72ch; margin: 2.5rem auto 2rem; padding: 0 1rem; }
+      .faq-section h2 { font-family: "Signika", sans-serif; font-weight: 700; font-size: clamp(1.4rem, 2.5vw, 1.75rem); margin: 0 0 1rem; }
+      .faq-item { border: 1px solid rgba(15, 23, 42, 0.12); border-radius: 12px; background: rgba(255,255,255,0.85); margin-bottom: 0.7rem; overflow: hidden; }
+      .faq-item summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.9rem 1.1rem; font-weight: 700; font-family: "Signika", sans-serif; font-size: 0.95rem; color: #0f172a; }
+      .faq-item summary::-webkit-details-marker { display: none; }
+      .faq-item[open] summary { border-bottom: 1px solid rgba(15,23,42,0.08); }
+      .faq-chevron { flex-shrink: 0; transition: transform 0.2s ease; font-size: 0.8rem; opacity: 0.6; }
+      .faq-item[open] .faq-chevron { transform: rotate(180deg); }
+      .faq-item p { margin: 0; padding: 0.9rem 1.1rem; font-size: 0.92rem; line-height: 1.65; color: rgba(51,65,85,1); }
+      .faq-item p a { color: inherit; text-decoration: underline; }
+      @media (prefers-color-scheme: dark) {
+        .faq-item { background: rgba(15,23,42,0.75); border-color: rgba(148,163,184,0.22); }
+        .faq-item summary { color: #f1f5f9; }
+        .faq-item[open] summary { border-bottom-color: rgba(148,163,184,0.18); }
+        .faq-item p { color: rgba(203,213,225,0.95); }
+      }
+    </style>
+    <section class="faq-section" aria-label="${isEn ? 'FAQ' : 'Questions fréquentes'}">
+      <h2>${title}</h2>
+      ${rows}
+    </section>`;
 }
 
 function generatePressKitHtml(gallery, canonical, lang) {
