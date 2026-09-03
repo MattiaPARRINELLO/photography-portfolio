@@ -65,12 +65,14 @@ function loadSeoData() {
 }
 
 // SEO: Génère le bloc hero HTML pour la page d'accueil (H1 + intro + artistes + lieux + CTA)
-function generateHomeHeroHtml() {
+function generateHomeHeroHtml(req) {
+    const isEn = !!(req && req.query && req.query.lang === 'en');
     const seo = loadSeoData();
     const pageSeo = (seo.pages && seo.pages.home) || {};
     const artists = seo.artists || [];
     const venues = seo.venues || [];
-    const introText = seo.intro_text || '';
+    const introText = isEn ? (seo.intro_text_en || seo.intro_text || '') : (seo.intro_text || '');
+    const h1 = isEn ? (pageSeo.h1_en || pageSeo.h1) : pageSeo.h1;
 
     // SEO: Liste des artistes avec noms comme mots-clés
     const artistNames = artists.map(a => a.name).join(' · ');
@@ -83,25 +85,28 @@ function generateHomeHeroHtml() {
         return `<span>${text}</span>`;
     }).join(' <span class="text-gray-400 dark:text-gray-500 select-none">·</span> ');
 
+    const ctaLabel = isEn ? 'View my work' : 'Voir mes projets';
+    const artistsLabel = isEn ? 'Artists photographed' : 'Artistes photographiés';
+    const venuesLabel = isEn ? 'Venues & festivals' : 'Salles & festivals';
     return `
             <div class="home-hero px-5 md:px-0 pt-10 pb-6">
         <!-- SEO: H1 optimisé avec mots-clés principaux -->
-        <h1 class="text-3xl md:text-4xl font-bold font-signika mb-4">${pageSeo.h1 || 'Mattia Parrinello - Photographe de Concert à Paris'}</h1>
+        <h1 class="text-3xl md:text-4xl font-bold font-signika mb-4">${h1 || 'Mattia Parrinello - Photographe de Concert à Paris'}</h1>
         <!-- SEO: Paragraphe d'introduction riche en mots-clés -->
         <p class="text-base md:text-lg text-gray-700 dark:text-gray-300 max-w-3xl mb-6 leading-relaxed">${introText}</p>
         <!-- SEO: Section artistes - mots-clés noms propres -->
         <div class="mb-4">
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-signika uppercase tracking-wider mb-1">Artistes photographiés</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-signika uppercase tracking-wider mb-1">${artistsLabel}</p>
           <p class="text-sm md:text-base text-gray-600 dark:text-gray-300">${artistNames}</p>
         </div>
         <!-- SEO: Section lieux - mots-clés locaux -->
         <div class="mb-6">
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-signika uppercase tracking-wider mb-1">Salles & festivals</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-signika uppercase tracking-wider mb-1">${venuesLabel}</p>
           <p class="text-sm md:text-base text-gray-600 dark:text-gray-300">${venueItemsHtml}</p>
         </div>
                 <!-- SEO: CTA vers contact + galerie -->
                 <div class="mt-6 flex items-center gap-10">
-                    <a href="/galeries" class="cta-contact primary inline-block px-6 py-3 text-sm font-signika font-bold rounded-lg transition duration-300">Voir mes projets</a>
+                    <a href="/galeries${isEn ? '?lang=en' : ''}" class="cta-contact primary inline-block px-6 py-3 text-sm font-signika font-bold rounded-lg transition duration-300">${ctaLabel}</a>
                 </div>
       </div>`;
 }
@@ -199,14 +204,23 @@ router.get('/', (req, res) => {
                 console.error('CSS Inline Error:', e);
             }
 
-            // SEO: Injecter le bloc hero (H1, intro, artistes, lieux, CTA)
-            htmlContent = htmlContent.replace('<!-- SEO_HERO_PLACEHOLDER -->', generateHomeHeroHtml());
+            // SEO: Injecter le bloc hero (H1, intro, artistes, lieux, CTA) — lang-aware
+            htmlContent = htmlContent.replace('<!-- SEO_HERO_PLACEHOLDER -->', generateHomeHeroHtml(req));
 
-            // SEO: Injecter le bloc post-galerie (collaborations + CTA secondaire)
+            // SEO: Injecter le bloc post-galerie (collaborations + CTA secondaire) — lang-aware
             const seoBottom = loadSeoData();
+            const bottomIsEn = !!(req.query && req.query.lang === 'en');
             const bottomArtists = (seoBottom.artists || []).map(a => a.name).join(', ');
             const bottomVenues = (seoBottom.venues || []).map(v => v.name).join(', ');
-            const bottomHtml = `
+            const bottomHtml = bottomIsEn ? `
+    <div class="container mx-auto px-5 md:px-0 py-12">
+      <section class="max-w-3xl mb-10">
+        <h2 class="text-2xl font-bold font-signika mb-4 text-black dark:text-white">Collaborations & events</h2>
+        <p class="text-base text-gray-700 dark:text-gray-300 mb-3">I've had the chance to photograph artists like <strong>${bottomArtists}</strong>, in iconic venues: <strong>${bottomVenues}</strong>.</p>
+        <p class="text-base text-gray-700 dark:text-gray-300 mb-6">Music media, emerging artist, label or venue — I'm available to capture the energy of your events across France.</p>
+        <a href="/contact?lang=en" class="cta-contact inline-block px-6 py-3 text-sm font-signika font-bold rounded-lg transition duration-300">Let's talk about your project</a>
+      </section>
+    </div>` : `
     <div class="container mx-auto px-5 md:px-0 py-12">
     <!-- SEO: Section collaborations - renforce les mots-clés et le maillage -->
       <section class="max-w-3xl mb-10">
@@ -273,13 +287,24 @@ router.get('/texts.json', async (req, res) => {
     }
 });
 
-// Route pour la page Contact
+// Route pour la page Contact (H1 visible EN)
 router.get('/contact', (req, res) => {
     servePage(req, res, {
         cacheKey: 'page:contact',
         file: 'contact.html',
         pageType: 'Contact',
-        ttlMs: 5 * 60 * 1000
+        ttlMs: 5 * 60 * 1000,
+        transform: (htmlContent) => {
+            const isEn = !!(req.query && req.query.lang === 'en');
+            if (isEn) {
+                htmlContent = htmlContent.replace('Contactez Mattia Parrinello, photographe de concert', 'Contact Mattia Parrinello, concert photographer');
+                htmlContent = htmlContent.replace('Contactez-moi', 'Get in touch');
+                htmlContent = htmlContent.replace('photographe de concert à Paris', 'concert photographer in Paris');
+                htmlContent = htmlContent.replace('Vous cherchez un', 'Looking for a');
+                htmlContent = htmlContent.replace('photographe de concert à Paris', 'concert photographer in Paris');
+            }
+            return htmlContent;
+        }
     });
 });
 
@@ -288,7 +313,7 @@ router.get('/contact/', (req, res) => {
     res.redirect(301, '/contact');
 });
 
-// Route pour la page À propos
+// Route pour la page À propos (H1 visible EN)
 router.get('/a-propos', (req, res) => {
     servePage(req, res, {
         cacheKey: 'page:about',
@@ -296,6 +321,11 @@ router.get('/a-propos', (req, res) => {
         pageType: 'À propos',
         ttlMs: 5 * 60 * 1000,
         transform: (htmlContent) => {
+            const isEn = !!(req.query && req.query.lang === 'en');
+            if (isEn) {
+                htmlContent = htmlContent.replace('Mattia Parrinello, photographe de concert à Paris', 'Mattia Parrinello, concert photographer in Paris');
+                htmlContent = htmlContent.replace('À propos', 'About');
+            }
             const lists = renderAboutListsHtml();
             htmlContent = htmlContent.replace('<!-- ARTISTS_LIST_PLACEHOLDER -->', lists.artists);
             htmlContent = htmlContent.replace('<!-- VENUES_LIST_PLACEHOLDER -->', lists.venues);
