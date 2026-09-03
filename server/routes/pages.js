@@ -32,7 +32,9 @@ function setCache(key, value, ttlMs) {
 // Rend une page: cache → lecture fichier → meta → JSON-LD → transform → cache → envoi.
 // En cas d'erreur, fallback sur le fichier statique (comportement historique des routes).
 async function renderPage(req, res, { cacheKey, file, pageType, ttlMs, campaignInfo, transform }) {
-    const cached = getCached(cacheKey);
+    const langSuffix = (req && req.query && req.query.lang === 'en') ? ':en' : ':fr';
+    const effectiveKey = `${cacheKey}${langSuffix}`;
+    const cached = getCached(effectiveKey);
     if (cached) return res.send(cached);
 
     const texts = textUtils.loadTexts();
@@ -41,7 +43,7 @@ async function renderPage(req, res, { cacheKey, file, pageType, ttlMs, campaignI
     htmlContent = htmlContent.replace('</head>', `    ${textUtils.generateSchemaJsonLd(pageType, req)}\n  </head>`);
     if (transform) htmlContent = await transform(htmlContent);
 
-    setCache(cacheKey, htmlContent, ttlMs);
+    setCache(effectiveKey, htmlContent, ttlMs);
     res.send(htmlContent);
 }
 
@@ -624,23 +626,28 @@ router.get('/galeries/:slug', async (req, res) => {
             return res.status(404).sendFile(path.join(paths.pages, '404.html'));
         }
 
-        const cacheKey = `page:gallery:${gallery.slug}`;
+        const lang = (req.query && req.query.lang === 'en') ? 'en' : 'fr';
+        const isEn = lang === 'en';
+        const cacheKey = `page:gallery:${gallery.slug}:${lang}`;
         const cached = getCached(cacheKey);
         if (cached) return res.send(cached);
 
         const htmlPath = path.join(paths.pages, 'gallery.html');
         let htmlContent = await fsp.readFile(htmlPath, 'utf-8');
+        if (isEn) htmlContent = htmlContent.replace('<html lang="fr"', '<html lang="en"');
 
         // Meta tags dynamiques spécifiques à la galerie (optimisés pour la recherche artiste)
         const artistName = (gallery.artist || '').trim();
-        const metaTitle = artistName
-            ? `Photos de ${artistName} en concert - ${gallery.title} | Mattia Parrinello`
-            : `${gallery.title} - Mattia Parrinello`;
+        const metaTitle = isEn
+            ? (artistName ? `Photos of ${artistName} live - ${gallery.title} | Mattia Parrinello` : `${gallery.title} - Mattia Parrinello`)
+            : (artistName ? `Photos de ${artistName} en concert - ${gallery.title} | Mattia Parrinello` : `${gallery.title} - Mattia Parrinello`);
         const metaDescParts = [artistName, gallery.venue, formatGalleryDate(gallery.date)].filter(Boolean);
-        const metaDesc = gallery.description
+        const metaDesc = isEn
+            ? (gallery.description ? `${gallery.description} (EN: live photos by Mattia Parrinello, concert photographer in Paris)` : (artistName ? `Live photo gallery of ${artistName}${metaDescParts.length ? ' - ' + metaDescParts.join(' · ') : ''}. Photos by Mattia Parrinello, concert photographer in Paris.` : `Concert photo gallery: ${gallery.title}${metaDescParts.length ? ' - ' + metaDescParts.join(' · ') : ''}. By Mattia Parrinello.`))
+            : (gallery.description
             || (artistName
                 ? `Galerie photo de ${artistName} en concert${metaDescParts.length ? ' - ' + metaDescParts.join(' · ') : ''}. Photos live par Mattia Parrinello, photographe de concert à Paris.`
-                : `Galerie photo concert : ${gallery.title}${metaDescParts.length ? ' - ' + metaDescParts.join(' · ') : ''}. Photographié par Mattia Parrinello, photographe de concert à Paris.`);
+                : `Galerie photo concert : ${gallery.title}${metaDescParts.length ? ' - ' + metaDescParts.join(' · ') : ''}. Photographié par Mattia Parrinello, photographe de concert à Paris.`));
 
         htmlContent = htmlContent.replace('{{DYNAMIC_TITLE}}', escapeAttr(metaTitle));
         htmlContent = htmlContent.replace('{{DYNAMIC_DESCRIPTION}}', escapeAttr(metaDesc));
@@ -661,13 +668,21 @@ router.get('/galeries/:slug', async (req, res) => {
             ? `photos ${artistName}, ${artistName} concert, galerie ${artistName}, photographe concert Paris`
             : 'galerie photo concert, photos live, photographe concert Paris';
 
+        const canonicalEn = `${canonical}?lang=en`;
+        const hreflangFr = canonical;
+        const hreflangEn = canonicalEn;
         const extraHead = `
-    <link rel="canonical" href="${canonical}" />
+    <link rel="canonical" href="${isEn ? canonicalEn : canonical}" />
+    <link rel="alternate" hreflang="fr" href="${hreflangFr}" />
+    <link rel="alternate" hreflang="en" href="${hreflangEn}" />
+    <link rel="alternate" hreflang="x-default" href="${hreflangFr}" />
     <meta name="keywords" content="${escapeAttr(keywords)}" />
     <meta property="og:type" content="article" />
+    <meta property="og:locale" content="${isEn ? 'en_US' : 'fr_FR'}" />
+    <meta property="og:locale:alternate" content="${isEn ? 'fr_FR' : 'en_US'}" />
     <meta property="og:title" content="${escapeAttr(metaTitle)}" />
     <meta property="og:description" content="${escapeAttr(metaDesc)}" />
-    <meta property="og:url" content="${canonical}" />
+    <meta property="og:url" content="${isEn ? canonicalEn : canonical}" />
     <meta property="og:image" content="${ogImage}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeAttr(metaTitle)}" />
@@ -784,6 +799,15 @@ router.get('/galeries/:slug', async (req, res) => {
             htmlContent = htmlContent.replace('<!-- PRESS_KIT_PLACEHOLDER -->', pressKitHtml);
         } else if (pressKitHtml) {
             htmlContent = htmlContent.replace('</main>', `${pressKitHtml}\n    </main>`);
+        }
+
+        // Lang switcher flottant pour galeries (anglais partiel)
+        {
+            const toggleHref = isEn ? `/galeries/${encodeURIComponent(gallery.slug)}` : `/galeries/${encodeURIComponent(gallery.slug)}?lang=en`;
+            const toggleLabel = isEn ? 'FR' : 'EN';
+            const toggleTitle = isEn ? 'Voir en français' : 'View in English';
+            const langSwitcher = `\n    <style>.lang-switch{position:fixed;top:14px;right:14px;z-index:50;background:rgba(255,255,255,0.92);border:1px solid rgba(15,23,42,0.12);border-radius:999px;padding:4px 10px;font-family:Signika,sans-serif;font-weight:700;font-size:0.72rem;backdrop-filter:blur(6px);text-decoration:none;color:#0f172a}@media(prefers-color-scheme:dark){.lang-switch{background:rgba(15,23,42,0.9);border-color:rgba(148,163,184,0.22);color:#fff}}</style>\n    <a class="lang-switch" href="${toggleHref}" hreflang="${isEn ? 'fr' : 'en'}" aria-label="${toggleTitle}">${toggleLabel}</a>`;
+            if (htmlContent.includes('</body>')) htmlContent = htmlContent.replace('</body>', `${langSwitcher}\n  </body>`);
         }
 
         try { setCache(cacheKey, htmlContent, 5 * 60 * 1000); } catch (e) { }

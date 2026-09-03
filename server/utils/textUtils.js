@@ -46,6 +46,10 @@ class TextUtils {
         return {};
     }
 
+    _getLang(req) {
+        return (req && req.query && req.query.lang === 'en') ? 'en' : 'fr';
+    }
+
     // SEO: Résout la clé de page SEO à partir du pageType
     _resolvePageKey(pageType) {
         const mapping = {
@@ -76,11 +80,17 @@ class TextUtils {
         const pageSeo = (seo.pages && seo.pages[pageKey]) || {};
         const siteSeo = seo.site || {};
 
+        const lang = this._getLang(req);
+        const isEn = lang === 'en';
         let injectedHtml = htmlContent;
 
-        // SEO: Utiliser les meta SEO optimisés de seo.json (prioritaire sur texts.json)
-        const title = pageSeo.title || (texts.meta && texts.meta.title ? texts.meta.title + (pageType ? ' - ' + pageType : '') : 'Mattia Parrinello');
-        const description = pageSeo.description || (texts.meta && texts.meta.description) || 'Portfolio photographique';
+        if (isEn) {
+            injectedHtml = injectedHtml.replace('<html lang="fr"', '<html lang="en"');
+        }
+
+        // SEO: Utiliser les meta SEO optimisés de seo.json (prioritaire sur texts.json), avec variante EN si ?lang=en
+        const title = (isEn && pageSeo.title_en ? pageSeo.title_en : null) || pageSeo.title || (texts.meta && texts.meta.title ? texts.meta.title + (pageType ? ' - ' + pageType : '') : 'Mattia Parrinello');
+        const description = (isEn && pageSeo.description_en ? pageSeo.description_en : null) || pageSeo.description || (texts.meta && texts.meta.description) || 'Portfolio photographique';
 
         // Remplacement des placeholders
         injectedHtml = injectedHtml.replace('{{DYNAMIC_TITLE}}', title);
@@ -90,8 +100,8 @@ class TextUtils {
         const metaPlaceholderEnd = '    <!-- META_PLACEHOLDER_END -->';
         let additionalMetas = '';
 
-        // SEO: Keywords optimisés par page
-        const keywords = pageSeo.keywords || (texts.meta && texts.meta.keywords) || '';
+        // SEO: Keywords optimisés par page (EN)
+        const keywords = (isEn && pageSeo.keywords_en ? pageSeo.keywords_en : null) || pageSeo.keywords || (texts.meta && texts.meta.keywords) || '';
         if (keywords) {
             additionalMetas += `    <meta name="keywords" content="${keywords}">\n`;
         }
@@ -106,14 +116,20 @@ class TextUtils {
         const fullUrl = `${protocol}://${host}${req.originalUrl}`;
         const baseUrl = siteSeo.url || `${protocol}://${host}`;
 
-        // SEO: Balise canonical (éviter le contenu dupliqué)
-        const canonicalPath = req.originalUrl.replace(/\/$/, '') || '/';
+        // SEO: Balise canonical + hreflang (anglais partiel via ?lang=en)
+        const pathOnly = (req.path || '/').replace(/\/$/, '') || '/';
+        const canonicalPath = isEn ? `${pathOnly}?lang=en` : pathOnly;
         const canonicalUrl = `${baseUrl}${canonicalPath}`;
         additionalMetas += `    <link rel="canonical" href="${canonicalUrl}">\n`;
+        const frUrl = `${baseUrl}${pathOnly}`;
+        const enUrl = `${baseUrl}${pathOnly}?lang=en`;
+        additionalMetas += `    <link rel="alternate" hreflang="fr" href="${frUrl}">\n`;
+        additionalMetas += `    <link rel="alternate" hreflang="en" href="${enUrl}">\n`;
+        additionalMetas += `    <link rel="alternate" hreflang="x-default" href="${frUrl}">\n`;
 
-        // SEO: Open Graph tags optimisés
-        const ogTitle = pageSeo.og_title || title;
-        const ogDescription = pageSeo.og_description || description;
+        // SEO: Open Graph tags optimisés (variante EN)
+        const ogTitle = (isEn && pageSeo.og_title_en ? pageSeo.og_title_en : null) || pageSeo.og_title || title;
+        const ogDescription = (isEn && pageSeo.og_description_en ? pageSeo.og_description_en : null) || pageSeo.og_description || description;
         // og:image : valeur centralisée en code (og-image.jpg). La surcharge texts.json
         // reste possible, sauf si elle pointe encore vers l'ancien Avatar.png par défaut
         // (config de prod non versionnée) — dans ce cas, l'og-image prend le relais.
@@ -128,7 +144,12 @@ class TextUtils {
         additionalMetas += `    <meta property="og:image" content="${ogImage}">\n`;
         additionalMetas += `    <meta property="og:type" content="website">\n`;
         additionalMetas += `    <meta property="og:url" content="${canonicalUrl}">\n`;
-        additionalMetas += `    <meta property="og:locale" content="fr_FR">\n`;
+        additionalMetas += `    <meta property="og:locale" content="${isEn ? 'en_US' : 'fr_FR'}">\n`;
+        if (!isEn) {
+            additionalMetas += `    <meta property="og:locale:alternate" content="en_US">\n`;
+        } else {
+            additionalMetas += `    <meta property="og:locale:alternate" content="fr_FR">\n`;
+        }
         additionalMetas += `    <meta property="og:site_name" content="Mattia Parrinello - Photographe de Concert">\n`;
 
         // SEO: Twitter Cards
@@ -152,6 +173,15 @@ class TextUtils {
         // Injecter les meta tags et le script de campagne
         injectedHtml = injectedHtml.replace(metaPlaceholderEnd, `${additionalMetas}${campaignScript}\n${metaPlaceholderEnd}`);
 
+        // Lang switcher flottant (anglais partiel)
+        const toggleHref = isEn ? `${pathOnly}` : `${pathOnly}?lang=en`;
+        const toggleLabel = isEn ? 'FR' : 'EN';
+        const toggleTitle = isEn ? 'Voir en français' : 'View in English';
+        const langSwitcher = `\n    <style>.lang-switch{position:fixed;top:14px;right:14px;z-index:50;background:rgba(255,255,255,0.92);border:1px solid rgba(15,23,42,0.12);border-radius:999px;padding:4px 10px;font-family:Signika,sans-serif;font-weight:700;font-size:0.72rem;backdrop-filter:blur(6px);text-decoration:none;color:#0f172a}@media(prefers-color-scheme:dark){.lang-switch{background:rgba(15,23,42,0.9);border-color:rgba(148,163,184,0.22);color:#fff}}</style>\n    <a class="lang-switch" href="${toggleHref}" hreflang="${isEn ? 'fr' : 'en'}" aria-label="${toggleTitle}">${toggleLabel}</a>`;
+        if (injectedHtml.includes('</body>')) {
+            injectedHtml = injectedHtml.replace('</body>', `${langSwitcher}\n  </body>`);
+        }
+
         return injectedHtml;
     }
 
@@ -159,6 +189,7 @@ class TextUtils {
     // Graphe unique (@graph) avec des @id stables : les entités Person,
     // ProfessionalService et WebSite sont définies une seule fois et référencées.
     generateSchemaJsonLd(pageType, req) {
+        const lang = this._getLang(req);
         const seo = this.loadSeoData();
         const siteSeo = seo.site || {};
         const baseUrl = siteSeo.url || 'https://www.photo.mprnl.fr';
@@ -190,7 +221,7 @@ class TextUtils {
                 '@id': websiteId,
                 'name': siteSeo.name || 'Mattia Parrinello - Photographe de Concert',
                 'url': baseUrl,
-                'inLanguage': 'fr',
+                'inLanguage': [lang, lang === 'fr' ? 'en' : 'fr'],
                 'publisher': { '@id': personId }
             },
             {
@@ -243,7 +274,7 @@ class TextUtils {
                 'url': `${baseUrl}${pagePath}`,
                 'isPartOf': { '@id': websiteId },
                 'about': { '@id': personId },
-                'inLanguage': 'fr'
+                'inLanguage': lang
             }
         ];
 
