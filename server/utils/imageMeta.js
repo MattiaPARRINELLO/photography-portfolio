@@ -1,5 +1,5 @@
 // Dimensions intrinsèques des photos (cache mémoire) pour les attributs
-// width/height — prévient le CLS sur la maçonnerie sans appeler sharp à chaque requête.
+// width/height - prévient le CLS sur la maçonnerie sans appeler sharp à chaque requête.
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');

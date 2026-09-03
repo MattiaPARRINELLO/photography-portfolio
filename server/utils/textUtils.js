@@ -135,7 +135,7 @@ class TextUtils {
         const ogDescription = (isEn && pageSeo.og_description_en ? pageSeo.og_description_en : null) || pageSeo.og_description || description;
         // og:image : valeur centralisée en code (og-image.jpg). La surcharge texts.json
         // reste possible, sauf si elle pointe encore vers l'ancien Avatar.png par défaut
-        // (config de prod non versionnée) — dans ce cas, l'og-image prend le relais.
+        // (config de prod non versionnée) - dans ce cas, l'og-image prend le relais.
         const legacyOgImage = '/dist/assets/Avatar.png';
         const ogImageRef = (texts.meta && texts.meta.og_image && texts.meta.og_image !== legacyOgImage)
             ? texts.meta.og_image
@@ -176,7 +176,7 @@ class TextUtils {
         // Injecter les meta tags et le script de campagne
         injectedHtml = injectedHtml.replace(metaPlaceholderEnd, `${additionalMetas}${campaignScript}\n${metaPlaceholderEnd}`);
 
-        // Lang switcher flottant (anglais partiel) — persiste via cookie
+        // Lang switcher flottant (anglais partiel) - persiste via cookie
         const toggleHref = isEn ? `${pathOnly}?lang=fr` : `${pathOnly}?lang=en`;
         const toggleLabel = isEn ? 'FR' : 'EN';
         const toggleTitle = isEn ? 'Voir en français' : 'View in English';

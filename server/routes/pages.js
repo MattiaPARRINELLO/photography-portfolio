@@ -168,7 +168,7 @@ router.get('/', (req, res) => {
         ttlMs: 60 * 1000,
         campaignInfo,
         transform: async (htmlContent) => {
-            // INLINE CSS OPTIMIZATION — utilise le manifest pour matcher le fichier fingerprinté
+            // INLINE CSS OPTIMIZATION - utilise le manifest pour matcher le fichier fingerprinté
             try {
                 let cssContent = null;
                 const manifestPath = path.join(paths.root, 'dist/manifest.json');
@@ -206,10 +206,10 @@ router.get('/', (req, res) => {
                 console.error('CSS Inline Error:', e);
             }
 
-            // SEO: Injecter le bloc hero (H1, intro, artistes, lieux, CTA) — lang-aware
+            // SEO: Injecter le bloc hero (H1, intro, artistes, lieux, CTA) - lang-aware
             htmlContent = htmlContent.replace('<!-- SEO_HERO_PLACEHOLDER -->', generateHomeHeroHtml(req));
 
-            // SEO: Injecter le bloc post-galerie (collaborations + CTA secondaire) — lang-aware
+            // SEO: Injecter le bloc post-galerie (collaborations + CTA secondaire) - lang-aware
             const seoBottom = loadSeoData();
             const bottomIsEn = req.lang === 'en';
             const bottomArtists = (seoBottom.artists || []).map(a => a.name).join(', ');
@@ -219,7 +219,7 @@ router.get('/', (req, res) => {
       <section class="max-w-3xl mb-10">
         <h2 class="text-2xl font-bold font-signika mb-4 text-black dark:text-white">Collaborations & events</h2>
         <p class="text-base text-gray-700 dark:text-gray-300 mb-3">I've had the chance to photograph artists like <strong>${bottomArtists}</strong>, in iconic venues: <strong>${bottomVenues}</strong>.</p>
-        <p class="text-base text-gray-700 dark:text-gray-300 mb-6">Music media, emerging artist, label or venue — I'm available to capture the energy of your events across France.</p>
+        <p class="text-base text-gray-700 dark:text-gray-300 mb-6">Music media, emerging artist, label or venue - I'm available to capture the energy of your events across France.</p>
         <a href="/contact?lang=en" class="cta-contact inline-block px-6 py-3 text-sm font-signika font-bold rounded-lg transition duration-300">Let's talk about your project</a>
       </section>
     </div>` : `
@@ -285,21 +285,21 @@ router.get('/texts.json', async (req, res) => {
         const lang = (req.lang === 'en' || req.query.lang === 'en') ? 'en' : 'fr';
         if (lang === 'en' && texts['a propos'] && Array.isArray(texts['a propos'].bio)) {
             texts['a propos'].bio = [
-                "I'm Mattia Parrinello, <strong>concert photographer</strong> based in <strong>Paris</strong> — <strong>MPRNL</strong> is the professional name under which I sign and share my work. What drives me is the raw energy of artists on stage - the moment when light, sound and emotion collide. I capture what the audience feels but doesn't always see: the intensity of a gaze, the sweat under the lights, the controlled chaos of a live show.",
+                "I'm Mattia Parrinello, <strong>concert photographer</strong> based in <strong>Paris</strong> - <strong>MPRNL</strong> is the professional name under which I sign and share my work. What drives me is the raw energy of artists on stage - the moment when light, sound and emotion collide. I capture what the audience feels but doesn't always see: the intensity of a gaze, the sweat under the lights, the controlled chaos of a live show.",
                 "Specialized in <strong>rap music</strong> and urban scenes, I've had the chance to shoot artists like <strong>Jok'air, Arma Jackson, Wallace Cleaver, Cyrus.wrld, Trebiz, Aswell</strong> and <strong>The French Kris</strong> in venues like <strong>La Cigale, La Boule Noire, La Bellevilloise, La Maroquinerie, Élispace, EMB Sannois, Paris La Défense Arena, Reims Arena, Zénith d'Amiens</strong> and the <strong>Pagaille Festival</strong>. From intimate showcase to open-air festival, every event is a new story to tell in images.",
-                "My approach: being as close as possible to the action, anticipating the highlights, playing with stage light to create cinematic and striking images. No poses, no artifice — just the authenticity of live. My style blends strong contrasts, vibrant colors and an energy that oozes from every shot.",
-                "I work with <strong>music media (Rapstar)</strong>, emerging artists, labels and venues. Based in <strong>Île-de-France</strong>, I travel across <strong>France</strong> to cover your events — concerts, festivals, showcases, backstage, promo, making-of, parties. Available immediately. Got a project or a show to cover? <a href=\"/contact?lang=en\">Let's talk.</a>",
+                "My approach: being as close as possible to the action, anticipating the highlights, playing with stage light to create cinematic and striking images. No poses, no artifice - just the authenticity of live. My style blends strong contrasts, vibrant colors and an energy that oozes from every shot.",
+                "I work with <strong>music media (Rapstar)</strong>, emerging artists, labels and venues. Based in <strong>Île-de-France</strong>, I travel across <strong>France</strong> to cover your events - concerts, festivals, showcases, backstage, promo, making-of, parties. Available immediately. Got a project or a show to cover? <a href=\"/contact?lang=en\">Let's talk.</a>",
                 ""
             ];
             texts['a propos'].presentation = "Hi, I'm Mattia";
             if (texts.main) texts.main.nom = "Mattia PARRINELLO";
             if (texts.footer) {
-                texts.footer.ligne1 = "Paris · Île-de-France — Available across France";
+                texts.footer.ligne1 = "Paris · Île-de-France - Available across France";
             }
             if (texts.meta) {
-                texts.meta.title = "Mattia PARRINELLO – Concert & Live Photographer";
+                texts.meta.title = "Mattia PARRINELLO - Concert & Live Photographer";
                 texts.meta.description = "Concert and live photographer based in Paris, capturing authentic moments and strong emotions. Between music scenes, portraits and street photography, I tell unique stories through images.";
-                texts.meta.og_title = "Mattia PARRINELLO – Concert Photographer";
+                texts.meta.og_title = "Mattia PARRINELLO - Concert Photographer";
                 texts.meta.og_description = "Concert and live photographer capturing authentic moments and the energy of performances. Between portraits and urban scenes, I share images full of emotion and story.";
             }
         }
@@ -470,9 +470,9 @@ function generatePressKitHtml(gallery, canonical, lang) {
     if (photos.length === 0) return '';
     const artist = (gallery.artist || '').trim() || (isEn ? 'this artist' : 'cet artiste');
     const venue = gallery.venue ? ` ${isEn ? 'at' : 'à'} ${gallery.venue}` : '';
-    const credit = `© Mattia Parrinello — photo.mprnl.fr — ${gallery.title}`;
+    const credit = `© Mattia Parrinello - photo.mprnl.fr - ${gallery.title}`;
     const galleryUrl = canonical;
-    const creditLong = `© Mattia Parrinello — ${galleryUrl} — ${artist}${venue}`;
+    const creditLong = `© Mattia Parrinello - ${galleryUrl} - ${artist}${venue}`;
     const cards = photos.map((filename, i) => {
         const thumb = `/photos/resize?file=${encodeURIComponent(filename)}&w=400`;
         const alt = isEn ? `${artist} live - photo ${i + 1} by Mattia Parrinello` : `${artist} en concert - photo ${i + 1} par Mattia Parrinello`;
@@ -480,7 +480,7 @@ function generatePressKitHtml(gallery, canonical, lang) {
         return `<div class="press-kit-card"><img src="${thumb}" alt="${escapeAttr(alt)}" loading="lazy" /><button type="button" onclick="pressKitDownload('${escapeAttr(filename)}', this)">${dl}</button></div>`;
     }).join('');
     const aria = isEn ? 'Press kit' : 'Kit presse';
-    const summaryTitle = isEn ? 'Press kit — 3 free HD photos' : 'Kit presse — 3 photos HD gratuites';
+    const summaryTitle = isEn ? 'Press kit - 3 free HD photos' : 'Kit presse - 3 photos HD gratuites';
     const summarySub = isEn ? `${escapeAttr(artist)}${escapeAttr(venue)} · credit required` : `${escapeAttr(artist)}${escapeAttr(venue)} · crédit obligatoire`;
     const desc = isEn ? 'For artists, venues or press: 3 free HD photos for socials/website with credit + link.' : 'Pour l\'artiste, la salle ou la presse : 3 HD libres pour réseaux/site contre crédit + lien.';
     const copyLabel = isEn ? 'Copy' : 'Copier';
@@ -866,7 +866,7 @@ router.get('/galeries/:slug', async (req, res) => {
             htmlContent = htmlContent.replace('</main>', `${pressKitHtml}\n    </main>`);
         }
 
-        // Lang switcher flottant pour galeries (anglais partiel) — cookie persistant
+        // Lang switcher flottant pour galeries (anglais partiel) - cookie persistant
         {
             const toggleHref = isEn ? `/galeries/${encodeURIComponent(gallery.slug)}?lang=fr` : `/galeries/${encodeURIComponent(gallery.slug)}?lang=en`;
             const toggleLabel = isEn ? 'FR' : 'EN';
