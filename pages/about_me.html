@@ -211,6 +211,7 @@
         margin-top: 2.2rem;
         padding-top: 1.8rem;
         border-top: 1px solid rgba(15, 23, 42, 0.1);
+        max-width: 56rem;
       }
       .history-section h2 {
         font-family: "Signika", sans-serif;
@@ -235,7 +236,7 @@
         line-height: 1.75;
         color: rgba(31, 41, 55, 0.92);
         font-size: clamp(0.95rem, 1.3vw, 1.02rem);
-        max-width: 75ch;
+        max-width: 68ch;
       }
       .history-grid strong { color: rgba(15, 23, 42, 1); }
       .history-quote {
@@ -248,7 +249,10 @@
       #about-content { text-align: start; }
       #about-content p { text-align: start; }
       #about-content .font-serif { text-align: start; }
-      .about-lists { text-align: start; }
+      .about-lists {
+        text-align: start;
+        max-width: 56rem;
+      }
       .about-lists ul { padding-left: 1.1rem; list-style: disc; }
       @media (prefers-color-scheme: dark) {
         .history-section { border-top-color: rgba(148, 163, 184, 0.2); }
@@ -459,7 +463,7 @@
         </section>
       </div>
       <!-- SEO: Section artistes et lieux - renforce les mots-clés et le maillage -->
-      <div class="about-lists grid grid-cols-1 md:grid-cols-2 gap-10 mt-12 mb-8 mx-3">
+      <div class="about-lists grid grid-cols-1 md:grid-cols-2 gap-10 mt-12 mb-8">
         <div>
           <h2 class="text-xl font-bold font-signika mb-3">
             Artistes photographiés
@@ -477,7 +481,7 @@
           </ul>
         </div>
       </div>
-      <section class="history-section mx-3" id="mon-histoire" aria-label="Mon histoire">
+      <section class="history-section" id="mon-histoire" aria-label="Mon histoire">
         <p class="history-kicker">Mon histoire</p>
         <h2>Comment j'ai commencé</h2>
         <div class="history-grid">

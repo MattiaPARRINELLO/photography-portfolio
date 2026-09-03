@@ -486,7 +486,7 @@ function generateFaqHtml(lang) {
     const title = isEn ? 'FAQ' : 'Questions fréquentes';
     const rows = items.map(x => `<details class="faq-item"><summary>${escapeAttr(x.q)}<span class="faq-chevron">⌄</span></summary><p>${x.a}</p></details>`).join('');
     return `<style>
-      .faq-section { max-width: 72ch; margin: 2.5rem auto 2rem; padding: 0 1rem; }
+      .faq-section { max-width: 56rem; margin: 2.5rem 0 2rem; }
       .faq-section h2 { font-family: "Signika", sans-serif; font-weight: 700; font-size: clamp(1.4rem, 2.5vw, 1.75rem); margin: 0 0 1rem; }
       .faq-item { border: 1px solid rgba(15, 23, 42, 0.12); border-radius: 12px; background: rgba(255,255,255,0.85); margin-bottom: 0.7rem; overflow: hidden; }
       .faq-item summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.9rem 1.1rem; font-weight: 700; font-family: "Signika", sans-serif; font-size: 0.95rem; color: #0f172a; }
