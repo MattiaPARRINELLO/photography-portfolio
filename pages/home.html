@@ -20,7 +20,7 @@
       defer
       src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
     ></script>
-    <!-- Start, Fonts -->
+    <!-- Start - Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       rel="preconnect"
@@ -39,8 +39,8 @@
         rel="stylesheet"
       />
     </noscript>
-    <!-- End, Fonts -->
-    <!-- Start, Fancybox Scripts -->
+    <!-- End - Fonts -->
+    <!-- Start - Fancybox Scripts -->
     <script
       defer
       src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.min.js"
@@ -55,7 +55,7 @@
       media="print"
       onload="this.media = 'all'"
     />
-    <!-- End, Fancybox Scripts -->
+    <!-- End - Fancybox Scripts -->
     <!-- Masonry.js -->
     <script
       defer
@@ -65,7 +65,7 @@
       defer
       src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"
     ></script>
-    <!-- End, Masonry.js -->
+    <!-- End - Masonry.js -->
     <style>
       /* Subtle animated background used across public pages */
       .animated-bg {
@@ -295,7 +295,7 @@
         );
 
         console.log(
-          "%c© Mattia Parrinello, Tous droits réservés\n\n" +
+          "%c© Mattia Parrinello - Tous droits réservés\n\n" +
             "Toutes les photographies publiées sur ce site sont protégées par le droit d'auteur.\n" +
             "Toute reproduction, représentation, modification, publication, transmission,\n" +
             "dénaturation, totale ou partielle du site ou de son contenu, par quelque\n" +
@@ -458,7 +458,7 @@
                 devDebug(
                   "Fancybox: reveal called for slide",
                   sidx,
-                  ", dumping slide object once",
+                  " - dumping slide object once",
                 );
                 try {
                   console.dir && console.dir(slide);
@@ -620,7 +620,7 @@
                       };
                     }
 
-                    // target (top-left badge), align with badge left:8px inside container
+                    // target (top-left badge) - align with badge left:8px inside container
                     const targetLeft = containerRect.left + 8;
                     const targetTop = containerRect.top + 8;
                     const targetWidth = 140; // wider to fit the text during morph
@@ -653,7 +653,7 @@
                     // compute sizes: keep starting svg size consistent and animate scale
                     const startSvgSize = Math.max(
                       12,
-                      Math.min(startRect.height, 6, startRect.width, 6),
+                      Math.min(startRect.height - 6, startRect.width - 6),
                     );
                     const targetSvgSize = 14;
                     try {
@@ -690,8 +690,8 @@
                     // Force layout
                     wrap.getBoundingClientRect();
 
-                    const deltaX = targetLeft, startRect.left;
-                    const deltaY = targetTop, startRect.top;
+                    const deltaX = targetLeft - startRect.left;
+                    const deltaY = targetTop - startRect.top;
 
                     // enable smooth transitions now that layout is settled
                     wrap.style.transition =
@@ -985,7 +985,7 @@
                   });
                   // also listen to wheel on image as fallback
                   directImg.addEventListener("wheel", wheel, { passive: true });
-                  // Also start HD load on single click, do not prevent default so Fancybox's zoom still runs
+                  // Also start HD load on single click - do not prevent default so Fancybox's zoom still runs
                   const clickHandler = (ev) => {
                     try {
                       /* don't prevent Fancybox zoom */
@@ -1045,7 +1045,7 @@
                   infos.push(`📷 <b>Appareil :</b> ${exif.Model}`);
                 if (exif.LensModel)
                   infos.push(`🔍 <b>Objectif :</b> ${exif.LensModel}`);
-                // Focale (mm), prefer the actual FocalLength, fall back to 35mm equivalent if available
+                // Focale (mm) - prefer the actual FocalLength, fall back to 35mm equivalent if available
                 try {
                   const focal =
                     typeof exif.FocalLength !== "undefined"
@@ -1057,7 +1057,7 @@
                     const fnum = Number(focal);
                     const focalText =
                       !Number.isNaN(fnum) &&
-                      Math.abs(fnum, Math.round(fnum)) > 0.05
+                      Math.abs(fnum - Math.round(fnum)) > 0.05
                         ? `${fnum.toFixed(1)}mm`
                         : `${Math.round(fnum)}mm`;
                     infos.push(`🔭 <b>Focale :</b> ${focalText}`);
@@ -1138,7 +1138,7 @@
               /* ignore */
             }
             img.alt =
-              "Photo de concert par Mattia Parrinello, " +
+              "Photo de concert par Mattia Parrinello - " +
               photo.filename
                 .replace(/^\d+_*/, "")
                 .replace(/\.[^.]+$/, "")
@@ -1198,7 +1198,7 @@
           }
         });
 
-        // Initialize Masonry with imagesLoaded, with gaps
+        // Initialize Masonry with imagesLoaded - with gaps
         const isMobile = window.innerWidth < 768;
         const gutterSize = isMobile ? 6 : 10; // Reduced mobile gaps for more compact view
 
@@ -1464,9 +1464,9 @@
             // Calculate scale to match width roughly
             const scale = Math.min(1, tRect.width / iRect.width);
             const translateX =
-              tRect.left + tRect.width / 2, (iRect.left + iRect.width / 2);
+              tRect.left + tRect.width / 2 - (iRect.left + iRect.width / 2);
             const translateY =
-              tRect.top + tRect.height / 2, (iRect.top + iRect.height / 2);
+              tRect.top + tRect.height / 2 - (iRect.top + iRect.height / 2);
 
             // Apply transform with a tuned duration and easing, using translate3d + RAF
             const dur =
@@ -1496,7 +1496,7 @@
               });
             });
 
-            // Fade out overlay background while moving, match duration
+            // Fade out overlay background while moving - match duration
             const overlayDur = parseInt(dur) || 2200;
             overlay.style.willChange = "opacity, background-color";
             overlay.style.transition = `background-color ${overlayDur}ms ${ease}, opacity ${overlayDur}ms ${ease}`;
@@ -1637,7 +1637,7 @@
     </header>
     <!-- Content -->
     <div class="container mx-auto px-0">
-      <!-- SEO: H1 optimisé et introduction, injectés dynamiquement depuis seo.json -->
+      <!-- SEO: H1 optimisé et introduction - injectés dynamiquement depuis seo.json -->
       <!-- SEO_HERO_PLACEHOLDER -->
       <section class="text-neutral-700">
         <div class="w-full max-w-full overflow-hidden">
@@ -1650,7 +1650,7 @@
               --intro-duration: 1100ms;
               --letter-duration: 520ms;
             }
-            /* Masonry gallery styles, compact view with more columns */
+            /* Masonry gallery styles - compact view with more columns */
             .gallery-justified {
               width: 100%;
               max-width: 100%;
@@ -1660,7 +1660,7 @@
             }
 
             .gallery-item {
-              width: calc(20%, 10px); /* 5 columns for very compact view */
+              width: calc(20% - 10px); /* 5 columns for very compact view */
               display: block;
               will-change: transform, opacity;
               transition:
@@ -1675,21 +1675,21 @@
 
             @media (max-width: 1680px) {
               .gallery-item {
-                width: calc(25%, 10px); /* 4 columns on large desktop */
+                width: calc(25% - 10px); /* 4 columns on large desktop */
                 margin-bottom: 10px;
               }
             }
 
             @media (max-width: 1440px) {
               .gallery-item {
-                width: calc(33.333%, 10px); /* 3 columns on smaller desktop */
+                width: calc(33.333% - 10px); /* 3 columns on smaller desktop */
                 margin-bottom: 10px;
               }
             }
 
             @media (max-width: 1024px) {
               .gallery-item {
-                width: calc(33.333%, 8px); /* 3 columns on tablet */
+                width: calc(33.333% - 8px); /* 3 columns on tablet */
                 margin-bottom: 10px;
               }
             }
@@ -1697,7 +1697,7 @@
             @media (max-width: 768px) {
               .gallery-item {
                 width: calc(
-                  33.333%, 6px
+                  33.333% - 6px
                 ); /* 3 columns on mobile for more compact view */
                 margin-bottom: 6px;
               }
@@ -1706,7 +1706,7 @@
             @media (max-width: 480px) {
               .gallery-item {
                 width: calc(
-                  50%, 5px
+                  50% - 5px
                 ); /* 2 columns on small mobile instead of 1 */
                 margin-bottom: 6px;
               }
@@ -1763,7 +1763,7 @@
             }
 
             .skeleton-item {
-              flex: 1 0 calc(25%, 20px);
+              flex: 1 0 calc(25% - 20px);
               height: 220px;
               border-radius: 16px;
               background: linear-gradient(90deg, #111 0%, #222 25%, #111 50%);
@@ -1782,14 +1782,14 @@
 
             @media (max-width: 1024px) {
               .skeleton-item {
-                flex: 1 0 calc(33.333%, 20px);
+                flex: 1 0 calc(33.333% - 20px);
                 height: 200px;
               }
             }
 
             @media (max-width: 640px) {
               .skeleton-item {
-                flex: 1 0 calc(50%, 12px);
+                flex: 1 0 calc(50% - 12px);
                 height: 160px;
               }
             }
@@ -1925,7 +1925,7 @@
               line-height: 0.9;
               pointer-events: none;
               transform-origin: center center;
-              /* GPU optimization, creates composite layer */
+              /* GPU optimization - creates composite layer */
               transform: translate3d(0, 0, 0);
               backface-visibility: hidden;
               -webkit-font-smoothing: antialiased;
@@ -2060,7 +2060,7 @@
         </div>
       </section>
     </div>
-    <!-- SEO: Section post-galerie, collaborations et CTA secondaire -->
+    <!-- SEO: Section post-galerie - collaborations et CTA secondaire -->
     <!-- SEO_BOTTOM_PLACEHOLDER -->
     <!-- Footer -->
     <footer>
@@ -2069,7 +2069,7 @@
           <div>
             <p class="font-signika"><b>MATTIA PARRINELLO</b></p>
             <p class="mt-4 text-sm text-gray-600 dark:text-gray-300">
-              Paris · Île-de-France, disponible partout en France<br />(+33) 6 50 58 62 51 · contact.mprnl@gmail.com
+              Paris · Île-de-France, Disponible partout en France<br />(+33) 6 50 58 62 51 · contact.mprnl@gmail.com
             </p>
             <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
               <a href="/mentions-legales" class="hover:underline"
@@ -2083,7 +2083,7 @@
             </p>
             <!-- SEO: Ligne footer avec mots-clés géographiques -->
             <p class="mt-3 text-xs text-gray-400 dark:text-gray-500">
-              Mattia Parrinello, Photographe de concert à Paris · Disponible en
+              Mattia Parrinello - Photographe de concert à Paris · Disponible en
               Île-de-France et partout en France
             </p>
             <div class="flex mx-auto">
@@ -2228,7 +2228,7 @@
     <!-- User Activity Tracker -->
     <script defer src="/dist/js/user-tracker.js"></script>
     <script>
-      // Animated blobs follow the pointer, subtle parallax + idle float
+      // Animated blobs follow the pointer - subtle parallax + idle float
       (function () {
         if (
           window.matchMedia &&
@@ -2250,18 +2250,18 @@
         window.addEventListener(
           "pointermove",
           (e) => {
-            mx = e.clientX / window.innerWidth, 0.5;
-            my = e.clientY / window.innerHeight, 0.5;
+            mx = e.clientX / window.innerWidth - 0.5;
+            my = e.clientY / window.innerHeight - 0.5;
           },
           { passive: true },
         );
 
         function animate(t) {
-          const dt = (t, lastTime) / 1000;
+          const dt = (t - lastTime) / 1000;
           lastTime = t;
           // smooth
-          lx += (mx, lx) * ease;
-          ly += (my, ly) * ease;
+          lx += (mx - lx) * ease;
+          ly += (my - ly) * ease;
 
           blobs.forEach((b, i) => {
             const idx = i + 1;
@@ -2270,9 +2270,9 @@
             const floatX = Math.sin(t / 2000 + i) * (8 + i * 2) * 0.6;
             const floatY = Math.cos(t / 1800 + i) * (6 + i * 1.5) * 0.5;
             // mouse influence scaled by depth (front blobs move more)
-            const mxPx = lx * 140 * (1, depth * 0.6);
-            const myPx = ly * 80 * (1, depth * 0.6);
-            const scale = 1, depth * 0.06;
+            const mxPx = lx * 140 * (1 - depth * 0.6);
+            const myPx = ly * 80 * (1 - depth * 0.6);
+            const scale = 1 - depth * 0.06;
             b.style.transform = `translate3d(${mxPx + floatX}px, ${myPx + floatY}px, 0) scale(${scale})`;
           });
 
