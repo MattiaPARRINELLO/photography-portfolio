@@ -946,6 +946,17 @@ router.get('/galeries/:slug', async (req, res) => {
             htmlContent = htmlContent.replace('</main>', `${pressKitHtml}\n    </main>`);
         }
 
+        // Bloc citable LLM (permet à ChatGPT/Perplexity de citer cette galerie)
+        const citeText = isEn
+            ? `Photo gallery: ${gallery.title} — ${artistName} at ${gallery.venue || 'venue'}, ${formatGalleryDate(gallery.date)}. Photographs by Mattia Parrinello (MPRNL), concert photographer based in Paris. ${gallery.photos ? gallery.photos.length + ' photos.' : ''} Source: ${canonical}`
+            : `Galerie photo : ${gallery.title} — ${artistName} ${gallery.venue ? 'à ' + gallery.venue : ''}, ${formatGalleryDate(gallery.date)}. Photos par Mattia Parrinello (MPRNL), photographe de concert basé à Paris. ${gallery.photos ? gallery.photos.length + ' photos.' : ''} Source : ${canonical}`;
+        const citeHtml = `<aside style="margin-top:2rem;padding:1.2rem;border-radius:12px;background:rgba(255,255,255,0.85);border:1px solid rgba(15,23,42,0.12);font-size:0.85rem;line-height:1.6;color:rgba(51,65,85,1);max-width:72ch;" aria-label="${isEn ? 'Citation' : 'Citation'}"><p style="margin:0 0 0.5rem;font-weight:700;font-family:Signika,sans-serif;font-size:0.9rem;cursor:pointer;" onclick="navigator.clipboard.writeText(this.dataset.text).then(()=>{this.textContent='Copié ✓';setTimeout(()=>{this.textContent='${isEn ? 'Citer cette galerie' : 'Citer cette galerie'}'},1200)})" data-text="${escapeAttr(citeText)}">${isEn ? 'Cite this gallery' : 'Citer cette galerie'}</p><p style="margin:0;font-family:ui-monospace,monospace;font-size:0.78rem;word-break:break-all;opacity:0.7;">${escapeAttr(citeText)}</p><p style="margin:0.4rem 0 0;font-size:0.72rem;opacity:0.55;">${isEn ? 'Press + social with mandatory credit. HD via signed URL valid 1h.' : 'Presse & réseaux avec crédit obligatoire. HD via URL signée valable 1h.'}</p></aside>`;
+        if (htmlContent.includes('<!-- PRESS_KIT_PLACEHOLDER -->')) {
+            htmlContent = htmlContent.replace('<!-- PRESS_KIT_PLACEHOLDER -->', `${pressKitHtml}\n${citeHtml}`);
+        } else if (pressKitHtml) {
+            htmlContent = htmlContent.replace('</main>', `${pressKitHtml}\n${citeHtml}\n    </main>`);
+        }
+
         // Lang switcher flottant pour galeries (anglais partiel), cookie persistant
         {
             const toggleHref = isEn ? `/galeries/${encodeURIComponent(gallery.slug)}?lang=fr` : `/galeries/${encodeURIComponent(gallery.slug)}?lang=en`;
