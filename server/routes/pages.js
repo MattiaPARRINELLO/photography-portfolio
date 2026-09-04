@@ -728,6 +728,45 @@ router.get('/galeries', (req, res) => {
 });
 router.get('/galeries/', (req, res) => res.redirect(301, '/galeries'));
 
+// =============================================
+// ROUTES CLUSTER: /artiste/:slug et /salle/:slug
+// =============================================
+
+router.get('/artiste/:slug', async (req, res) => {
+    const seo = loadSeoData();
+    const slug = decodeURIComponent(req.params.slug);
+    const artist = (seo.artists || []).find(a => a.slug === slug);
+    if (!artist) return res.status(404).sendFile(path.join(paths.pages, '404.html'));
+    const galleries = getPublicGalleries().filter(g => (g.artist || '').trim().toLowerCase() === artist.name.toLowerCase());
+    const firstGallery = galleries[0];
+    const artistLinks = firstGallery && firstGallery.artistLinks ? firstGallery.artistLinks : {};
+    const lang = (req.lang === 'en') ? 'en' : 'fr';
+    const isEn = lang === 'en';
+    const title = isEn ? `${artist.name} - Concert photos by Mattia Parrinello` : `${artist.name} - Photos de concert par Mattia Parrinello`;
+    const desc = artist.description || (isEn ? `Concert photos of ${artist.name} by Mattia Parrinello, concert photographer in Paris.` : `Photos de concert de ${artist.name} par Mattia Parrinello, photographe de concert à Paris.`);
+    const galLinks = galleries.map(g => `<li><a href="/galeries/${encodeURIComponent(g.slug)}">${escapeAttr(g.title)}${g.venue ? ' - ' + escapeAttr(g.venue) : ''}</a></li>`).join('');
+    const canonical = `https://www.photo.mprnl.fr/artiste/${encodeURIComponent(slug)}`;
+    const sameAs = Object.values(artistLinks).filter(Boolean);
+    const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${escapeAttr(title)}</title><meta name="description" content="${escapeAttr(desc)}"><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="fr" href="${canonical}"><link rel="alternate" hreflang="en" href="${canonical}?lang=en"><link rel="alternate" hreflang="x-default" href="${canonical}"><meta property="og:title" content="${escapeAttr(title)}"><meta property="og:description" content="${escapeAttr(desc)}"><meta property="og:image" content="https://www.photo.mprnl.fr/dist/assets/og-image.jpg"><meta property="og:type" content="profile"><script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'MusicGroup', name: artist.name, genre: artist.genre, ...(sameAs.length ? { sameAs } : {}), url: canonical })}</script><style>body{margin:0;padding:1rem 1.5rem;font-family:system-ui,sans-serif;max-width:800px;margin:0 auto;line-height:1.6}h1{font-size:1.8rem}a{color:#2563eb}a:hover{text-decoration:none}.galleries{list-style:none;padding:0}.galleries li{padding:0.4rem 0;border-bottom:1px solid #eee}.galleries li a{text-decoration:none}.galleries li a:hover{text-decoration:underline}</style></head><body><h1>${escapeAttr(title)}</h1><p>${escapeAttr(desc)}</p>${galLinks ? `<h2>${isEn ? 'Galleries' : 'Galeries'}</h2><ul class="galleries">${galLinks}</ul>` : ''}<p style="margin-top:2rem"><a href="/galeries">${isEn ? 'All galleries' : 'Toutes les galeries'}</a></p></body></html>`;
+    res.send(html);
+});
+
+router.get('/salle/:slug', async (req, res) => {
+    const seo = loadSeoData();
+    const slug = decodeURIComponent(req.params.slug);
+    const venue = (seo.venues || []).find(v => v.slug === slug);
+    if (!venue) return res.status(404).sendFile(path.join(paths.pages, '404.html'));
+    const galleries = getPublicGalleries().filter(g => (g.venue || '').trim().toLowerCase() === venue.name.toLowerCase());
+    const lang = (req.lang === 'en') ? 'en' : 'fr';
+    const isEn = lang === 'en';
+    const title = isEn ? `${venue.name} (${venue.city}) - Concert photos` : `${venue.name} (${venue.city}) - Photos de concert`;
+    const desc = venue.description || (isEn ? `Concert photos at ${venue.name} in ${venue.city} by Mattia Parrinello.` : `Photos de concerts à ${venue.name} à ${venue.city} par Mattia Parrinello.`);
+    const galLinks = galleries.map(g => `<li><a href="/galeries/${encodeURIComponent(g.slug)}">${escapeAttr(g.title)}${g.artist ? ' — ' + escapeAttr(g.artist) : ''}</a></li>`).join('');
+    const canonical = `https://www.photo.mprnl.fr/salle/${encodeURIComponent(slug)}`;
+    const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${escapeAttr(title)}</title><meta name="description" content="${escapeAttr(desc)}"><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="fr" href="${canonical}"><link rel="alternate" hreflang="en" href="${canonical}?lang=en"><link rel="alternate" hreflang="x-default" href="${canonical}"><meta property="og:title" content="${escapeAttr(title)}"><meta property="og:description" content="${escapeAttr(desc)}"><meta property="og:image" content="https://www.photo.mprnl.fr/dist/assets/og-image.jpg"><meta property="og:type" content="place"><script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'Place', name: venue.name, address: { '@type': 'PostalAddress', addressLocality: venue.city, addressCountry: 'FR' }, url: canonical })}</script><style>body{margin:0;padding:1rem 1.5rem;font-family:system-ui,sans-serif;max-width:800px;margin:0 auto;line-height:1.6}h1{font-size:1.8rem}a{color:#2563eb}a:hover{text-decoration:none}.galleries{list-style:none;padding:0}.galleries li{padding:0.4rem 0;border-bottom:1px solid #eee}.galleries li a{text-decoration:none}.galleries li a:hover{text-decoration:underline}</style></head><body><h1>${escapeAttr(title)}</h1><p>${escapeAttr(desc)}</p>${galLinks ? `<h2>${isEn ? 'Galleries' : 'Galeries'}</h2><ul class="galleries">${galLinks}</ul>` : ''}<p style="margin-top:2rem"><a href="/galeries">${isEn ? 'All galleries' : 'Toutes les galeries'}</a></p></body></html>`;
+    res.send(html);
+});
+
 router.get('/galeries/:slug', async (req, res) => {
     try {
         const gallery = galleryService.getGalleryBySlug(req.params.slug);
