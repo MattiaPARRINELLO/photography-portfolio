@@ -561,7 +561,7 @@ function generatePressKitHtml(gallery, canonical, lang) {
         window.pressKitCopyLink = function(e){
           if(e) e.preventDefault();
           var t = galleryUrl;
-          if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){ alert('Lien copié : ' + t); }); } else { prompt('Copiez ce lien :', t); }
+          if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(function(){ var btn = document.querySelector('.press-kit-btn.primary'); if(btn){ btn.textContent = '${isEn ? 'Copied!' : 'Copié !'}'; setTimeout(function(){ btn.textContent = '${isEn ? 'Copy link' : 'Copier le lien'}'; }, 1500); } }); } else { prompt('${isEn ? 'Copy this link:' : 'Copiez ce lien :'}', t); }
         };
         window.pressKitCopyCredit = function(){
           if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(credit).then(function(){ var b=document.getElementById('press-kit-credit'); if(b){ b.textContent='Copié !'; setTimeout(function(){ b.textContent=credit; },1200);} }); } else { prompt('Crédit :', credit); }
@@ -747,7 +747,18 @@ router.get('/artiste/:slug', async (req, res) => {
     const galLinks = galleries.map(g => `<li><a href="/galeries/${encodeURIComponent(g.slug)}">${escapeAttr(g.title)}${g.venue ? ' - ' + escapeAttr(g.venue) : ''}</a></li>`).join('');
     const canonical = `https://www.photo.mprnl.fr/artiste/${encodeURIComponent(slug)}`;
     const sameAs = Object.values(artistLinks).filter(Boolean);
-    const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${escapeAttr(title)}</title><meta name="description" content="${escapeAttr(desc)}"><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="fr" href="${canonical}"><link rel="alternate" hreflang="en" href="${canonical}?lang=en"><link rel="alternate" hreflang="x-default" href="${canonical}"><meta property="og:title" content="${escapeAttr(title)}"><meta property="og:description" content="${escapeAttr(desc)}"><meta property="og:image" content="https://www.photo.mprnl.fr/dist/assets/og-image.jpg"><meta property="og:type" content="profile"><script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'MusicGroup', name: artist.name, genre: artist.genre, ...(sameAs.length ? { sameAs } : {}), url: canonical })}</script><style>body{margin:0;padding:1rem 1.5rem;font-family:system-ui,sans-serif;max-width:800px;margin:0 auto;line-height:1.6}h1{font-size:1.8rem}a{color:#2563eb}a:hover{text-decoration:none}.galleries{list-style:none;padding:0}.galleries li{padding:0.4rem 0;border-bottom:1px solid #eee}.galleries li a{text-decoration:none}.galleries li a:hover{text-decoration:underline}</style></head><body><h1>${escapeAttr(title)}</h1><p>${escapeAttr(desc)}</p>${galLinks ? `<h2>${isEn ? 'Galleries' : 'Galeries'}</h2><ul class="galleries">${galLinks}</ul>` : ''}<p style="margin-top:2rem"><a href="/galeries">${isEn ? 'All galleries' : 'Toutes les galeries'}</a></p></body></html>`;
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@graph': [
+            { '@type': 'MusicGroup', name: artist.name, genre: artist.genre, ...(sameAs.length ? { sameAs } : {}), url: canonical },
+            { '@type': 'BreadcrumbList', itemListElement: [
+                { '@type': 'ListItem', position: 1, name: isEn ? 'Home' : 'Accueil', item: 'https://www.photo.mprnl.fr' },
+                { '@type': 'ListItem', position: 2, name: isEn ? 'Galleries' : 'Galeries', item: 'https://www.photo.mprnl.fr/galeries' },
+                { '@type': 'ListItem', position: 3, name: artist.name, item: canonical }
+            ]}
+        ]
+    };
+    const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${escapeAttr(title)}</title><meta name="description" content="${escapeAttr(desc)}"><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="fr" href="${canonical}"><link rel="alternate" hreflang="en" href="${canonical}?lang=en"><link rel="alternate" hreflang="x-default" href="${canonical}"><meta property="og:title" content="${escapeAttr(title)}"><meta property="og:description" content="${escapeAttr(desc)}"><meta property="og:image" content="https://www.photo.mprnl.fr/dist/assets/og-image.jpg"><meta property="og:type" content="profile"><script type="application/ld+json">${JSON.stringify(jsonLd)}</script><style>body{margin:0;padding:1rem 1.5rem;font-family:system-ui,sans-serif;max-width:800px;margin:0 auto;line-height:1.6}h1{font-size:1.8rem}a{color:#2563eb}a:hover{text-decoration:none}.galleries{list-style:none;padding:0}.galleries li{padding:0.4rem 0;border-bottom:1px solid #eee}.galleries li a{text-decoration:none}.galleries li a:hover{text-decoration:underline}</style></head><body><h1>${escapeAttr(title)}</h1><p>${escapeAttr(desc)}</p>${galLinks ? `<h2>${isEn ? 'Galleries' : 'Galeries'}</h2><ul class="galleries">${galLinks}</ul>` : ''}<p style="margin-top:2rem"><a href="/galeries">${isEn ? 'All galleries' : 'Toutes les galeries'}</a></p></body></html>`;
     res.send(html);
 });
 
@@ -763,7 +774,18 @@ router.get('/salle/:slug', async (req, res) => {
     const desc = venue.description || (isEn ? `Concert photos at ${venue.name} in ${venue.city} by Mattia Parrinello.` : `Photos de concerts à ${venue.name} à ${venue.city} par Mattia Parrinello.`);
     const galLinks = galleries.map(g => `<li><a href="/galeries/${encodeURIComponent(g.slug)}">${escapeAttr(g.title)}${g.artist ? ' — ' + escapeAttr(g.artist) : ''}</a></li>`).join('');
     const canonical = `https://www.photo.mprnl.fr/salle/${encodeURIComponent(slug)}`;
-    const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${escapeAttr(title)}</title><meta name="description" content="${escapeAttr(desc)}"><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="fr" href="${canonical}"><link rel="alternate" hreflang="en" href="${canonical}?lang=en"><link rel="alternate" hreflang="x-default" href="${canonical}"><meta property="og:title" content="${escapeAttr(title)}"><meta property="og:description" content="${escapeAttr(desc)}"><meta property="og:image" content="https://www.photo.mprnl.fr/dist/assets/og-image.jpg"><meta property="og:type" content="place"><script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'Place', name: venue.name, address: { '@type': 'PostalAddress', addressLocality: venue.city, addressCountry: 'FR' }, url: canonical })}</script><style>body{margin:0;padding:1rem 1.5rem;font-family:system-ui,sans-serif;max-width:800px;margin:0 auto;line-height:1.6}h1{font-size:1.8rem}a{color:#2563eb}a:hover{text-decoration:none}.galleries{list-style:none;padding:0}.galleries li{padding:0.4rem 0;border-bottom:1px solid #eee}.galleries li a{text-decoration:none}.galleries li a:hover{text-decoration:underline}</style></head><body><h1>${escapeAttr(title)}</h1><p>${escapeAttr(desc)}</p>${galLinks ? `<h2>${isEn ? 'Galleries' : 'Galeries'}</h2><ul class="galleries">${galLinks}</ul>` : ''}<p style="margin-top:2rem"><a href="/galeries">${isEn ? 'All galleries' : 'Toutes les galeries'}</a></p></body></html>`;
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@graph': [
+            { '@type': 'Place', name: venue.name, address: { '@type': 'PostalAddress', addressLocality: venue.city, addressCountry: 'FR' }, url: canonical },
+            { '@type': 'BreadcrumbList', itemListElement: [
+                { '@type': 'ListItem', position: 1, name: isEn ? 'Home' : 'Accueil', item: 'https://www.photo.mprnl.fr' },
+                { '@type': 'ListItem', position: 2, name: isEn ? 'Galleries' : 'Galeries', item: 'https://www.photo.mprnl.fr/galeries' },
+                { '@type': 'ListItem', position: 3, name: `${venue.name} (${venue.city})`, item: canonical }
+            ]}
+        ]
+    };
+    const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${escapeAttr(title)}</title><meta name="description" content="${escapeAttr(desc)}"><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="fr" href="${canonical}"><link rel="alternate" hreflang="en" href="${canonical}?lang=en"><link rel="alternate" hreflang="x-default" href="${canonical}"><meta property="og:title" content="${escapeAttr(title)}"><meta property="og:description" content="${escapeAttr(desc)}"><meta property="og:image" content="https://www.photo.mprnl.fr/dist/assets/og-image.jpg"><meta property="og:type" content="place"><script type="application/ld+json">${JSON.stringify(jsonLd)}</script><style>body{margin:0;padding:1rem 1.5rem;font-family:system-ui,sans-serif;max-width:800px;margin:0 auto;line-height:1.6}h1{font-size:1.8rem}a{color:#2563eb}a:hover{text-decoration:none}.galleries{list-style:none;padding:0}.galleries li{padding:0.4rem 0;border-bottom:1px solid #eee}.galleries li a{text-decoration:none}.galleries li a:hover{text-decoration:underline}</style></head><body><h1>${escapeAttr(title)}</h1><p>${escapeAttr(desc)}</p>${galLinks ? `<h2>${isEn ? 'Galleries' : 'Galeries'}</h2><ul class="galleries">${galLinks}</ul>` : ''}<p style="margin-top:2rem"><a href="/galeries">${isEn ? 'All galleries' : 'Toutes les galeries'}</a></p></body></html>`;
     res.send(html);
 });
 
@@ -851,7 +873,7 @@ router.get('/galeries/:slug', async (req, res) => {
             url: canonical,
             ...(gallery.date ? { datePublished: gallery.date } : {}),
             ...(gallery.updatedAt ? { dateModified: gallery.updatedAt } : {}),
-            ...(gallery.venue ? { contentLocation: { '@type': 'Place', name: gallery.venue } } : {}),
+            ...(gallery.venue ? { contentLocation: { '@type': 'Place', name: gallery.venue, address: { '@type': 'PostalAddress', addressLocality: (loadSeoData().venues || []).find(v => v.name === gallery.venue)?.city || 'Paris', addressCountry: 'FR' } } } : {}),
             ...(artistName ? { about: { '@type': 'MusicGroup', name: artistName, ...(artistSameAs.length ? { sameAs: artistSameAs } : {}) } } : {}),
             author: {
                 '@type': 'Person',
@@ -1110,6 +1132,24 @@ router.get('/sitemap.xml', async (req, res) => {
                     changefreq: 'monthly',
                     priority: '0.8',
                     images: imageUrls
+                });
+            });
+            // Pages cluster /artiste/:slug et /salle/:slug
+            const seoData = loadSeoData();
+            (seoData.artists || []).forEach(a => {
+                staticPages.push({
+                    loc: `/artiste/${a.slug}`,
+                    lastmod: galleriesLastmod,
+                    changefreq: 'monthly',
+                    priority: '0.6'
+                });
+            });
+            (seoData.venues || []).forEach(v => {
+                staticPages.push({
+                    loc: `/salle/${v.slug}`,
+                    lastmod: galleriesLastmod,
+                    changefreq: 'monthly',
+                    priority: '0.5'
                 });
             });
         } catch (e) {

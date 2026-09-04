@@ -11,7 +11,8 @@ function languageMiddleware(req, res, next) {
     } else if (req.cookies && (req.cookies.lang === 'en' || req.cookies.lang === 'fr')) {
         lang = req.cookies.lang;
     } else {
-        lang = 'fr';
+        const accept = (req.headers['accept-language'] || '').toLowerCase();
+        lang = accept.startsWith('en') ? 'en' : 'fr';
     }
     req.lang = lang === 'en' ? 'en' : 'fr';
     next();

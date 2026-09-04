@@ -228,6 +228,7 @@ class TextUtils {
                 '@type': 'WebSite',
                 '@id': websiteId,
                 'name': siteSeo.name || 'Mattia Parrinello - Photographe de Concert',
+                'alternateName': 'MPRNL',
                 'url': baseUrl,
                 'inLanguage': [lang, lang === 'fr' ? 'en' : 'fr'],
                 'publisher': { '@id': personId }

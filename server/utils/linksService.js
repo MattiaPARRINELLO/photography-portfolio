@@ -323,6 +323,11 @@ function injectLinksData(html, config, req) {
     html = html.replace(/\{\{SEO_TITLE\}\}/g, seo.title || profile.name);
     html = html.replace(/\{\{SEO_DESCRIPTION\}\}/g, seo.description || '');
     html = html.replace(/\{\{CANONICAL_URL\}\}/g, canonicalUrl);
+    // hreflang pour /links
+    const frUrl = canonicalUrl;
+    const enUrl = `${canonicalUrl}?lang=en`;
+    const hreflangs = `\n    <link rel="alternate" hreflang="fr" href="${frUrl}" />\n    <link rel="alternate" hreflang="en" href="${enUrl}" />\n    <link rel="alternate" hreflang="x-default" href="${frUrl}" />`;
+    html = html.replace('</head>', `${hreflangs}\n  </head>`);
     // og:image doit être une URL absolue (les URLs relatives sont invalides pour Open Graph)
     const stableBaseForImage = getCanonicalBaseUrl() || canonicalUrl.replace(/\/links$/, '');
     const profileAvatar = (profile.avatar && profile.avatar.url) || '/dist/assets/Avatar.png';
