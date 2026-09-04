@@ -196,7 +196,8 @@ class TextUtils {
     // SEO: Génère le JSON-LD Schema.org pour une page donnée
     // Graphe unique (@graph) avec des @id stables : les entités Person,
     // ProfessionalService et WebSite sont définies une seule fois et référencées.
-    generateSchemaJsonLd(pageType, req) {
+    // photos (optionnel) : liste de filenames pour remplir image[] de l'ImageGallery home.
+    generateSchemaJsonLd(pageType, req, photos) {
         const lang = this._getLang(req);
         const seo = this.loadSeoData();
         const siteSeo = seo.site || {};
@@ -299,7 +300,20 @@ class TextUtils {
                 'name': 'Portfolio - Photos de concert par Mattia Parrinello',
                 'description': 'Galerie de photographies de concerts, festivals et événements musicaux à Paris et en France.',
                 'url': baseUrl,
-                'author': { '@id': personId }
+                'author': { '@id': personId },
+                ...(Array.isArray(photos) && photos.length ? {
+                    'image': photos.slice(0, 12).map(f => ({
+                        '@type': 'ImageObject',
+                        'contentUrl': `${baseUrl}/photos/resize?file=${encodeURIComponent(f)}&w=1600`,
+                        'thumbnailUrl': `${baseUrl}/photos/resize?file=${encodeURIComponent(f)}&w=640`,
+                        'creator': { '@type': 'Person', '@id': personId, 'name': author },
+                        'copyrightHolder': { '@id': personId },
+                        'creditText': '© Mattia Parrinello / photo.mprnl.fr',
+                        'license': `${baseUrl}/mentions-legales`,
+                        'acquireLicensePage': `${baseUrl}/contact`,
+                        'caption': 'Photo de concert par Mattia Parrinello (MPRNL)'
+                    }))
+                } : {})
             });
         }
 
@@ -379,23 +393,32 @@ class TextUtils {
         };
     }
 
-    _getFaq(lang, baseUrl) {
+    // FAQ: source unique partagée entre le JSON-LD (texte brut) et le HTML visible (variante <a>)
+    getFaqItems(lang, siteUrl) {
+        const contactUrl = (siteUrl || 'https://www.photo.mprnl.fr') + '/contact';
         const isEn = lang === 'en';
-        const qs = isEn ? [
-            { q: 'How much does a concert report in Paris cost?', a: 'From 300€, free quote within 24h. Price depends on duration, number of photos and usage. Press and social networks with credit included, commercial use on request. More on ' + baseUrl + '/contact' },
-            { q: 'What is the delivery time?', a: '48 to 72 hours. Online gallery and HD download via link. Available immediately, travel across France.' },
-            { q: 'What usage rights are included?', a: 'Press and social media use with mandatory credit included. Commercial, advertising or print use requires a separate quote. All photos remain protected.' },
-            { q: 'Where do you work?', a: 'Paris, Île-de-France and across France. Based in Paris, I travel everywhere in France for concerts, festivals, showcases and backstage.' }
-        ] : [
-            { q: 'Quel est le tarif d\'un reportage concert à Paris ?', a: 'À partir de 300€, devis gratuit sous 24h. Prix selon durée, nombre de photos et usage. Presse et réseaux avec crédit inclus, commercial sur devis. Détails sur ' + baseUrl + '/contact' },
-            { q: 'Quel est le délai de livraison ?', a: '48 à 72 heures. Galerie en ligne et HD via lien. Disponible immédiatement, déplacement partout en France.' },
-            { q: 'Quels droits d\'usage sont inclus ?', a: 'Usage presse et réseaux sociaux avec crédit obligatoire inclus. Usage commercial, pub ou print sur devis. Toutes les photos restent protégées.' },
-            { q: 'Dans quelles villes tu te déplaces ?', a: 'Paris, Île-de-France et partout en France. Basé à Paris, je me déplace partout en France pour concerts, festivals, showcases et backstage.' }
+        if (isEn) {
+            return [
+                { q: 'How much does a concert report in Paris cost?', a: 'From 300€ for a concert report, free quote within 24h. The price depends on show duration, number of delivered photos and intended usage. Press and social media with mandatory credit included, commercial use on quote. Night shows and multi-day festivals are welcome. Details at ' + contactUrl, aHtml: 'From 300€ for a concert report, free quote within 24h. The price depends on show duration, number of delivered photos and intended usage. Press and social media with mandatory credit included, commercial use on quote. <a href="/contact?lang=en">Request a quote</a>.' },
+                { q: 'What is the delivery time?', a: '48 to 72 hours after the show, depending on the number of photos. You receive a protected online gallery and an HD download link. All photos are sorted and retouched before delivery. I am available immediately, on weekdays and weekends, anywhere in France.', aHtml: null },
+                { q: 'What usage rights are included?', a: 'Press and social media use with mandatory credit (© Mattia Parrinello / photo.mprnl.fr) is included. Commercial, advertising or print use requires a separate quote. All photos remain protected by copyright; HD files are delivered via a signed URL valid for 1 hour.', aHtml: null },
+                { q: 'Where do you work?', a: 'Based in Paris, I travel across Île-de-France and all over France: concerts, festivals, showcases, backstage, promo and making-of. I have already covered venues from La Cigale to Paris La Défense Arena, and festivals from Beauvais to Bordeaux, day and night shows.', aHtml: null }
+            ];
+        }
+        return [
+            { q: 'Quel est le tarif d\'un reportage concert à Paris ?', a: 'À partir de 300€ pour un reportage concert, devis gratuit sous 24h. Le prix dépend de la durée du show, du nombre de photos livrées et de l\'usage prévu. Presse et réseaux sociaux avec crédit obligatoire inclus, usage commercial sur devis. Détails sur ' + contactUrl, aHtml: 'À partir de 300€ pour un reportage concert, devis gratuit sous 24h. Le prix dépend de la durée du show, du nombre de photos livrées et de l\'usage prévu. Presse et réseaux sociaux avec crédit obligatoire inclus, usage commercial sur devis. <a href="/contact">Demandez un devis</a>.' },
+            { q: 'Quel est le délai de livraison ?', a: '48 à 72 heures après le concert, selon le volume de photos. Tu reçois une galerie en ligne protégée et un lien de téléchargement HD. Les photos sont triées et retouchées avant la livraison. Je suis disponible immédiatement, en semaine comme le week-end, partout en France.', aHtml: null },
+            { q: 'Quels droits d\'usage sont inclus ?', a: 'Usage presse et réseaux sociaux avec crédit obligatoire (© Mattia Parrinello / photo.mprnl.fr) inclus. Usage commercial, publicitaire ou print sur devis séparé. Toutes les photos restent protégées par le droit d\'auteur ; la HD est livrée via une URL signée valable 1 heure.', aHtml: null },
+            { q: 'Dans quelles villes tu te déplaces ?', a: 'Basé à Paris, je me déplace en Île-de-France et partout en France : concerts, festivals, showcases, backstage, promo et making-of. J\'ai déjà couvert des salles de La Cigale à Paris La Défense Arena, et des festivals de Beauvais à Bordeaux.', aHtml: null }
         ];
+    }
+
+    _getFaq(lang, baseUrl) {
+        const items = this.getFaqItems(lang, baseUrl);
         return {
             '@type': 'FAQPage',
             'inLanguage': lang,
-            'mainEntity': qs.map(x => ({
+            'mainEntity': items.map(x => ({
                 '@type': 'Question',
                 'name': x.q,
                 'acceptedAnswer': { '@type': 'Answer', 'text': x.a }

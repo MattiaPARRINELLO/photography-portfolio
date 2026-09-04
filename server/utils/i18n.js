@@ -72,6 +72,14 @@ const dict = {
   },
   en: {
     nav: { portfolio: 'PORTFOLIO', galleries: 'GALLERIES', about: 'ABOUT', contact: 'CONTACT', openMenu: 'Open main menu' },
+    bio: [
+      "I'm Mattia Parrinello, <strong>concert photographer</strong> based in <strong>Paris</strong>, <strong>MPRNL</strong> is the professional name under which I sign and share my work. What drives me is the raw energy of artists on stage, the moment when light, sound and emotion collide. I capture what the audience feels but doesn't always see: the intensity of a gaze, the sweat under the lights, the controlled chaos of a live show.",
+      "Specialized in <strong>rap music</strong> and urban scenes, I've had the chance to shoot artists like <strong>Jok'air, Arma Jackson, Wallace Cleaver, Cyrus.wrld, Trebiz, Aswell</strong> and <strong>The French Kris</strong> in venues like <strong>La Cigale, La Boule Noire, La Bellevilloise, La Maroquinerie, Élispace, EMB Sannois, Paris La Défense Arena, Reims Arena, Zénith d'Amiens</strong> and the <strong>Pagaille Festival</strong>. From intimate showcase to open-air festival, every event is a new story to tell in images.",
+      "My approach: being as close as possible to the action, anticipating the highlights, playing with stage light to create cinematic and striking images. No poses, no artifice, just the authenticity of live. My style blends strong contrasts, vibrant colors and an energy that oozes from every shot.",
+      "I work with <strong>music media (Rapstar)</strong>, emerging artists, labels and venues. Based in <strong>Île-de-France</strong>, I travel across <strong>France</strong> to cover your events, concerts, festivals, showcases, backstage, promo, making-of, parties. Available immediately. Got a project or a show to cover? <a href=\"/contact?lang=en\">Let's talk.</a>",
+      ""
+    ],
+    presentation: 'Hi, I\'m Mattia',
     home: {
       cta: 'View my work',
       artists: 'Artists photographed',
@@ -223,7 +231,7 @@ const _enDict = {
   'Hébergeur :': 'Hosting provider:',
   'Le Site est normalement accessible à tout moment.': 'The Site is normally accessible at all times.',
   'Accueil</a>': 'Home</a>',
-  'Galeries</a>': '>Galleries</a>',
+  'Galeries</a>': 'Galleries</a>',
 };
 
 function translateHtml(html, lang) {

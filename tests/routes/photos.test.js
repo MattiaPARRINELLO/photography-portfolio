@@ -63,7 +63,10 @@ jest.mock('../../server/utils/textUtils', function () {
     loadTexts: jest.fn().mockReturnValue({ meta: { title: 'Portfolio Test', description: 'Description test', keywords: 'photo, concert', author: 'Mattia' } }),
     loadSeoData: jest.fn().mockReturnValue({}),
     injectMetaTags: jest.fn(function (html) { return html; }),
-    generateSchemaJsonLd: jest.fn().mockReturnValue('')
+    generateSchemaJsonLd: jest.fn().mockReturnValue(''),
+    getFaqItems: jest.fn().mockReturnValue([
+      { q: 'Question test ?', a: 'Réponse test', aHtml: '<p>Réponse test</p>' }
+    ])
   };
 });
 

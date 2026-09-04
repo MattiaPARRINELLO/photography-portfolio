@@ -568,7 +568,7 @@
                     }
 
                     // VÉRIFICATION 2 : Temps de remplissage (minimum 3 secondes)
-                    const fillTime = Date.now(), formLoadTime;
+                    const fillTime = Date.now() - formLoadTime;
                     if (fillTime < 3000) {
                       console.warn(
                         "🚫 Bot détecté : formulaire rempli trop vite (" +
@@ -972,18 +972,18 @@
         window.addEventListener(
           "pointermove",
           (e) => {
-            mx = e.clientX / window.innerWidth, 0.5;
-            my = e.clientY / window.innerHeight, 0.5;
+            mx = e.clientX / window.innerWidth - 0.5;
+            my = e.clientY / window.innerHeight - 0.5;
           },
           { passive: true },
         );
 
         function animate(t) {
-          const dt = (t, lastTime) / 1000;
+          const dt = (t - lastTime) / 1000;
           lastTime = t;
           // smooth
-          lx += (mx, lx) * ease;
-          ly += (my, ly) * ease;
+          lx += (mx - lx) * ease;
+          ly += (my - ly) * ease;
 
           blobs.forEach((b, i) => {
             const idx = i + 1;
@@ -992,9 +992,9 @@
             const floatX = Math.sin(t / 2000 + i) * (8 + i * 2) * 0.6;
             const floatY = Math.cos(t / 1800 + i) * (6 + i * 1.5) * 0.5;
             // mouse influence scaled by depth (front blobs move more)
-            const mxPx = lx * 140 * (1, depth * 0.6);
-            const myPx = ly * 80 * (1, depth * 0.6);
-            const scale = 1, depth * 0.06;
+            const mxPx = lx * 140 * (1 - depth * 0.6);
+            const myPx = ly * 80 * (1 - depth * 0.6);
+            const scale = 1 - depth * 0.06;
             b.style.transform = `translate3d(${mxPx + floatX}px, ${myPx + floatY}px, 0) scale(${scale})`;
           });
 

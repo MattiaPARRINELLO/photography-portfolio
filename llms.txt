@@ -8,6 +8,10 @@
 - [Contact](https://www.photo.mprnl.fr/contact) — Devis gratuit, réponse 24h
 - [FAQ](https://www.photo.mprnl.fr/a-propos#faq) — Tarifs, délais, droits, villes
 
+Pages cluster (une page par artiste et par salle, avec liste des galeries) :
+- https://www.photo.mprnl.fr/artiste/:slug (ex. /artiste/jokair, /artiste/arma-jackson)
+- https://www.photo.mprnl.fr/salle/:slug (ex. /salle/la-cigale, /salle/zenith-amiens)
+
 Artistes : Arma Jackson, Aswell, Cyrus.wrld, Damso, Jok'air, Romsii, The French Kris, Trebiz, Wallace Cleaver
 Salles : Dock B, L'Antipode, La Bellevilloise, La Boule Noire, La Cigale, La Maroquinerie, Pagaille Festival - Bordeaux, Paris La Défense Arena, Reims Arena, Zénith d'Amiens, Élispace, EMB Sannois
 
