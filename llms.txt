@@ -17,5 +17,7 @@ Salles : Dock B, L'Antipode, La Bellevilloise, La Boule Noire, La Cigale, La Mar
 
 Contact : contact.mprnl@gmail.com — (+33) 6 50 58 62 51 — Paris, Île-de-France
 
+<!-- AUTO_GALLERIES -->
+
 Full context : /llms-full.md
 Sitemap : /sitemap.xml

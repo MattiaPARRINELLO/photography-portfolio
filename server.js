@@ -13,6 +13,7 @@ const { requireAdminSession } = require('./server/middleware/auth');
 
 // Utilitaires
 const campaignService = require('./server/utils/campaignService');
+const llmsService = require('./server/utils/llmsService');
 
 // Middleware
 const { userTrackingMiddleware, campaignMiddleware } = require('./server/middleware/tracking');
@@ -164,13 +165,18 @@ app.get('/robots.txt', (req, res) => {
 });
 app.get('/llms.txt', (req, res) => {
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
-    res.sendFile(path.join(paths.root, 'llms.txt'));
+    // Généré dynamiquement (liste des galeries), cache 5 min
+    res.setHeader('Cache-Control', 'public, max-age=300');
+    const content = llmsService.generateLlmsTxt();
+    if (content === null) return res.sendFile(path.join(paths.root, 'llms.txt'));
+    res.send(content);
 });
 app.get('/llms-full.md', (req, res) => {
     res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
-    res.sendFile(path.join(paths.root, 'llms-full.md'));
+    res.setHeader('Cache-Control', 'public, max-age=300');
+    const content = llmsService.generateLlmsFull();
+    if (content === null) return res.sendFile(path.join(paths.root, 'llms-full.md'));
+    res.send(content);
 });
 
 // Rendre les services disponibles dans les routes

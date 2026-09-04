@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <title>SEO, Administration</title>
+    <link rel="icon" type="image/svg+xml" href="../../dist/assets/Logo_MP.svg" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root {
+        --bg: #0f0f0f; --surface: #1a1a1a; --border: #2a2a2a; --text: #e5e5e5;
+        --text-muted: #888; --accent: #3b82f6; --accent-hover: #2563eb; --danger: #dc2626; --success: #16a34a;
+      }
+      body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; }
+      .header { position: sticky; top: 0; z-index: 30; background: rgba(15,15,15,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+      .header-inner { max-width: 1100px; margin: 0 auto; padding: 0 1.25rem; height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+      .header-title { font-size: 0.95rem; font-weight: 600; }
+      .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.15s; text-decoration: none; }
+      .btn:hover { background: #222; }
+      .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .btn-primary:hover { background: var(--accent-hover); }
+      .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+      main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1.25rem; }
+      .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; }
+      .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
+      .hint { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.75rem; }
+      textarea#seo-json { width: 100%; min-height: 60vh; background: #121212; color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 0.9rem; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.8rem; line-height: 1.55; resize: vertical; }
+      textarea#seo-json:focus { outline: none; border-color: var(--accent); }
+      .status { margin-top: 0.9rem; font-size: 0.85rem; min-height: 1.3rem; }
+      .status.error { color: var(--danger); }
+      .status.success { color: var(--success); }
+      .actions { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-inner">
+        <div class="header-title">SEO — config/seo.json</div>
+        <a class="btn" href="/admin">← Retour admin</a>
+      </div>
+    </header>
+    <main>
+      <div class="card">
+        <div class="card-title">Éditeur SEO (metas, artistes, salles, pages cluster)</div>
+        <p class="hint">
+          Chaque artiste/salle doit avoir un <strong>name</strong> (slug auto si absent).
+          Un nouvel artiste/salle crée automatiquement sa page <code>/artiste/:slug</code> ou <code>/salle/:slug</code> et sa ligne dans le sitemap.
+          La validation refuse un JSON cassé ou un <code>site.url</code> manquant.
+        </p>
+        <textarea id="seo-json" spellcheck="false" aria-label="Contenu JSON de seo.json"></textarea>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="save-btn">Enregistrer</button>
+          <button type="button" class="btn" id="reload-btn">Recharger</button>
+        </div>
+        <div class="status" id="status" role="status"></div>
+      </div>
+    </main>
+    <script>
+      (function () {
+        var textarea = document.getElementById("seo-json");
+        var saveBtn = document.getElementById("save-btn");
+        var reloadBtn = document.getElementById("reload-btn");
+        var status = document.getElementById("status");
+
+        function setStatus(msg, type) {
+          status.textContent = msg;
+          status.className = "status" + (type ? " " + type : "");
+        }
+
+        async function ensureAuth() {
+          var response = await fetch("/admin/status");
+          var data = await response.json();
+          if (!data.isLoggedIn) {
+            window.location.href = "/admin";
+            return false;
+          }
+          return true;
+        }
+
+        async function load() {
+          try {
+            var response = await fetch("/admin/api/seo");
+            if (response.status === 401) { window.location.href = "/admin"; return; }
+            var data = await response.json();
+            textarea.value = JSON.stringify(data, null, 2);
+            setStatus("Chargé depuis config/seo.json", "success");
+          } catch (err) {
+            setStatus("Erreur de chargement : " + err.message, "error");
+          }
+        }
+
+        async function save() {
+          var parsed;
+          try {
+            parsed = JSON.parse(textarea.value);
+          } catch (err) {
+            setStatus("JSON invalide : " + err.message, "error");
+            return;
+          }
+          saveBtn.disabled = true;
+          try {
+            var response = await fetch("/admin/api/seo", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: textarea.value
+            });
+            var data = await response.json();
+            if (response.ok) {
+              textarea.value = JSON.stringify(parsed, null, 2);
+              setStatus("seo.json mis à jour — pages cluster et sitemap à jour sous 5 min (cache).", "success");
+            } else {
+              setStatus(data.error || "Erreur lors de la sauvegarde", "error");
+            }
+          } catch (err) {
+            setStatus("Erreur réseau : " + err.message, "error");
+          } finally {
+            saveBtn.disabled = false;
+          }
+        }
+
+        saveBtn.addEventListener("click", save);
+        reloadBtn.addEventListener("click", load);
+        ensureAuth().then(function (ok) { if (ok) load(); });
+      })();
+    </script>
+  </body>
+</html>

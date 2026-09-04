@@ -12,6 +12,7 @@ const {
 } = require('../middleware/auth');
 const linksService = require('../utils/linksService');
 const galleryService = require('../utils/galleryService');
+const seoService = require('../utils/seoService');
 const multer = require('multer');
 const { handleEventBanner } = require('./event-banner');
 
@@ -407,6 +408,34 @@ router.get('/galleries', (req, res) => {
     res.sendFile(path.join(paths.adminPages, 'galleries.html'));
 });
 router.get('/galleries/', (req, res) => res.redirect('/admin/galleries'));
+
+// Page admin SEO (seo.json : metas, pages cluster artistes/salles)
+router.get('/seo', (req, res) => {
+    res.sendFile(path.join(paths.adminPages, 'seo.html'));
+});
+router.get('/seo/', (req, res) => res.redirect('/admin/seo'));
+
+// API: lire config/seo.json
+router.get('/api/seo', requireAdminSession, (req, res) => {
+    try {
+        res.json(seoService.loadSeoConfig());
+    } catch (error) {
+        console.error('Erreur lecture seo.json:', error);
+        res.status(500).json({ error: 'Erreur lors de la lecture de seo.json' });
+    }
+});
+
+// API: sauvegarder config/seo.json (validé + écriture atomique)
+router.put('/api/seo', requireAdminSession, (req, res) => {
+    try {
+        const result = seoService.saveSeoConfig(req.body);
+        if (result.ok) return res.json({ success: true, message: 'seo.json mis à jour' });
+        return res.status(400).json({ error: result.error });
+    } catch (error) {
+        console.error('Erreur sauvegarde seo.json:', error);
+        res.status(500).json({ error: 'Erreur lors de la sauvegarde : ' + error.message });
+    }
+});
 
 // API: liste complète des galeries (admin)
 router.get('/api/galleries', requireAdminSession, (req, res) => {

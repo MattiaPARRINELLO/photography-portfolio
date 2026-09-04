@@ -46,6 +46,8 @@ Intrigué par la photo depuis petit, appareil offert à 18 ans, voyage en Égypt
 ## Galeries
 Voir /galeries et chaque /galeries/:slug (ImageGallery avec datePublished, venue, artist, 20 images max, sitemap image). Exemples : jok-air-a-beauvais, cyrus-a-l-antipode, arma-jackson-a-la-cigale.
 
+<!-- AUTO_GALLERIES -->
+
 ## Pages cluster
 - /artiste/:slug — une page par artiste (MusicGroup, genre Rap, sameAs réseaux) avec la liste de ses galeries. Ex. /artiste/jokair, /artiste/arma-jackson.
 - /salle/:slug — une page par salle avec sa ville réelle (Place, PostalAddress) et la liste des galeries tournées dans cette salle. Ex. /salle/la-cigale, /salle/zenith-amiens.
