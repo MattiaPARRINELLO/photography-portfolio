@@ -1,5 +1,4 @@
 var express = require('express');
-var crypto = require('crypto');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
 
@@ -109,8 +108,6 @@ function makeApp() {
   return app;
 }
 
-var SECRET = process.env.CONTACT_API_SECRET;
-
 describe('Route contact POST /send-mail', function () {
   var supertest;
 
@@ -125,17 +122,12 @@ describe('Route contact POST /send-mail', function () {
   function makeValidBody(overrides) {
     // Use a timestamp from 5 seconds ago to pass the "fill time >= 3 sec" check
     var ts = Date.now() - 5000;
-    var sig = crypto.createHash('sha256')
-      .update(ts + SECRET)
-      .digest('hex')
-      .substring(0, 16);
     var base = {
       email: 'visiteur@test.com',
       subject: 'Demande de devis',
       message: 'Bonjour, je souhaiterais un devis pour un concert.',
       _timestamp: ts,
-      _token: 'csrf-token-123',
-      _signature: sig
+      _token: 'csrf-token-123'
     };
     if (overrides) {
       Object.keys(overrides).forEach(function (k) { base[k] = overrides[k]; });
@@ -261,7 +253,6 @@ describe('Route contact POST /send-mail', function () {
   it('retourne 400 si timestamp absent', function (done) {
     var body = makeValidBody();
     delete body._timestamp;
-    delete body._signature;
 
     supertest(makeApp())
       .post('/send-mail')
@@ -276,11 +267,7 @@ describe('Route contact POST /send-mail', function () {
   // ================================================================
   it('retourne 400 si timestamp expire', function (done) {
     var oldTs = Date.now() - 11 * 60 * 1000;
-    var sig = crypto.createHash('sha256')
-      .update(oldTs + SECRET)
-      .digest('hex')
-      .substring(0, 16);
-    var body = makeValidBody({ _timestamp: oldTs, _signature: sig });
+    var body = makeValidBody({ _timestamp: oldTs });
 
     supertest(makeApp())
       .post('/send-mail')
@@ -295,45 +282,13 @@ describe('Route contact POST /send-mail', function () {
   });
 
   // ================================================================
-  // Signature absente
-  // ================================================================
-  it('retourne 400 si signature absente', function (done) {
-    var body = makeValidBody();
-    delete body._signature;
-
-    supertest(makeApp())
-      .post('/send-mail')
-      .set(validHeaders())
-      .send(body)
-      .expect(400)
-      .end(done);
-  });
-
-  // ================================================================
-  // Signature invalide
-  // ================================================================
-  it('retourne 403 si signature invalide', function (done) {
-    var body = makeValidBody({ _signature: 'invalide' });
-
-    supertest(makeApp())
-      .post('/send-mail')
-      .set(validHeaders())
-      .send(body)
-      .expect(403)
-      .end(done);
-  });
-
-  // ================================================================
   // Token CSRF absent
   // ================================================================
   it('retourne 400 si token CSRF absent', function (done) {
-    var ts = Date.now();
-    var sig = crypto.createHash('sha256').update(ts + SECRET).digest('hex').substring(0, 16);
-
     supertest(makeApp())
       .post('/send-mail')
       .set(validHeaders())
-      .send({ email: 'v@t.com', subject: 'S', message: 'Message assez long.', _timestamp: ts, _signature: sig })
+      .send({ email: 'v@t.com', subject: 'S', message: 'Message assez long.', _timestamp: Date.now() - 5000 })
       .expect(400)
       .end(done);
   });

@@ -46,23 +46,11 @@ const SPAM_KEYWORDS = [
     'investment opportunity', 'limited time', 'act now', 'urgent'
 ];
 
-// ============================================
-// CLÉ SECRÈTE POUR SIGNATURE DES REQUÊTES
-// ============================================
-// Cette clé est utilisée pour valider que la requête
-// vient bien du formulaire et non d'un appel API direct.
-// Elle est combinée avec le timestamp pour créer une signature.
-
-const API_SECRET = process.env.CONTACT_API_SECRET;
-if (!API_SECRET) {
-    throw new Error('CONTACT_API_SECRET must be set in environment');
-}
-
 // ===== ROUTES DE COMMUNICATION =====
 
 // Route pour l'envoi d'email (avec protection anti-spam et anti-API abuse)
 router.post('/send-mail', async (req, res) => {
-    const { email, subject, message, _honeypot, _timestamp, _token, _signature } = req.body;
+    const { email, subject, message, _honeypot, _timestamp, _token } = req.body;
     const clientIP = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
     // ============================================
@@ -108,28 +96,6 @@ router.post('/send-mail', async (req, res) => {
     if (age > 10 * 60 * 1000) {
         console.warn('🚫 API abuse: Timestamp trop ancien (' + Math.round(age / 1000) + 's) depuis IP:', clientIP);
         return res.status(400).json({ error: 'Session expirée. Veuillez rafraîchir la page.' });
-    }
-
-    // VÉRIFICATION D : Signature de la requête
-    // Le client doit envoyer une signature basée sur le timestamp
-    // Cela prouve qu'il a exécuté notre JavaScript
-    if (!_signature) {
-        console.warn('🚫 API abuse: Signature manquante depuis IP:', clientIP);
-        return res.status(400).json({ error: 'Requête invalide - signature manquante' });
-    }
-
-    // Vérifie la signature (hash simple du timestamp + secret)
-    // Le même calcul est fait côté client
-    const crypto = require('crypto');
-    const expectedSignature = crypto
-        .createHash('sha256')
-        .update(_timestamp + API_SECRET)
-        .digest('hex')
-        .substring(0, 16);
-
-    if (_signature !== expectedSignature) {
-        console.warn('🚫 API abuse: Signature invalide depuis IP:', clientIP);
-        return res.status(403).json({ error: 'Signature invalide' });
     }
 
     // VÉRIFICATION E : Token CSRF obligatoire
@@ -231,6 +197,11 @@ router.post('/send-mail', async (req, res) => {
     const smtpPass = serverConfig.smtpPass;
     const smtpHost = serverConfig.smtpHost;
     const smtpPort = serverConfig.smtpPort;
+
+    if (!smtpHost || !smtpUser || !smtpPass) {
+        console.error('❌ Configuration SMTP manquante (SMTP_* ou GMAIL_* requis)');
+        return res.status(500).json({ error: 'Envoi de mail non configuré côté serveur' });
+    }
 
     try {
         let transporter = nodemailer.createTransport({

@@ -26,11 +26,17 @@ class ServerConfig {
         this.port = process.env.PORT || 3000;
         this.adminPassword = process.env.ADMIN_PASSWORD;
 
-        // Configuration SMTP
-        this.smtpHost = process.env.SMTP_HOST;
-        this.smtpPort = parseInt(process.env.SMTP_PORT || '465');
-        this.smtpUser = process.env.SMTP_USER;
-        this.smtpPass = process.env.SMTP_PASS;
+        // Configuration SMTP (SMTP_* prioritaire, repli GMAIL_* pour l'envoi via Gmail)
+        this.smtpUser = process.env.SMTP_USER || process.env.GMAIL_USER;
+        this.smtpPass = process.env.SMTP_PASS || process.env.GMAIL_PASS;
+        this.smtpHost = process.env.SMTP_HOST || (this.smtpUser && this.smtpPass ? 'smtp.gmail.com' : undefined);
+        if (process.env.SMTP_PORT) {
+            this.smtpPort = parseInt(process.env.SMTP_PORT);
+        } else if (!process.env.SMTP_HOST && this.smtpUser && this.smtpPass) {
+            this.smtpPort = 587;
+        } else {
+            this.smtpPort = 465;
+        }
     }
 
     loadConfig() {

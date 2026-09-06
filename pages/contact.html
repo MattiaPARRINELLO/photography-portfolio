@@ -513,32 +513,6 @@
                 // Stocke le token dans sessionStorage pour vérification
                 sessionStorage.setItem("contactCsrf", csrfToken);
 
-                // 3. Génère une signature basée sur le timestamp
-                // Cette signature prouve que le JavaScript a été exécuté
-                // (impossible à générer avec curl/Postman sans connaître l'algorithme)
-                async function generateSignature(timestamp) {
-                  const secret = "mp-contact-form-2024-secret-key";
-                  const data = timestamp + secret;
-                  const encoder = new TextEncoder();
-                  const dataBuffer = encoder.encode(data);
-                  const hashBuffer = await crypto.subtle.digest(
-                    "SHA-256",
-                    dataBuffer,
-                  );
-                  const hashArray = Array.from(new Uint8Array(hashBuffer));
-                  const hashHex = hashArray
-                    .map((b) => b.toString(16).padStart(2, "0"))
-                    .join("");
-                  return hashHex.substring(0, 16);
-                }
-
-                // Génère et stocke la signature
-                let formSignature = "";
-                generateSignature(formLoadTimestamp).then((sig) => {
-                  formSignature = sig;
-                  console.log("📝 Formulaire initialisé avec signature");
-                });
-
                 document
                   .getElementById("contactForm")
                   .addEventListener("submit", async function (e) {
@@ -612,7 +586,6 @@
                           _honeypot: honeypot,
                           _timestamp: formLoadTime,
                           _token: token,
-                          _signature: formSignature, // Signature anti-API abuse
                         }),
                       });
 
@@ -633,7 +606,7 @@
                         `;
                         bigCheck.style.display = "flex";
                         this.reset();
-                        // Régénère le timestamp, le token et la signature pour le prochain envoi
+                        // Régénère le timestamp et le token pour le prochain envoi
                         const newTimestamp = Date.now().toString();
                         document.getElementById("formLoadTime").value =
                           newTimestamp;
@@ -644,9 +617,6 @@
                         );
                         document.getElementById("csrfToken").value = newToken;
                         sessionStorage.setItem("contactCsrf", newToken);
-                        generateSignature(newTimestamp).then((sig) => {
-                          formSignature = sig;
-                        });
 
                         setTimeout(() => {
                           bigCheck.style.display = "none";

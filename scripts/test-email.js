@@ -1,10 +1,17 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
-const user = process.env.SMTP_USER;
-const pass = process.env.SMTP_PASS;
-const host = process.env.SMTP_HOST;
-const port = parseInt(process.env.SMTP_PORT || '465');
+const user = process.env.SMTP_USER || process.env.GMAIL_USER;
+const pass = process.env.SMTP_PASS || process.env.GMAIL_PASS;
+const host = process.env.SMTP_HOST || (user && pass ? 'smtp.gmail.com' : undefined);
+let port;
+if (process.env.SMTP_PORT) {
+    port = parseInt(process.env.SMTP_PORT);
+} else if (!process.env.SMTP_HOST && user && pass) {
+    port = 587;
+} else {
+    port = 465;
+}
 
 console.log('Host:', host);
 console.log('Port:', port);
@@ -29,8 +36,8 @@ const transporter = nodemailer.createTransport({
 const mailOptions = {
     from: `"Test Script" <${user}>`,
     to: 'contact.mprnl@gmail.com', // Envoi vers votre adresse perso
-    subject: 'Test Email from Server (Hosterfy SMTP)',
-    text: 'Si vous recevez ceci, la configuration SMTP Hosterfy fonctionne !'
+    subject: 'Test Email from Server (Gmail SMTP)',
+    text: 'Si vous recevez ceci, la configuration SMTP Gmail fonctionne !'
 };
 
 transporter.sendMail(mailOptions, (error, info) => {
