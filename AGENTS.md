@@ -125,13 +125,19 @@ Les tests injectent leurs propres valeurs via `tests/setup.js` — ne pas y mett
 
 ## Déploiement
 
-Identifiable uniquement en partie (À confirmer pour la procédure détaillée) :
+Vérifié sur le serveur de production (`~/photo.mprnl.fr` sur `web2-fr.hosterfy.com`) :
 
-- Hébergement Apache qui proxyifie `/admin` vers Node (`SetHandler proxy:http://localhost:3000` dans `.htaccess`, désactive gzip/brotli Apache sur `/admin` car Node gère déjà la compression).
-- Node sert sur le port 3000 en `NODE_ENV=production` ; domaine de production : `https://www.photo.mprnl.fr`.
-- Pas de CI/CD dans le dépôt (`.github/` ne contient que FUNDING.yml + templates d'issues).
+- **Phusion Passenger 6** (hébergement CloudLinux/cPanel), pas de proxy Apache vers un port Node : `PassengerAppRoot`, `PassengerBaseURI "/"`, `PassengerStartupFile server.js`. Passenger sert **tout** le site, y compris les fichiers statiques de la racine du projet.
+- Conséquence de sécurité : `.env`, `config/*.json`, `*.md`, `package.json` étaient téléchargeables publiquement. Deux couches protègent désormais : les règles `<FilesMatch>`/`RedirectMatch` du `.htaccess` **et** le middleware de refus dans `server.js` (robuste au chemin URL-encodé). Ne jamais faire confiance à une seule.
+- Le `.htaccess` versionné contient la config Passenger générée par cPanel : c'est le seul `.htaccess` qui fonctionne en prod. Ne pas le remplacer par une version « Apache + proxy :3000 ».
+- Redémarrage après déploiement : `touch tmp/restart.txt`.
+- Déploiement : `git pull --ff-only` sur le serveur (branche `main`). Toute modif manuelle sur le serveur est perdue au pull — et un pull échoue s'il y a des fichiers modifiés localement.
+- Domaine de production : `https://www.photo.mprnl.fr`. Pas de CI/CD dans le dépôt (`.github/` ne contient que FUNDING.yml + templates d'issues).
 
 ## Particularités et pièges
+
+- **Ne jamais laisser de fichier sensible dans la racine du projet** : c'est la racine du DocumentRoot. Les sauvegardes (`.env.bak*`, `config/*.bak*`, `photos.zip`) y ont longtemps traîné et étaient téléchargeables. Les stocker hors du DocumentRoot (`~/hors-ligne-mprnl/`, `chmod 700`).
+- Les noms de variables SMTP en prod sont `SMTP_USER`/`SMTP_PASS`/`SMTP_HOST`/`SMTP_PORT` (`.env.example` documente encore `GMAIL_*`, conservé comme repli dans `server/config.js`).
 
 - **Express 5** : les patterns de routes diffèrent d'Express 4 (attention aux wildcards et aux handlers d'erreur).
 - **Helmet 8 + CSP** : directives à maintenir explicitement, sinon tout casse silencieusement : `scriptSrcAttr: ["'unsafe-inline'"]` (événements inline), `scriptSrc` incluant jsdelivr/unpkg/`'unsafe-inline'`/`'unsafe-eval'`, `styleSrc` incluant jsdelivr + fonts.googleapis + `'unsafe-inline'`, `connectSrc` jsdelivr, `crossOriginEmbedderPolicy: false`, `crossOriginResourcePolicy: cross-origin`. Helmet 8 ajoute `upgrade-insecure-requests` automatiquement.

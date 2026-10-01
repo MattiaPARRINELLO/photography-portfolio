@@ -1,18 +1,24 @@
-# Rediriger toutes les requêtes /admin vers Node.js
-RewriteEngine On
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/mattiapa/photo.mprnl.fr"
+PassengerBaseURI "/"
+PassengerNodejs "/home/mattiapa/nodevenv/photo.mprnl.fr/20/bin/node"
+PassengerAppType node
+PassengerStartupFile server.js
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
 
-# Rediriger /admin et /admin/ vers Node.js
-RewriteRule ^admin/?$ - [E=no-gzip:1,E=no-brotli:1]
+# php -- BEGIN cPanel-generated handler, do not edit
+# Définissez le package « ea-php84 » comme langage de programmation « PHP » par défaut.
+<IfModule mime_module>
+  AddHandler application/x-httpd-ea-php84 .php .php8 .phtml
+</IfModule>
+# php -- END cPanel-generated handler, do not edit
 
-# Empêcher Apache de servir des fichiers statiques dans /admin
-<LocationMatch "^/admin">
-    SetHandler proxy:http://localhost:3000
-</LocationMatch>
 
 # =============================================================
-# SÉCURITÉ : Apache sert le DocumentRoot (= racine du projet) pour
-# tout ce qui n'est pas /admin. Sans ces règles, /.env, /config/*.json,
-# /AGENTS.md, /package.json sont téléchargeables en clair.
+# SÉCURITÉ : Passenger sert la racine du projet en statique.
+# Sans ces règles, /.env, /config/*.json, /AGENTS.md sont
+# téléchargeables en clair. Garde-fou équivalent dans server.js
+# (middleware de refus) — les deux couches sont nécessaires.
 # =============================================================
 
 # 1) /.well-known reste public (ACME, security.txt) — à garder AVANT le refus
