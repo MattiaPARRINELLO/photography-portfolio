@@ -19,22 +19,22 @@ PassengerStartupFile server.js
 # Sans ces règles, /.env, /config/*.json, /AGENTS.md sont
 # téléchargeables en clair. Garde-fou équivalent dans server.js
 # (middleware de refus) — les deux couches sont nécessaires.
+#
+# Ne PAS utiliser <LocationMatch> ici : le vhost n'autorise pas
+# `Require` dans un <Location> coming d'un .htaccess → Apache renvoie
+# 500 sur TOUTES les requêtes. /.well-known/ n'a pas besoin d'exemption :
+# FilesMatch ne teste que le basename du fichier servi.
 # =============================================================
 
-# 1) /.well-known reste public (ACME, security.txt) — à garder AVANT le refus
-<LocationMatch "^/\.well-known/">
-    Require all granted
-</LocationMatch>
-
-# 2) Tout fichier caché (.env, .env.*, .npmrc, .htpasswd...)
+# 1) Tout fichier caché (.env, .env.*, .npmrc, .htpasswd...)
 <FilesMatch "^\.">
     Require all denied
 </FilesMatch>
 
-# 3) Dossiers internes du projet
+# 2) Dossiers internes du projet
 RedirectMatch 404 ^/(?:config|logs|coverage|temp|scripts|tests|server|graphify-out|node_modules)/
 
-# 4) Fichiers internes à la racine du projet
+# 3) Fichiers internes à la racine du projet
 RedirectMatch 404 ^/(?:package|package-lock)\.json$
 RedirectMatch 404 ^/(?:AGENTS|AUDIT|REFACTORING_PLAN|REFACTORING_STATUS|TESTS_REPORT|CONFIG_README)\.md$
 RedirectMatch 404 ^/.*/README\.md$
