@@ -91,6 +91,28 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(languageMiddleware);
 
+// Empêcher l'accès direct aux fichiers internes du projet (.env, config/, logs/…).
+// En prod Apache sert le DocumentRoot à la place de Node : ce garde-fou est une
+// défense en profondeur, utile si le proxy Apache est mal configuré ou contourné.
+const BLOCKED_DIRS_RE = /^\/(?:config|logs|coverage|temp|scripts|tests|server|graphify-out|node_modules)(?:\/|$)/i;
+const BLOCKED_FILES_RE = /^\/(?:package|package-lock)\.json$/i;
+const BLOCKED_DOCS_RE = /^\/(?:AGENTS|AUDIT|REFACTORING_PLAN|REFACTORING_STATUS|TESTS_REPORT|CONFIG_README)\.md$/i;
+
+app.use((req, res, next) => {
+    let target = req.path;
+    try {
+        target = decodeURIComponent(target);
+    } catch (e) {
+        return res.status(404).sendFile(path.join(paths.pages, '404.html'));
+    }
+    if (target.startsWith('/.well-known/')) return next();
+    if (target.startsWith('/.')) return res.status(404).sendFile(path.join(paths.pages, '404.html'));
+    if (BLOCKED_DIRS_RE.test(target) || BLOCKED_FILES_RE.test(target) || BLOCKED_DOCS_RE.test(target) || /README\.md$/i.test(target)) {
+        return res.status(404).sendFile(path.join(paths.pages, '404.html'));
+    }
+    next();
+});
+
 // Sert les fichiers statiques, mais exclut le dossier /admin pour éviter les conflits
 // Middleware: servir les versions pré-compressées si elles existent (.br/.gz)
 app.use((req, res, next) => {

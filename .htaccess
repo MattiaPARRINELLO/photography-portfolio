@@ -8,3 +8,27 @@ RewriteRule ^admin/?$ - [E=no-gzip:1,E=no-brotli:1]
 <LocationMatch "^/admin">
     SetHandler proxy:http://localhost:3000
 </LocationMatch>
+
+# =============================================================
+# SÉCURITÉ : Apache sert le DocumentRoot (= racine du projet) pour
+# tout ce qui n'est pas /admin. Sans ces règles, /.env, /config/*.json,
+# /AGENTS.md, /package.json sont téléchargeables en clair.
+# =============================================================
+
+# 1) /.well-known reste public (ACME, security.txt) — à garder AVANT le refus
+<LocationMatch "^/\.well-known/">
+    Require all granted
+</LocationMatch>
+
+# 2) Tout fichier caché (.env, .env.*, .npmrc, .htpasswd...)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# 3) Dossiers internes du projet
+RedirectMatch 404 ^/(?:config|logs|coverage|temp|scripts|tests|server|graphify-out|node_modules)/
+
+# 4) Fichiers internes à la racine du projet
+RedirectMatch 404 ^/(?:package|package-lock)\.json$
+RedirectMatch 404 ^/(?:AGENTS|AUDIT|REFACTORING_PLAN|REFACTORING_STATUS|TESTS_REPORT|CONFIG_README)\.md$
+RedirectMatch 404 ^/.*/README\.md$
