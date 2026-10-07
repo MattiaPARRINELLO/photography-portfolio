@@ -219,7 +219,13 @@ router.post('/send-mail', async (req, res) => {
             auth: {
                 user: smtpUser,
                 pass: smtpPass
-            }
+            },
+            // Ce serveur n'a pas de route IPv6 : sans ce timeout, nodemailer tente
+            // l'IPv6 de smtp.gmail.com puis attend l'expiration avant de basculer
+            // en IPv4 (≈120 s par envoi, formulaire figé sur « Envoi en cours… »).
+            connectionTimeout: 10000,
+            greetingTimeout: 10000,
+            socketTimeout: 20000
         });
 
         await transporter.sendMail({

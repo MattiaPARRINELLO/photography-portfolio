@@ -222,6 +222,25 @@ describe('Route contact POST /send-mail', function () {
     runNext();
   });
 
+  it(' borne les timeouts SMTP (serveur sans IPv6 : fallback IPv4)', function (done) {
+    var body = makeValidBody();
+
+    supertest(makeApp())
+      .post('/send-mail')
+      .set(validHeaders())
+      .send(body)
+      .expect(200)
+      .end(function (err) {
+        if (err) return done(err);
+        var opts = nodemailer.createTransport.mock.calls[0][0];
+        // Sans ces timeouts, l'envoi bloque ~120 s le temps que l'IPv6 expire.
+        expect(opts.connectionTimeout).toBeLessThanOrEqual(15000);
+        expect(opts.greetingTimeout).toBeLessThanOrEqual(15000);
+        expect(opts.socketTimeout).toBeGreaterThan(0);
+        done();
+      });
+  });
+
   // ================================================================
   // Honeypot
   // ================================================================
