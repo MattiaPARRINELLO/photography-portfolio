@@ -91,8 +91,8 @@ jest.mock('../../server/utils/textUtils', function () {
   };
 });
 
-var nodemailer = require('nodemailer');
-var statsRouter = require('../../server/routes/stats');
+var nodemailer;
+var statsRouter;
 
 function makeApp() {
   var app = express();
@@ -117,6 +117,11 @@ describe('Route contact POST /send-mail', function () {
 
   beforeEach(function () {
     jest.clearAllMocks();
+    // Le rate limiter vit dans le module : on recharge pour repartir d'un
+    // compteur IP vierge, sinon les tests s'épuisent mutuellement.
+    jest.resetModules();
+    nodemailer = require('nodemailer');
+    statsRouter = require('../../server/routes/stats');
   });
 
   function makeValidBody(overrides) {
@@ -242,6 +247,31 @@ describe('Route contact POST /send-mail', function () {
       .post('/send-mail')
       .set('Content-Type', 'application/json')
       .set('Origin', 'https://evil.com')
+      .send(body)
+      .expect(403)
+      .end(done);
+  });
+
+  it('accepte une requete depuis le domaine de production', function (done) {
+    var body = makeValidBody();
+
+    supertest(makeApp())
+      .post('/send-mail')
+      .set('Content-Type', 'application/json')
+      .set('Origin', 'https://www.photo.mprnl.fr')
+      .set('Referer', 'https://www.photo.mprnl.fr/contact')
+      .send(body)
+      .expect(200)
+      .end(done);
+  });
+
+  it('retourne 403 sur un sous-domaine piege du domaine autorise', function (done) {
+    var body = makeValidBody();
+
+    supertest(makeApp())
+      .post('/send-mail')
+      .set('Content-Type', 'application/json')
+      .set('Origin', 'https://www.photo.mprnl.fr.evil.com')
       .send(body)
       .expect(403)
       .end(done);

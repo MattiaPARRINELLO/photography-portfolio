@@ -67,15 +67,23 @@ router.post('/send-mail', async (req, res) => {
     const allowedOrigins = [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
+        'https://www.photo.mprnl.fr',
+        'https://photo.mprnl.fr',
         'https://mattiaparrinello.com',
         'https://www.mattiaparrinello.com',
         process.env.SITE_URL
     ].filter(Boolean);
 
     const requestOrigin = origin || referer;
-    const isValidOrigin = requestOrigin && allowedOrigins.some(allowed =>
-        requestOrigin.startsWith(allowed)
-    );
+    const isValidOrigin = requestOrigin && allowedOrigins.some(allowed => {
+        try {
+            // Compare les origines exactes : le Referer inclut le chemin,
+            // et startsWith laisserait passer « https://www.photo.mprnl.fr.evil.com ».
+            return new URL(requestOrigin).origin === new URL(allowed).origin;
+        } catch (e) {
+            return false;
+        }
+    });
 
     if (!isValidOrigin) {
         console.warn('🚫 API abuse: Origin invalide:', requestOrigin, 'depuis IP:', clientIP);

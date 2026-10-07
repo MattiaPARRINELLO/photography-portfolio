@@ -1264,11 +1264,12 @@ function extractDateFromFilename(filename) {
 - **Description** : `substring(0, 16)` réduit entropie à 64 bits.
 - **Correction** : Utiliser 32+ caractères (128 bits minimum).
 
-#### Q-M15 MEDIUM — `startsWith` pour comparaison d'origine bypassable
+#### Q-M15 MEDIUM — ✅ CORRIGÉ — `startsWith` pour comparaison d'origine bypassable
 
-- **Fichier** : `server/routes/stats.js:101`
-- **Description** : `'http://localhost:3000.evil.com'.startsWith('http://localhost:3000')` → true.
-- **Correction** : `requestOrigin === allowed`.
+- **Fichier** : `server/routes/stats.js:70`
+- **Description** : ~~`'http://localhost:3000.evil.com'.startsWith('http://localhost:3000')` → true.~~ Ajout : le domaine de production `photo.mprnl.fr` manquait dans la liste blanche d'origines, ce qui renvoyait 403 sur tous les envois du formulaire de contact en prod.
+- **Correction appliquée** : Comparaison des origines exactes via `new URL(x).origin === new URL(y).origin` (gère le chemin du `Referer` tout en refusant les sous-domaines pièges). Domaines de production ajoutés à la liste blanche.
+- **Tests** : `tests/routes/contact.test.js` — origine de prod acceptée, sous-domaine piège refusé.
 
 #### Q-M16 MEDIUM — `secure: smtpPort === 465` ignore le port 587 STARTTLS
 
