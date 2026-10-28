@@ -187,7 +187,9 @@ router.get('/hd-image', hdLimiter, (req, res) => {
         res.setHeader('Cache-Control', 'private, no-store');
         res.setHeader('X-Content-Type-Options', 'nosniff');
 
-        res.sendFile(fullPath);
+        // dotfiles: 'allow' — le dossier des originaux peut contenir un segment
+        // caché ; le chemin est déjà confiné à ce répertoire et validé.
+        res.sendFile(fullPath, { dotfiles: 'allow' });
     } catch (error) {
         console.error('Erreur lors de la récupération de l\'image HD:', error);
         res.status(500).send('Erreur serveur');

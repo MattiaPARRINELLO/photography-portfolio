@@ -112,7 +112,7 @@ describe('Route image-resize GET /photos/resize — cache hits et erreurs', func
       .end(function (err, res) {
         if (err) return done(err);
         expect(res.text).toBe('cache-hit');
-        expect(sendFileSpy).toHaveBeenCalledWith(cachePath);
+        expect(sendFileSpy).toHaveBeenCalledWith(cachePath, { dotfiles: 'allow' });
         done();
       });
   });
@@ -126,7 +126,7 @@ describe('Route image-resize GET /photos/resize — cache hits et erreurs', func
       .expect(200)
       .end(function (err) {
         if (err) return done(err);
-        expect(sendFileSpy).toHaveBeenCalledWith(cachePath);
+        expect(sendFileSpy).toHaveBeenCalledWith(cachePath, { dotfiles: 'allow' });
         done();
       });
   });
@@ -147,7 +147,7 @@ describe('Route image-resize GET /photos/resize — cache hits et erreurs', func
       .end(function (err, res) {
         if (err) return done(err);
         expect(res.text).toBe('cache-hit');
-        expect(sendFileSpy).toHaveBeenCalledWith(cachePath);
+        expect(sendFileSpy).toHaveBeenCalledWith(cachePath, { dotfiles: 'allow' });
         done();
       });
   });
@@ -164,7 +164,7 @@ describe('Route image-resize GET /photos/resize — cache hits et erreurs', func
       .end(function (err, res) {
         if (err) return done(err);
         expect(res.text).toBe('cache-hit');
-        expect(sendFileSpy).toHaveBeenCalledWith(cachePath);
+        expect(sendFileSpy).toHaveBeenCalledWith(cachePath, { dotfiles: 'allow' });
         done();
       });
   });

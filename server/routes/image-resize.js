@@ -75,7 +75,10 @@ function sendCached(res, cachePath, contentType) {
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.setHeader('Vary', 'Accept');
     res.setHeader('X-Robots-Tag', 'noimageindex');
-    return res.sendFile(cachePath);
+    // dotfiles: 'allow' — le chemin disque du cache peut contenir un dossier
+    // caché (ex. ~/.t3/worktrees/...) ; on ne sert jamais que des chemins
+    // construits par le serveur, pas une entrée utilisateur.
+    return res.sendFile(cachePath, { dotfiles: 'allow' });
 }
 
 // GET /photos/resize?file=FILENAME&w=320&fmt=webp&q=80

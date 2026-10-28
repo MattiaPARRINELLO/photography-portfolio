@@ -49,6 +49,8 @@ Tout ce qui suit est vérifié dans le dépôt sauf mention explicite « À conf
 | Thumbnails → WebP | `npm run convert-thumbnails` |
 | Test d'envoi SMTP | `npm run test:email` |
 | Migration photos « galerie seulement » | `npm run migrate:gallery-only` |
+| Migration des originaux hors du statique | `npm run migrate:originals` (dry-run), puis `-- --apply` |
+| Recette de sécurité HTTP (instance locale isolée) | `npm run test:security` |
 
 **État vérifié** : `npx jest --ci --silent` → 33 suites passantes, 638 tests passants, 0 skip. `TESTS_REPORT.md` est daté (445 tests, 14 skips) et ne reflète plus l'état actuel.
 
