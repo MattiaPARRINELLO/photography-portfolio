@@ -13,10 +13,7 @@ function createPhotosStaticMiddleware(photosDir) {
     router.use('/thumbnails', express.static(path.join(photosDir, 'thumbnails'), {
         index: false,
         maxAge: '1y',
-        immutable: true,
-        // Un déploiement peut vivre sous un dossier caché (ex. ~/.t3/...) ;
-        // seules les miniatures, dans un répertoire fixe, sont servies ici.
-        dotfiles: 'allow'
+        immutable: true
     }));
 
     // Tout le reste tombe en 404 : originaux, cache resized/, listings.
