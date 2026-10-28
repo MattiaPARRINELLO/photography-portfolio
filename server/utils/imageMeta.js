@@ -4,19 +4,20 @@ const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 const serverConfig = require('../config');
+const { getOriginalsDir } = require('./photoStorage');
 
-const paths = serverConfig.getPaths();
 const cache = new Map();
 
 // Retourne {width, height} de l'original, ou null (fallback : pas d'attributs).
 async function getImageDimensions(filename) {
     const name = String(filename || '').replace(/^.*[\\/]/, ''); // basename, anti-traversal
     if (cache.has(name)) return cache.get(name);
-    if (!paths.photos) {
+    const originalsDir = getOriginalsDir();
+    if (!originalsDir) {
         cache.set(name, null);
         return null;
     }
-    const filePath = path.join(paths.photos, name);
+    const filePath = path.join(originalsDir, name);
     if (!fs.existsSync(filePath)) {
         cache.set(name, null);
         return null;

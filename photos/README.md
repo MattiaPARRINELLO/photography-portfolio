@@ -4,8 +4,17 @@ Ce dossier contient toutes vos photos de portfolio.
 
 ## Structure :
 
-- `/photos/` : Photos originales en haute qualité
-- `/photos/thumbnails/` : Miniatures générées automatiquement
+- `photos-originals/` : Photos originales en haute qualité (hors du dossier statique public)
+- `/photos/thumbnails/` : Miniatures générées automatiquement (seul contenu servi en statique)
+- `/photos/resized/` : Cache de redimensionnement (généré, jamais servi en statique)
+
+> **Important :** les originaux ne sont **jamais** servis en statique. Ils vivent
+> dans `paths.photoOriginals` (`PHOTOS_ORIGINALS_DIR`, par défaut
+> `photos-originals/`, et **hors du DocumentRoot en production**).
+> Le site sert uniquement `/photos/resize?file=…&w=…` (1600 px max) et les URLs
+> signées du kit presse (`/api/hd-image`).
+> Migration : `node scripts/migrate-originals-out.js` (dry-run par défaut),
+> puis `node scripts/migrate-originals-out.js --apply`.
 
 ## Formats supportés :
 

@@ -38,3 +38,8 @@ RedirectMatch 404 ^/(?:config|logs|coverage|temp|scripts|tests|server|graphify-o
 RedirectMatch 404 ^/(?:package|package-lock)\.json$
 RedirectMatch 404 ^/(?:AGENTS|AUDIT|REFACTORING_PLAN|REFACTORING_STATUS|TESTS_REPORT|CONFIG_README)\.md$
 RedirectMatch 404 ^/.*/README\.md$
+
+# 4) Photos : le dossier est servi par Passenger en statique AVANT Node.
+#    Seules les vignettes (miniatures générées) et la route /photos/resize
+#    doivent être accessibles ; les originaux et le cache `resized/` non.
+RedirectMatch 404 ^/photos/(?!resize(?:\?|$)|thumbnails/).*\.(?:jpe?g|png|webp|gif)$

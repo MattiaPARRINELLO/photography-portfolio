@@ -8,6 +8,7 @@ jest.mock('../../server/config', function () {
   return {
     getPaths: jest.fn().mockReturnValue({
       photos: '/fake/photos',
+      photoOriginals: '/fake/originals',
       root: '/fake/root'
     }),
     getConfig: jest.fn().mockReturnValue({
@@ -48,6 +49,7 @@ jest.mock('sharp', function () {
       webp: jest.fn().mockReturnThis(),
       jpeg: jest.fn().mockReturnThis(),
       png: jest.fn().mockReturnThis(),
+      withMetadata: jest.fn().mockReturnThis(),
       toBuffer: jest.fn().mockResolvedValue(Buffer.from('fake-resized-image-data')),
       toFile: jest.fn().mockResolvedValue(undefined)
     };
@@ -146,7 +148,7 @@ describe('Route image-resize GET /photos/resize', function () {
   // ================================================================
 
   it('retourne 200 avec l image redimensionnee (pas de cache)', function (done) {
-    fsStore['/fake/photos/test.jpg'] = { mtimeMs: Date.now() };
+    fsStore['/fake/originals/test.jpg'] = { mtimeMs: Date.now() };
 
     supertest(makeApp())
       .get('/photos/resize?file=test.jpg&w=640')
@@ -161,16 +163,16 @@ describe('Route image-resize GET /photos/resize', function () {
   });
 
   it('appelle sharp.resize avec la largeur demandee', function (done) {
-    fsStore['/fake/photos/test.jpg'] = { mtimeMs: Date.now() };
+    fsStore['/fake/originals/test.jpg'] = { mtimeMs: Date.now() };
 
     supertest(makeApp())
-      .get('/photos/resize?file=test.jpg&w=1000')
+      .get('/photos/resize?file=test.jpg&w=960')
       .expect(200)
       .end(function (err) {
         if (err) return done(err);
         var pipeline = sharp.mock.results[0].value;
         expect(pipeline.resize).toHaveBeenCalledWith(
-          expect.objectContaining({ width: 1000 })
+          expect.objectContaining({ width: 960 })
         );
         done();
       });
@@ -181,7 +183,7 @@ describe('Route image-resize GET /photos/resize', function () {
   // ================================================================
 
   it('utilise le format fmt=png quand specifie', function (done) {
-    fsStore['/fake/photos/test.png'] = { mtimeMs: Date.now() };
+    fsStore['/fake/originals/test.png'] = { mtimeMs: Date.now() };
 
     supertest(makeApp())
       .get('/photos/resize?file=test.png&w=640&fmt=png')
@@ -196,7 +198,7 @@ describe('Route image-resize GET /photos/resize', function () {
   });
 
   it('utilise le format fmt=webp quand specifie', function (done) {
-    fsStore['/fake/photos/test.jpg'] = { mtimeMs: Date.now() };
+    fsStore['/fake/originals/test.jpg'] = { mtimeMs: Date.now() };
 
     supertest(makeApp())
       .get('/photos/resize?file=test.jpg&w=640&fmt=webp')
@@ -215,7 +217,7 @@ describe('Route image-resize GET /photos/resize', function () {
   // ================================================================
 
   it('passe le parametre q a sharp en qualite', function (done) {
-    fsStore['/fake/photos/test.jpg'] = { mtimeMs: Date.now() };
+    fsStore['/fake/originals/test.jpg'] = { mtimeMs: Date.now() };
 
     supertest(makeApp())
       .get('/photos/resize?file=test.jpg&w=640&q=50')
@@ -233,7 +235,7 @@ describe('Route image-resize GET /photos/resize', function () {
   // ================================================================
 
   it('accepte le parametre width comme alternative a w', function (done) {
-    fsStore['/fake/photos/test.jpg'] = { mtimeMs: Date.now() };
+    fsStore['/fake/originals/test.jpg'] = { mtimeMs: Date.now() };
 
     supertest(makeApp())
       .get('/photos/resize?file=test.jpg&width=320')
@@ -253,7 +255,7 @@ describe('Route image-resize GET /photos/resize', function () {
     var fsp = fs.promises;
 
     // Simuler que le fichier original existe
-    var origPath = path.resolve('/fake/photos/photo-cache.jpg');
+    var origPath = path.resolve('/fake/originals/photo-cache.jpg');
     fsStore[origPath] = { mtimeMs: 1000 }; // original plus vieux
     // Simuler que le cache existe et est plus récent
     var cachePath = path.resolve('/fake/photos/resized/webp/800/photo-cache.webp');
@@ -264,5 +266,99 @@ describe('Route image-resize GET /photos/resize', function () {
       .get('/photos/resize?file=photo-cache.jpg&w=800')
       .expect(200)
       .end(done);
+  });
+
+  // ================================================================
+  // Sécurité : plafond de résolution et validation des entrées
+  // ================================================================
+
+  it('rejette une largeur supérieure au plafond public (w=5000)', function (done) {
+    supertest(makeApp())
+      .get('/photos/resize?file=test.jpg&w=5000')
+      .expect(400)
+      .end(function (err, res) {
+        if (err) return done(err);
+        expect(res.text).toBe('Invalid width');
+        done();
+      });
+  });
+
+  it('rejette une largeur arbitraire hors liste (w=1234)', function (done) {
+    supertest(makeApp())
+      .get('/photos/resize?file=test.jpg&w=1234')
+      .expect(400)
+      .end(function (err, res) {
+        if (err) return done(err);
+        expect(res.text).toBe('Invalid width');
+        done();
+      });
+  });
+
+  it('sert la largeur maximale publique (w=1600) avec métadonnées copyright', function (done) {
+    fsStore['/fake/originals/test.jpg'] = { mtimeMs: Date.now() };
+
+    supertest(makeApp())
+      .get('/photos/resize?file=test.jpg&w=1600')
+      .expect(200)
+      .end(function (err, res) {
+        if (err) return done(err);
+        var pipeline = sharp.mock.results[0].value;
+        expect(pipeline.resize).toHaveBeenCalledWith(expect.objectContaining({ width: 1600 }));
+        expect(pipeline.withMetadata).toHaveBeenCalledWith(expect.objectContaining({
+          exif: expect.objectContaining({ IFD0: expect.objectContaining({ Artist: 'Mattia Parrinello' }) })
+        }));
+        expect(res.headers['x-robots-tag']).toBe('noimageindex');
+        done();
+      });
+  });
+
+  it('n injecte pas les métadonnées copyright sous 960px', function (done) {
+    fsStore['/fake/originals/test.jpg'] = { mtimeMs: Date.now() };
+
+    supertest(makeApp())
+      .get('/photos/resize?file=test.jpg&w=640')
+      .expect(200)
+      .end(function (err) {
+        if (err) return done(err);
+        var pipeline = sharp.mock.results[0].value;
+        expect(pipeline.withMetadata).not.toHaveBeenCalled();
+        done();
+      });
+  });
+
+  it('borne la qualite demandee entre 40 et 85', function (done) {
+    fsStore['/fake/originals/test.jpg'] = { mtimeMs: Date.now() };
+
+    supertest(makeApp())
+      .get('/photos/resize?file=test.jpg&w=640&q=100')
+      .expect(200)
+      .end(function (err) {
+        if (err) return done(err);
+        var pipeline = sharp.mock.results[0].value;
+        expect(pipeline.jpeg).toHaveBeenCalledWith({ quality: 85 });
+        done();
+      });
+  });
+
+  it('rejette un chemin de traversal', function (done) {
+    supertest(makeApp())
+      .get('/photos/resize?file=' + encodeURIComponent('../../etc/passwd'))
+      .expect(400)
+      .end(function (err, res) {
+        if (err) return done(err);
+        expect(res.text).toBe('Invalid file');
+        done();
+      });
+  });
+
+  it('rejette une extension non image (stats.json)', function (done) {
+    supertest(makeApp())
+      .get('/photos/resize?file=stats.json')
+      .expect(400)
+      .end(function (err, res) {
+        if (err) return done(err);
+        expect(res.text).toBe('Invalid file');
+        done();
+      });
   });
 });

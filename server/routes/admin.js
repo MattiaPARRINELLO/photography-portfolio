@@ -15,13 +15,22 @@ const galleryService = require('../utils/galleryService');
 const seoService = require('../utils/seoService');
 const multer = require('multer');
 const { handleEventBanner } = require('./event-banner');
+const { getOriginalsDir } = require('../utils/photoStorage');
 
 const router = express.Router();
 const paths = serverConfig.getPaths();
 
 // Multer setup for admin uploads (store directly in photos directory)
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, paths.photos),
+    destination: (req, file, cb) => {
+        const dir = getOriginalsDir();
+        try {
+            fs.mkdirSync(dir, { recursive: true });
+        } catch (e) {
+            return cb(e);
+        }
+        cb(null, dir);
+    },
     filename: (req, file, cb) => {
         const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '-');
         const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;

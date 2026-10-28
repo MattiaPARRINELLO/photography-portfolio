@@ -18,6 +18,7 @@ const llmsService = require('./server/utils/llmsService');
 // Middleware
 const { userTrackingMiddleware, campaignMiddleware } = require('./server/middleware/tracking');
 const languageMiddleware = require('./server/middleware/language');
+const { createPhotosStaticMiddleware } = require('./server/middleware/photosStatic');
 
 // Routes
 const pagesRouter = require('./server/routes/pages');
@@ -103,12 +104,12 @@ app.use((req, res, next) => {
     try {
         target = decodeURIComponent(target);
     } catch (e) {
-        return res.status(404).sendFile(path.join(paths.pages, '404.html'));
+        return res.status(404).sendFile(path.join(paths.pages, '404.html'), { dotfiles: 'allow' });
     }
     if (target.startsWith('/.well-known/')) return next();
-    if (target.startsWith('/.')) return res.status(404).sendFile(path.join(paths.pages, '404.html'));
+    if (target.startsWith('/.')) return res.status(404).sendFile(path.join(paths.pages, '404.html'), { dotfiles: 'allow' });
     if (BLOCKED_DIRS_RE.test(target) || BLOCKED_FILES_RE.test(target) || BLOCKED_DOCS_RE.test(target) || /README\.md$/i.test(target)) {
-        return res.status(404).sendFile(path.join(paths.pages, '404.html'));
+        return res.status(404).sendFile(path.join(paths.pages, '404.html'), { dotfiles: 'allow' });
     }
     next();
 });
@@ -173,11 +174,10 @@ app.use('/dist', express.static(path.join(__dirname, 'dist'), {
     immutable: true
 }));
 
-app.use('/photos', express.static(path.join(__dirname, 'photos'), {
-    index: false,
-    maxAge: '1y',
-    immutable: true
-}));
+// Vignettes uniquement. Les ORIGINAUX et le cache de redimensionnement ne sont
+// jamais servis en statique : tout passe par /photos/resize, ou par les URLs
+// signées du kit presse (/api/hd-image).
+app.use('/photos', createPhotosStaticMiddleware(path.join(__dirname, 'photos')));
 
 // Servir /robots.txt / llms.txt depuis la racine
 app.get('/robots.txt', (req, res) => {
@@ -227,7 +227,7 @@ app.use('/api', signedImagesRouter);
 
 // SEO: Page 404 HTML propre au lieu de JSON
 app.use((req, res) => {
-    res.status(404).sendFile(path.join(paths.pages, '404.html'));
+    res.status(404).sendFile(path.join(paths.pages, '404.html'), { dotfiles: 'allow' });
 });
 
 // Gestion des erreurs globales

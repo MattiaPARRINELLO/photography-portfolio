@@ -2,8 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 
-// Configuration
-const photosDir = path.join(__dirname, '..', 'photos');
+// Configuration : les originaux ne sont plus dans photos/ (dossier public)
+const serverConfig = require('../server/config');
+const photosDir = serverConfig.getPaths().photoOriginals || path.join(__dirname, '..', 'photos-originals');
 const placeholdersDir = path.join(photosDir, 'placeholders');
 
 // Créer le dossier placeholders s'il n'existe pas

@@ -26,7 +26,7 @@ Tout ce qui suit est vérifié dans le dépôt sauf mention explicite « À conf
 - `scripts/` — `UserActivityLogger.js`, `PhotoClickTracker.js`, `CampaignManager.js` (instanciés dans `server.js`), `build-css.js`, `build-assets.js`, `generate-og-image.js` (og:image 1200×1200), `convert-thumbnails-to-webp.js`, `generate-placeholders.js`, `migrate-gallery-only-photos.js`, `test-email.js`, `untrack-config.sh`.
 - `pages/` — templates HTML publics + `pages/admin/` (admin.html, campaigns, galleries, links, logs, text-editor). **Refactoring JS inline en cours** : `home.html` fait encore 2282 lignes (voir `REFACTORING_PLAN.md` / `REFACTORING_STATUS.md`). Nouveau JS à placer dans `dist/js/`.
 - `dist/` — sorties de build **partiellement trackées par git** (voir « Fichiers générés »).
-- `photos/` — originaux ; `photos/thumbnails/` (générés à l'upload, seul `.gitkeep` + README trackés) ; `photos/resized/` (cache de redimensionnement, gitignoré).
+- `photos-originals/` — originaux (hors statique, `PHOTOS_ORIGINALS_DIR`) ; `photos/thumbnails/` (générés à l'upload, seul `.gitkeep` + README trackés) ; `photos/resized/` (cache de redimensionnement, gitignoré).
 - `tests/` — 33 suites / 638 tests (voir Commandes). `tests/setup.js` injecte les variables d'env factices (chargé via `jest.config.js` → `setupFiles`).
 - `graphify-out/` — graphe de connaissance du code (voir « Outillage local »).
 - `AUDIT.md` — registre d'audit (sécurité/perf/SEO/a11y/qualité) avec identifiants d'items (ex. `Q-C2`, `V11`, `E5-REDIR`). Convention : les commits de correction marquent les items `CORRIGÉ` dans ce fichier.
@@ -73,7 +73,7 @@ Tout ce qui suit est vérifié dans le dépôt sauf mention explicite « À conf
 - **CSS** : éditer uniquement `src/input.css` (source unique). Le pipeline de build ne fait plus tourner Tailwind : les classes d'utilitaires sont figées dedans en CSS brut.
 - Les pages HTML utilisent des **placeholders côté serveur** : `<!-- SEO_HERO_PLACEHOLDER -->`, `<!-- SEO_BOTTOM_PLACEHOLDER -->`, `<!-- GALLERIES_LIST_PLACEHOLDER -->`, `<!-- GALLERY_HERO_PLACEHOLDER -->`, `<!-- GALLERY_DESCRIPTION_PLACEHOLDER -->`, `<!-- GALLERY_PHOTOS_PLACEHOLDER -->`, `<!-- META_PLACEHOLDER_END -->`, `{{DYNAMIC_TITLE}}`, `{{DYNAMIC_DESCRIPTION}}`. Ne pas supprimer les placeholders attendus par `server/routes/pages.js`.
 - **Contenu (données)** : `config/galleries.json`, `texts.json`, `links.json`, `campaigns.json`, `seo.json` **ne sont pas trackés** (gitignorés via `config/*.json`) — les `*.example` sont trackés : `texts.json.example`, `config.json.example`, `campaigns.json.example`, **`seo.json.example`, `galleries.json.example`, `links.json.example`** (modèles). Structure observée : `galleries.json` = `{metadata, galleries[]}` avec `id`, `slug`, `title`, `artist`, `venue`, `date`, `description`, `cover`, `photos[]`, `published`, `createdAt`, `updatedAt`, `excludeFromMain`, `galleryOnlyPhotos` ; `texts.json` = `{main, meta, "a propos", footer}` ; `seo.json` = `{site, pages, artists, venues, intro_text, footer_seo}`.
-- **Photos** : originaux dans `photos/` ; les galeries référencent des fichiers par nom ; le redimensionnement se fait à la volée via `/photos/resize?file=...&w=...` (srcset 320→1600) ; l'accès HD passe par des URLs signées HMAC. Pour ajouter des photos : via l'admin (POST `/admin/upload`, multer → `temp/`), pas à la main.
+- **Photos** : originaux dans `paths.photoOriginals` (`PHOTOS_ORIGINALS_DIR`, hors DocumentRoot en prod, **jamais servis en statique**) ; les galeries référencent des fichiers par nom ; le redimensionnement se fait à la volée via `/photos/resize?file=...&w=...` (largeurs en liste blanche, 1600 px max) ; l'accès HD (3 photos/galerie, kit presse) passe par des URLs signées HMAC valables 1 h. Pour ajouter des photos : via l'admin (POST `/admin/upload`, multer → `temp/`), pas à la main. Migration du dossier : `npm run migrate:originals` (dry-run) puis `-- --apply`.
 - SEO : chaque page reçoit meta tags + Schema.org JSON-LD injectés par `textUtils.js` ; `sitemap.xml` est généré dynamiquement ; domaine canonical `https://www.photo.mprnl.fr`.
 
 ## Contraintes UX, responsive et accessibilité
@@ -96,7 +96,8 @@ Copier `.env.example` vers `.env` (jamais tracké). **Toutes les valeurs sont ob
 - `IMAGE_SECRET_KEY` (signature URLs HD, obligatoire),
 - `SITE_URL` (canonical/sitemap),
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` (SMTP ; `.env.example` documente un fallback `GMAIL_USER`/`GMAIL_PASS` — le code lit réellement `SMTP_*`, À confirmer si le fallback est effectif),
-- `CONFIG_FILE` (optionnel, chemin absolu du JSON de config).
+- `CONFIG_FILE` (optionnel, chemin absolu du JSON de config),
+- `PHOTOS_ORIGINALS_DIR` (dossier des originaux, **hors DocumentRoot** en prod ; défaut `./photos-originals`).
 
 Les tests injectent leurs propres valeurs via `tests/setup.js` — ne pas y mettre de vrais secrets.
 

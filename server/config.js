@@ -14,7 +14,12 @@ class ServerConfig {
             stats: path.join(__dirname, '..', 'stats.json'),
             config: path.join(__dirname, '..', 'config', 'config.json'),
             texts: path.join(__dirname, '..', 'config', 'texts.json'),
+            // Dossier servi publiquement (uniquement thumbnails/ + cache resized/)
             photos: path.join(__dirname, '..', 'photos'),
+            // Originaux : JAMAIS servis en statique (hors DocumentRoot en prod).
+            photoOriginals: process.env.PHOTOS_ORIGINALS_DIR
+                ? path.resolve(process.env.PHOTOS_ORIGINALS_DIR)
+                : path.join(__dirname, '..', 'photos-originals'),
             pages: path.join(__dirname, '..', 'pages'),
             adminPages: path.join(__dirname, '..', 'pages', 'admin'),
             dist: path.join(__dirname, '..', 'dist'),

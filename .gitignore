@@ -22,6 +22,9 @@ photos/thumbnails/*.gif
 # Generated/resized images cache - do not track
 photos/resized/
 
+# Originaux : hors du dossier statique public, jamais commités
+photos-originals/
+
 # Configuration et textes
 config/texts.json
 config/config.json

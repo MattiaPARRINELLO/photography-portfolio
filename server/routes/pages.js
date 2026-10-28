@@ -574,7 +574,8 @@ function generatePressKitHtml(gallery, canonical, lang) {
           try{
             var res = await fetch('/api/request-hd-access', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({imagePath: 'photos/' + filename})});
             var data = await res.json();
-            var url = (data && data.url) ? data.url : ('/photos/' + filename);
+            if(!res.ok || !data || !data.url) throw new Error('HD indisponible');
+            var url = data.url;
             var a = document.createElement('a');
             a.href = url;
             a.download = filename;
@@ -585,7 +586,6 @@ function generatePressKitHtml(gallery, canonical, lang) {
             if(btn){ btn.textContent='Téléchargé ✓'; setTimeout(function(){ btn.textContent=orig; btn.disabled=false; }, 1800); }
           } catch(err){
             if(btn){ btn.textContent='Erreur'; setTimeout(function(){ btn.textContent=orig; btn.disabled=false; }, 1800); }
-            window.open('/photos/' + filename, '_blank');
           }
         };
       })();
