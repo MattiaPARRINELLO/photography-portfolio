@@ -144,7 +144,9 @@ app.use((req, res, next) => {
             else if (/\.(png|jpe?g|webp|avif)$/.test(req.path)) res.setHeader('Content-Type', 'image/*');
             res.setHeader('Vary', 'Accept-Encoding');
             res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-            return res.sendFile(brPath);
+            // dotfiles: 'allow' — chemin disque construit à partir de req.path,
+            // mais le déploiement peut vivre sous un dossier caché (ex. ~/.t3/...).
+            return res.sendFile(brPath, { dotfiles: 'allow' });
         }
     }
 
@@ -160,7 +162,7 @@ app.use((req, res, next) => {
             else if (/\.(png|jpe?g|webp|avif)$/.test(req.path)) res.setHeader('Content-Type', 'image/*');
             res.setHeader('Vary', 'Accept-Encoding');
             res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-            return res.sendFile(gzPath);
+            return res.sendFile(gzPath, { dotfiles: 'allow' });
         }
     }
 
@@ -171,7 +173,8 @@ app.use((req, res, next) => {
 app.use('/dist', express.static(path.join(__dirname, 'dist'), {
     index: false,
     maxAge: '1y',
-    immutable: true
+    immutable: true,
+    dotfiles: 'allow'
 }));
 
 // Vignettes uniquement. Les ORIGINAUX et le cache de redimensionnement ne sont
