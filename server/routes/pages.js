@@ -1026,11 +1026,6 @@ router.get('/galeries/:slug', async (req, res) => {
         htmlContent = htmlContent.replace('<!-- GALLERY_PHOTOS_PLACEHOLDER -->', masonryHtml);
 
         const pressKitHtml = generatePressKitHtml(gallery, canonical, lang);
-        if (htmlContent.includes('<!-- PRESS_KIT_PLACEHOLDER -->')) {
-            htmlContent = htmlContent.replace('<!-- PRESS_KIT_PLACEHOLDER -->', pressKitHtml);
-        } else if (pressKitHtml) {
-            htmlContent = htmlContent.replace('</main>', `${pressKitHtml}\n    </main>`);
-        }
 
         // Bloc citable LLM (permet à ChatGPT/Perplexity de citer cette galerie)
         const citeText = isEn
