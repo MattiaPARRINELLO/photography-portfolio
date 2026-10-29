@@ -30,6 +30,14 @@ jest.mock('../../server/config', function () {
   };
 });
 
+jest.mock('../../server/utils/galleryService', function () {
+  return {
+    loadGalleries: function () {
+      return { galleries: [{ published: true, photos: ['test-photo.jpg'] }] };
+    }
+  };
+});
+
 jest.mock('multer', function () {
   var fn = function () {
     return {
@@ -106,7 +114,7 @@ describe('Securite Signatures HMAC', function () {
 
       supertest(makeApp())
         .post('/api/request-hd-access')
-        .send({ imagePath: 'https://example.com/photos/concert.jpg' })
+        .send({ imagePath: 'https://example.com/photos/test-photo.jpg' })
         .expect(200)
         .end(function (err, res) {
           if (err) return done(err);
@@ -115,13 +123,13 @@ describe('Securite Signatures HMAC', function () {
         });
     });
 
-    it('retourne 404 si le fichier est absent (plus de fallback non signe)', function (done) {
+    it('retourne 404 si le fichier autorise est absent (plus de fallback non signe)', function (done) {
       fs.existsSync.mockReturnValue(false);
       process.env.NODE_ENV = 'development';
 
       supertest(makeApp())
         .post('/api/request-hd-access')
-        .send({ imagePath: '/photos/missing.jpg' })
+        .send({ imagePath: '/photos/test-photo.jpg' })
         .expect(404)
         .end(function (err) {
           if (err) return done(err);
@@ -150,7 +158,7 @@ describe('Securite Signatures HMAC', function () {
       supertest(makeApp())
         .post('/api/request-hd-access')
         .send({ imagePath: '../../../etc/passwd' })
-        .expect(404)
+        .expect(403)
         .end(function (err) {
           if (err) return done(err);
           done();

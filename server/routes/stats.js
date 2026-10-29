@@ -420,7 +420,7 @@ router.post('/admin/photo-stats/reset', requireAdminSession, (req, res) => {
 
 // Route admin : page des logs
 router.get('/admin/logs', (req, res) => {
-    res.sendFile(path.join(paths.adminPages, 'logs.html'));
+    res.sendFile(path.join(paths.adminPages, 'logs.html'), { dotfiles: 'allow' });
 });
 
 // Route admin : récupérer les logs d'une date

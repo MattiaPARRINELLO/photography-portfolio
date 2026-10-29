@@ -56,7 +56,7 @@ async function renderPage(req, res, { cacheKey, file, pageType, ttlMs, campaignI
 function servePage(req, res, opts) {
     renderPage(req, res, opts).catch((error) => {
         console.error(`Erreur lors du chargement de ${opts.file}:`, error);
-        res.sendFile(path.join(paths.pages, opts.file));
+        res.sendFile(path.join(paths.pages, opts.file), { dotfiles: 'allow' });
     });
 }
 
@@ -738,7 +738,7 @@ router.get('/artiste/:slug', async (req, res) => {
     const seo = loadSeoData();
     const slug = decodeURIComponent(req.params.slug);
     const artist = (seo.artists || []).find(a => a.slug === slug);
-    if (!artist) return res.status(404).sendFile(path.join(paths.pages, '404.html'));
+    if (!artist) return res.status(404).sendFile(path.join(paths.pages, '404.html'), { dotfiles: 'allow' });
     const galleries = getPublicGalleries().filter(g => (g.artist || '').trim().toLowerCase() === artist.name.toLowerCase());
     const firstGallery = galleries[0];
     const artistLinks = firstGallery && firstGallery.artistLinks ? firstGallery.artistLinks : {};
@@ -772,7 +772,7 @@ router.get('/salle/:slug', async (req, res) => {
     const seo = loadSeoData();
     const slug = decodeURIComponent(req.params.slug);
     const venue = (seo.venues || []).find(v => v.slug === slug);
-    if (!venue) return res.status(404).sendFile(path.join(paths.pages, '404.html'));
+    if (!venue) return res.status(404).sendFile(path.join(paths.pages, '404.html'), { dotfiles: 'allow' });
     const galleries = getPublicGalleries().filter(g => (g.venue || '').trim().toLowerCase() === venue.name.toLowerCase());
     const lang = (req.lang === 'en') ? 'en' : 'fr';
     const isEn = lang === 'en';
@@ -804,7 +804,7 @@ router.get('/galeries/:slug', async (req, res) => {
         const gallery = galleryService.getGalleryBySlug(req.params.slug);
         if (!gallery || gallery.published === false
             || (process.env.NODE_ENV === 'production' && isManifestlyFake(gallery))) {
-            return res.status(404).sendFile(path.join(paths.pages, '404.html'));
+            return res.status(404).sendFile(path.join(paths.pages, '404.html'), { dotfiles: 'allow' });
         }
 
         const lang = req.lang === 'en' ? 'en' : 'fr';

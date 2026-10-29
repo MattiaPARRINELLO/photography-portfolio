@@ -74,7 +74,7 @@ router.put('/admin/texts/:key', requireAdminSession, (req, res) => {
 
 // Route admin : page de gestion des campagnes
 router.get('/admin/campaigns', requireAdminPage, (req, res) => {
-    res.sendFile(path.join(paths.adminPages, 'campaigns.html'), (err) => {
+    res.sendFile(path.join(paths.adminPages, 'campaigns.html'), { dotfiles: 'allow' }, (err) => {
         if (err) res.status(500).send('Erreur interne');
     });
 });
