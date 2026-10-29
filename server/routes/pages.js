@@ -517,17 +517,28 @@ function generatePressKitHtml(gallery, canonical, lang) {
     const credit = `© Mattia Parrinello, photo.mprnl.fr, ${gallery.title}`;
     const galleryUrl = canonical;
     const creditLong = `© Mattia Parrinello, ${galleryUrl}, ${artist}${venue}`;
+    const ICON = {
+        download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/></svg>',
+        chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
+        share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 15V3"/><path d="m8 7 4-4 4 4"/></svg>',
+        chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.7-.9L3 21l1.9-5.1a8.4 8.4 0 0 1-.9-3.8 8.4 8.4 0 0 1 8.4-8.4 8.4 8.4 0 0 1 8.6 7.8z"/></svg>',
+        mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+        copyright: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5a3.5 3.5 0 1 0 0 5"/></svg>'
+    };
     const cards = photos.map((filename, i) => {
         const thumb = `/photos/resize?file=${encodeURIComponent(filename)}&w=400`;
         const alt = isEn ? `${artist} live, photo ${i + 1} by Mattia Parrinello` : `${artist} en concert, photo ${i + 1} par Mattia Parrinello`;
-        const dl = isEn ? `Download HD ${i + 1}` : `Télécharger HD ${i + 1}`;
-        return `<div class="press-kit-card"><img src="${thumb}" alt="${escapeAttr(alt)}" loading="lazy" /><button type="button" onclick="pressKitDownload('${escapeAttr(filename)}', this)">${dl}</button></div>`;
+        const dl = isEn ? 'Download HD' : 'Télécharger HD';
+        const dlAria = `${dl} ${i + 1}`;
+        return `<div class="press-kit-card"><span class="press-kit-card-index" aria-hidden="true">${i + 1}</span><img src="${thumb}" alt="${escapeAttr(alt)}" loading="lazy" /><button type="button" aria-label="${escapeAttr(dlAria)}" onclick="pressKitDownload('${escapeAttr(filename)}', this)">${dl}</button></div>`;
     }).join('');
     const aria = isEn ? 'Press kit' : 'Kit presse';
-    const summaryTitle = isEn ? 'Press kit, 3 free HD photos' : 'Kit presse, 3 photos HD gratuites';
-    const summarySub = isEn ? `${escapeAttr(artist)}${escapeAttr(venue)} · credit required` : `${escapeAttr(artist)}${escapeAttr(venue)} · crédit obligatoire`;
+    const kicker = isEn ? 'Press kit' : 'Kit presse';
+    const summaryTitle = isEn ? '3 free HD photos' : '3 photos HD gratuites';
+    const summarySub = `${escapeAttr(artist)}${escapeAttr(venue)} · ${isEn ? 'credit required' : 'crédit obligatoire'}`;
     const desc = isEn ? 'For artists, venues or press: 3 free HD photos for socials/website with credit + link.' : 'Pour l\'artiste, la salle ou la presse : 3 HD libres pour réseaux/site contre crédit + lien.';
     const copyLabel = isEn ? 'Copy' : 'Copier';
+    const creditLabel = isEn ? 'Credit' : 'Crédit';
     const licence = isEn ? 'Press & social use with mandatory credit. HD via signed URL valid 1h.' : 'Usage presse &amp; réseaux avec crédit obligatoire. HD via URL signée valable 1h.';
     const copyLink = isEn ? 'Copy link' : 'Copier le lien';
     const shareLabel = isEn ? 'Share' : 'Partager';
@@ -536,22 +547,30 @@ function generatePressKitHtml(gallery, canonical, lang) {
     return `<details class="press-kit" id="press-kit" aria-label="${aria}">
       <summary>
         <span class="press-kit-summary-left">
-          <span class="press-kit-summary-icon">⬇</span>
-          <span class="press-kit-summary-text"><strong>${summaryTitle}</strong><span>${summarySub}</span></span>
+          <span class="press-kit-icon">${ICON.download}</span>
+          <span class="press-kit-summary-text">
+            <span class="press-kit-kicker">${kicker}</span>
+            <strong>${summaryTitle}</strong>
+            <span class="press-kit-sub">${summarySub}</span>
+          </span>
         </span>
-        <span class="press-kit-chevron">⌄</span>
+        <span class="press-kit-chevron">${ICON.chevron}</span>
       </summary>
       <div class="press-kit-body">
-      <p class="press-kit-desc">${desc}</p>
-      <div class="press-kit-grid">${cards}</div>
-      <div class="press-kit-credit"><code id="press-kit-credit">${escapeAttr(creditLong)}</code><button type="button" class="press-kit-btn" onclick="pressKitCopyCredit()">${copyLabel}</button></div>
-      <p class="press-kit-licence">${licence}</p>
-      <div class="press-kit-actions">
-        <a class="press-kit-btn primary" href="${escapeAttr(galleryUrl)}" onclick="pressKitCopyLink(event)">${copyLink}</a>
-        <button type="button" class="press-kit-btn" onclick="pressKitShare()">${shareLabel}</button>
-        <a class="press-kit-btn" href="https://wa.me/?text=${encodeURIComponent(galleryUrl)}" target="_blank" rel="noopener">WhatsApp</a>
-        <a class="press-kit-btn" href="mailto:?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}">Email</a>
-      </div>
+        <p class="press-kit-desc">${desc}</p>
+        <div class="press-kit-grid">${cards}</div>
+        <div class="press-kit-credit">
+          <span class="press-kit-credit-label">${creditLabel}</span>
+          <code id="press-kit-credit">${escapeAttr(creditLong)}</code>
+          <button type="button" class="press-kit-btn" onclick="pressKitCopyCredit()">${copyLabel}</button>
+        </div>
+        <p class="press-kit-licence">${ICON.copyright}<span>${licence}</span></p>
+        <div class="press-kit-actions">
+          <a class="press-kit-btn primary" href="${escapeAttr(galleryUrl)}" onclick="pressKitCopyLink(event)">${copyLink}</a>
+          <button type="button" class="press-kit-btn" onclick="pressKitShare()">${ICON.share}<span>${shareLabel}</span></button>
+          <a class="press-kit-btn" href="https://wa.me/?text=${encodeURIComponent(galleryUrl)}" target="_blank" rel="noopener">${ICON.chat}<span>WhatsApp</span></a>
+          <a class="press-kit-btn" href="mailto:?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}">${ICON.mail}<span>Email</span></a>
+        </div>
       </div>
       <script>
       (function(){
