@@ -17,7 +17,8 @@ jest.mock('../../server/config', function () {
     getPaths: function () {
       return {
         root: p.resolve(__dirname, '../..'),
-        pages: p.resolve(__dirname, '../../pages')
+        pages: p.resolve(__dirname, '../../pages'),
+        photoOriginals: '/fake/originals'
       };
     },
     getConfig: function () {
@@ -26,6 +27,14 @@ jest.mock('../../server/config', function () {
     getPort: function () { return 3001; },
     adminPassword: 'test',
     __esModule: true
+  };
+});
+
+jest.mock('../../server/utils/galleryService', function () {
+  return {
+    loadGalleries: function () {
+      return { galleries: [{ published: true, photos: ['test-photo.jpg'] }] };
+    }
   };
 });
 
@@ -42,6 +51,12 @@ jest.mock('multer', function () {
 
 var fs = require('fs');
 var express = require('express');
+
+// sendFile est intercepté : les fichiers HD n'existent pas sur disque en test.
+express.response.sendFile = function (p, opts, cb) {
+  this.status(200).type('image/jpeg').send(Buffer.from('fake-hd-image'));
+};
+
 var signedImagesRouter = require('../../server/routes/signed-images');
 
 function makeApp() {
@@ -99,7 +114,7 @@ describe('Securite Signatures HMAC', function () {
 
       supertest(makeApp())
         .post('/api/request-hd-access')
-        .send({ imagePath: 'https://example.com/photos/concert.jpg' })
+        .send({ imagePath: 'https://example.com/photos/test-photo.jpg' })
         .expect(200)
         .end(function (err, res) {
           if (err) return done(err);
@@ -108,28 +123,13 @@ describe('Securite Signatures HMAC', function () {
         });
     });
 
-    it('retourne URL non signee en dev si fichier absent', function (done) {
+    it('retourne 404 si le fichier autorise est absent (plus de fallback non signe)', function (done) {
       fs.existsSync.mockReturnValue(false);
       process.env.NODE_ENV = 'development';
 
       supertest(makeApp())
         .post('/api/request-hd-access')
-        .send({ imagePath: '/photos/missing.jpg' })
-        .expect(200)
-        .end(function (err, res) {
-          if (err) return done(err);
-          expect(res.body.url).toBe('/photos/missing.jpg');
-          done();
-        });
-    });
-
-    it('retourne 404 en production si fichier absent', function (done) {
-      fs.existsSync.mockReturnValue(false);
-      process.env.NODE_ENV = 'production';
-
-      supertest(makeApp())
-        .post('/api/request-hd-access')
-        .send({ imagePath: '/photos/missing.jpg' })
+        .send({ imagePath: '/photos/test-photo.jpg' })
         .expect(404)
         .end(function (err) {
           if (err) return done(err);
@@ -137,14 +137,28 @@ describe('Securite Signatures HMAC', function () {
         });
     });
 
-    it('normalise le chemin path traversal', function (done) {
+    it('retourne 403 en production si la photo n est pas dans la selection presse', function (done) {
       fs.existsSync.mockReturnValue(false);
+      process.env.NODE_ENV = 'production';
+
+      supertest(makeApp())
+        .post('/api/request-hd-access')
+        .send({ imagePath: '/photos/missing.jpg' })
+        .expect(403)
+        .end(function (err) {
+          if (err) return done(err);
+          done();
+        });
+    });
+
+    it('rejette un chemin path traversal non image', function (done) {
+      fs.existsSync.mockReturnValue(true);
       process.env.NODE_ENV = 'development';
 
       supertest(makeApp())
         .post('/api/request-hd-access')
         .send({ imagePath: '../../../etc/passwd' })
-        .expect(200)
+        .expect(403)
         .end(function (err) {
           if (err) return done(err);
           done();

@@ -6,6 +6,7 @@ const sharp = require('sharp');
 const serverConfig = require('../config');
 const { requireAdminSession } = require('../middleware/auth');
 const photoService = require('../utils/photoService');
+const { getOriginalsDir } = require('../utils/photoStorage');
 
 const router = express.Router();
 const paths = serverConfig.getPaths();
@@ -37,12 +38,12 @@ router.get('/photos-list', async (req, res) => {
 
 // Route admin : lister toutes les photos avec métadonnées
 router.get('/admin/photos', requireAdminSession, (req, res) => {
-    fs.readdir(paths.photos, (err, files) => {
+    fs.readdir(getOriginalsDir(), (err, files) => {
         if (err) return res.status(500).json({ error: 'Impossible de lire le dossier photos' });
 
         const images = files.filter(f => f.match(/\.(jpg|jpeg|png|webp)$/i));
         const photosWithInfo = images.map(filename => {
-            const filePath = path.join(paths.photos, filename);
+            const filePath = path.join(getOriginalsDir(), filename);
             const stats = fs.statSync(filePath);
             return {
                 filename,
@@ -60,10 +61,13 @@ router.post('/admin/upload', requireAdminSession, upload.array('photos'), async 
     try {
         const uploadedFiles = [];
         const thumbsDir = path.join(paths.photos, 'thumbnails');
+        const originalsDir = getOriginalsDir();
 
-        // S'assurer que le dossier thumbnails existe
-        if (!fs.existsSync(thumbsDir)) {
-            fs.mkdirSync(thumbsDir, { recursive: true });
+        // S'assurer que les dossiers thumbnails et originaux existent
+        for (const dir of [thumbsDir, originalsDir]) {
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir, { recursive: true });
+            }
         }
 
         for (const file of req.files) {
@@ -91,7 +95,7 @@ router.post('/admin/upload', requireAdminSession, upload.array('photos'), async 
                 uniqueName = Date.now() + '_' + file.originalname;
             }
 
-            const finalPath = path.join(paths.photos, uniqueName);
+            const finalPath = path.join(originalsDir, uniqueName);
 
             // Optimiser et sauvegarder l'image principale en préservant les métadonnées
             try {
@@ -177,8 +181,8 @@ router.post('/admin/upload', requireAdminSession, upload.array('photos'), async 
 router.delete('/admin/photos/:filename', requireAdminSession, (req, res) => {
     try {
         const filename = req.params.filename;
-        const photoPath = path.join(paths.photos, filename);
-        const thumbName = filename.replace(/\.[^.]+$/, '.webp');
+        const photoPath = path.join(getOriginalsDir(), path.basename(filename));
+        const thumbName = path.basename(filename).replace(/\.[^.]+$/, '.webp');
         const thumbnailPath = path.join(paths.photos, 'thumbnails', thumbName);
 
         // Vérifier que la photo existe

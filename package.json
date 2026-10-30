@@ -14,7 +14,9 @@
     "build:og-image": "node scripts/generate-og-image.js",
     "convert-thumbnails": "node scripts/convert-thumbnails-to-webp.js",
     "test:email": "node scripts/test-email.js",
-    "migrate:gallery-only": "node scripts/migrate-gallery-only-photos.js"
+    "migrate:gallery-only": "node scripts/migrate-gallery-only-photos.js",
+    "migrate:originals": "node scripts/migrate-originals-out.js",
+    "test:security": "bash scripts/security-smoke.sh"
   },
   "repository": {
     "type": "git",

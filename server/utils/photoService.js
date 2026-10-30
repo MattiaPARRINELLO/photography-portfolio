@@ -1,10 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const exifr = require('exifr');
-const serverConfig = require('../config');
 const galleryService = require('./galleryService');
+const { getOriginalsDir } = require('./photoStorage');
 
-const paths = serverConfig.getPaths();
 
 // Lit l'EXIF en passant UNIQUEMENT un Buffer à exifr (jamais un chemin : exifr 7
 // interprète mal le chemin string, leve une erreur et laisse un FileHandle ouvert,
@@ -42,7 +41,7 @@ function extractDateFromFilename(filename) {
 
 async function getPhotosList() {
     return new Promise((resolve, reject) => {
-        fs.readdir(paths.photos, async (err, files) => {
+        fs.readdir(getOriginalsDir(), async (err, files) => {
             if (err) return reject(err);
 
             const images = files.filter(f => f.match(/\.(jpg|jpeg|png|webp)$/i));
@@ -72,10 +71,10 @@ async function getPhotosList() {
             }
             const withDates = await Promise.all(images.map(async (f) => {
                 try {
-                    const url = '/photos/' + f;
+                    const url = `/photos/resize?file=${encodeURIComponent(f)}&w=1600`;
                     const filename = f;
                     const thumbnailUrl = `/photos/resize?file=${encodeURIComponent(f)}&w=320`;
-                    const filePath = path.join(paths.photos, f);
+                    const filePath = path.join(getOriginalsDir(), f);
 
                     // Essayer de lire les métadonnées EXIF
                     let date = null;

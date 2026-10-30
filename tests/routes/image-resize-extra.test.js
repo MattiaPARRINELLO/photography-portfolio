@@ -8,6 +8,7 @@ jest.mock('../../server/config', function () {
   return {
     getPaths: jest.fn().mockReturnValue({
       photos: '/fake/photos',
+      photoOriginals: '/fake/originals',
       root: '/fake/root'
     }),
     getConfig: jest.fn().mockReturnValue({
@@ -48,6 +49,7 @@ jest.mock('sharp', function () {
       webp: jest.fn().mockReturnThis(),
       jpeg: jest.fn().mockReturnThis(),
       png: jest.fn().mockReturnThis(),
+      withMetadata: jest.fn().mockReturnThis(),
       toBuffer: jest.fn().mockResolvedValue(Buffer.from('fake-resized-image-data')),
       toFile: jest.fn().mockResolvedValue(undefined)
     };
@@ -110,7 +112,7 @@ describe('Route image-resize GET /photos/resize — cache hits et erreurs', func
       .end(function (err, res) {
         if (err) return done(err);
         expect(res.text).toBe('cache-hit');
-        expect(sendFileSpy).toHaveBeenCalledWith(cachePath);
+        expect(sendFileSpy).toHaveBeenCalledWith(cachePath, { dotfiles: 'allow' });
         done();
       });
   });
@@ -124,7 +126,7 @@ describe('Route image-resize GET /photos/resize — cache hits et erreurs', func
       .expect(200)
       .end(function (err) {
         if (err) return done(err);
-        expect(sendFileSpy).toHaveBeenCalledWith(cachePath);
+        expect(sendFileSpy).toHaveBeenCalledWith(cachePath, { dotfiles: 'allow' });
         done();
       });
   });
@@ -135,7 +137,7 @@ describe('Route image-resize GET /photos/resize — cache hits et erreurs', func
 
   it('sert le cache quand il est a jour (lignes 78-81)', function (done) {
     var cachePath = '/fake/photos/resized/webp/320/test.webp';
-    var origPath = '/fake/photos/test.jpg';
+    var origPath = '/fake/originals/test.jpg';
     fsStore[cachePath] = { mtimeMs: 2000 };
     fsStore[origPath] = { mtimeMs: 1000 };
 
@@ -145,14 +147,14 @@ describe('Route image-resize GET /photos/resize — cache hits et erreurs', func
       .end(function (err, res) {
         if (err) return done(err);
         expect(res.text).toBe('cache-hit');
-        expect(sendFileSpy).toHaveBeenCalledWith(cachePath);
+        expect(sendFileSpy).toHaveBeenCalledWith(cachePath, { dotfiles: 'allow' });
         done();
       });
   });
 
   it('sert le cache a jour avec fmt=jpg (Content-Type image/jpeg)', function (done) {
     var cachePath = '/fake/photos/resized/jpg/320/test.jpeg';
-    var origPath = '/fake/photos/test.jpg';
+    var origPath = '/fake/originals/test.jpg';
     fsStore[cachePath] = { mtimeMs: 2000 };
     fsStore[origPath] = { mtimeMs: 1000 };
 
@@ -162,7 +164,7 @@ describe('Route image-resize GET /photos/resize — cache hits et erreurs', func
       .end(function (err, res) {
         if (err) return done(err);
         expect(res.text).toBe('cache-hit');
-        expect(sendFileSpy).toHaveBeenCalledWith(cachePath);
+        expect(sendFileSpy).toHaveBeenCalledWith(cachePath, { dotfiles: 'allow' });
         done();
       });
   });
@@ -172,7 +174,7 @@ describe('Route image-resize GET /photos/resize — cache hits et erreurs', func
   // ================================================================
 
   it('recree l\'image quand le cache est obsolete (cache mtime < original mtime)', function (done) {
-    var origPath = '/fake/photos/test.jpg';
+    var origPath = '/fake/originals/test.jpg';
     var cachePath = '/fake/photos/resized/webp/320/test.webp';
     fsStore[origPath] = { mtimeMs: 2000 };
     fsStore[cachePath] = { mtimeMs: 1000 };
@@ -194,7 +196,7 @@ describe('Route image-resize GET /photos/resize — cache hits et erreurs', func
   // ================================================================
 
   it('ne crashe pas si l\'ecriture du cache echoue en arriere-plan', function (done) {
-    var origPath = '/fake/photos/test.jpg';
+    var origPath = '/fake/originals/test.jpg';
     fsStore[origPath] = { mtimeMs: Date.now() };
 
     var writeErr = new Error('Disk full');
@@ -220,7 +222,7 @@ describe('Route image-resize GET /photos/resize — cache hits et erreurs', func
   // ================================================================
 
   it('retourne 500 si le pipeline sharp echoue (lignes 110-111)', function (done) {
-    var origPath = '/fake/photos/test.jpg';
+    var origPath = '/fake/originals/test.jpg';
     fsStore[origPath] = { mtimeMs: Date.now() };
 
     var failPipeline = {
@@ -228,6 +230,7 @@ describe('Route image-resize GET /photos/resize — cache hits et erreurs', func
       webp: jest.fn().mockReturnThis(),
       jpeg: jest.fn().mockReturnThis(),
       png: jest.fn().mockReturnThis(),
+      withMetadata: jest.fn().mockReturnThis(),
       toBuffer: jest.fn().mockRejectedValue(new Error('Sharp processing error')),
       toFile: jest.fn().mockResolvedValue(undefined)
     };

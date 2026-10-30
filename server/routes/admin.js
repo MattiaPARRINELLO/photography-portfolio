@@ -15,13 +15,22 @@ const galleryService = require('../utils/galleryService');
 const seoService = require('../utils/seoService');
 const multer = require('multer');
 const { handleEventBanner } = require('./event-banner');
+const { getOriginalsDir } = require('../utils/photoStorage');
 
 const router = express.Router();
 const paths = serverConfig.getPaths();
 
 // Multer setup for admin uploads (store directly in photos directory)
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, paths.photos),
+    destination: (req, file, cb) => {
+        const dir = getOriginalsDir();
+        try {
+            fs.mkdirSync(dir, { recursive: true });
+        } catch (e) {
+            return cb(e);
+        }
+        cb(null, dir);
+    },
     filename: (req, file, cb) => {
         const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '-');
         const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
@@ -170,14 +179,16 @@ router.get('/', (req, res) => {
     if (!fs.existsSync(filePath)) {
         return res.status(404).send('Page d\'administration non trouvée');
     }
-    res.sendFile(filePath, (err) => {
+    // dotfiles: 'allow' — pages admin dans un chemin disque éventuellement
+    // caché (ex. ~/.t3/worktrees/...). Chemin fixe, non contrôlé par l'URL.
+    res.sendFile(filePath, { dotfiles: 'allow' }, (err) => {
         if (err) res.status(500).send('Erreur lors de l\'envoi du fichier');
     });
 });
 
 // Route pour l'éditeur de texte
 router.get('/text-editor', (req, res) => {
-    res.sendFile(path.join(paths.adminPages, 'text-editor.html'));
+    res.sendFile(path.join(paths.adminPages, 'text-editor.html'), { dotfiles: 'allow' });
 });
 
 // Redirection pour /admin/text-editor/ vers /admin/text-editor
@@ -267,7 +278,7 @@ router.put('/config', requireAdminSession, (req, res) => {
 
 // Route pour la page d'administration des liens
 router.get('/links', (req, res) => {
-    res.sendFile(path.join(paths.adminPages, 'links.html'));
+    res.sendFile(path.join(paths.adminPages, 'links.html'), { dotfiles: 'allow' });
 });
 
 // Redirection pour /admin/links/ vers /admin/links
@@ -405,13 +416,13 @@ router.all(['/api/links/event', '/api/links/event/'], requireAdminSession, handl
 
 // Page admin galeries
 router.get('/galleries', (req, res) => {
-    res.sendFile(path.join(paths.adminPages, 'galleries.html'));
+    res.sendFile(path.join(paths.adminPages, 'galleries.html'), { dotfiles: 'allow' });
 });
 router.get('/galleries/', (req, res) => res.redirect('/admin/galleries'));
 
 // Page admin SEO (seo.json : metas, pages cluster artistes/salles)
 router.get('/seo', (req, res) => {
-    res.sendFile(path.join(paths.adminPages, 'seo.html'));
+    res.sendFile(path.join(paths.adminPages, 'seo.html'), { dotfiles: 'allow' });
 });
 router.get('/seo/', (req, res) => res.redirect('/admin/seo'));
 
