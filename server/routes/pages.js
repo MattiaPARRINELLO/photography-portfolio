@@ -10,6 +10,7 @@ const photoService = require('../utils/photoService');
 const linksService = require('../utils/linksService');
 const galleryService = require('../utils/galleryService');
 const { getPublicGalleries, isManifestlyFake } = require('../utils/dataSanity');
+const { getThumbnailUrl } = require('../utils/photoStorage');
 const { translateHtml, dict } = require('../utils/i18n');
 
 const router = express.Router();
@@ -140,6 +141,14 @@ function generateGalleryItemHtml(photo, index, dims) {
         ? ` width="640" height="${Math.round(640 * dims.height / dims.width)}"`
         : '';
 
+    // Repli fiable : miniature statique générée à l'upload, servie par le serveur
+    // web (hors rate-limit et hors rendu sharp). Couvre les 429/508 du
+    // redimensionnement dynamique et les originaux manquants.
+    const thumbFallback = getThumbnailUrl(photo.filename);
+    const onerrorAttr = thumbFallback
+        ? ` onerror="this.onerror=null;this.removeAttribute('srcset');this.src='${thumbFallback}'"`
+        : '';
+
     // LCP Optimization: Eager load first 4 images
     const loading = index < 4 ? 'eager' : 'lazy';
     // Apply high priority to the first 2 images to cover LCP candidates in multi-column layouts
@@ -158,7 +167,7 @@ function generateGalleryItemHtml(photo, index, dims) {
                      loading="${loading}" 
                      fetchpriority="${fetchPriority}"
                      class="gallery-image rounded-xl shadow-lg ${animClass} transition-all duration-700 transform-gpu" 
-                     style="will-change: transform, opacity, filter, box-shadow;">
+                     style="will-change: transform, opacity, filter, box-shadow;"${onerrorAttr}>
                 <div class="gallery-overlay absolute inset-0 bg-black bg-opacity-0 transition-all duration-500 rounded-xl flex items-center justify-center opacity-0 hover:opacity-100 hover:bg-opacity-20">
                     <div><svg class="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg></div>
                 </div>
@@ -1037,7 +1046,12 @@ router.get('/galeries/:slug', async (req, res) => {
             const sizeAttrs = dims && dims.width
                 ? ` width="640" height="${Math.round(640 * dims.height / dims.width)}"`
                 : '';
-            return `<a href="${full}" data-fancybox="gallery"><img src="${thumb}" srcset="${srcset}" sizes="(max-width:768px) 50vw, (max-width:1440px) 33vw, 25vw" alt="${escapeAttr(alt)}" loading="${loading}"${sizeAttrs} /></a>`;
+            // Repli fiable : miniature statique (429/508 du resize, original absent).
+            const thumbFallback = getThumbnailUrl(filename);
+            const onerrorAttr = thumbFallback
+                ? ` onerror="this.onerror=null;this.removeAttribute('srcset');this.src='${thumbFallback}'"`
+                : '';
+            return `<a href="${full}" data-fancybox="gallery"><img src="${thumb}" srcset="${srcset}" sizes="(max-width:768px) 50vw, (max-width:1440px) 33vw, 25vw" alt="${escapeAttr(alt)}" loading="${loading}"${sizeAttrs}${onerrorAttr} /></a>`;
         }).join('');
         const masonryHtml = photosHtml
             ? `<div class="gallery-photos-shell"><div class="gallery-divider-grid" aria-hidden="true"></div><section class="masonry">${photosHtml}</section></div>`

@@ -627,9 +627,10 @@
           const isCover = coverFilename === p.filename;
           const orderIdx = selectedPhotos.indexOf(p.filename);
           const thumb = `/photos/resize?file=${encodeURIComponent(p.filename)}&w=240`;
+          const thumbFallback = `/photos/thumbnails/${encodeURIComponent(p.filename.replace(/\.[^.]+$/, ""))}.webp`;
           return `
           <div class="photo-thumb${isSel ? " selected" : ""}${isCover ? " is-cover" : ""}" data-file="${p.filename}">
-            <img src="${thumb}" alt="" loading="lazy" />
+            <img src="${thumb}" alt="" loading="lazy" onerror="this.onerror=null;this.removeAttribute('srcset');this.src='${thumbFallback}'" />
             ${isSel ? `<span class="badge">${orderIdx + 1}</span>` : ""}
             <span class="cover-star" title="Definir comme couverture">&#9733;</span>
           </div>`;
@@ -673,7 +674,7 @@
         }
         listEl.innerHTML = galleries.map((g) => {
           const cover = g.cover
-            ? `<img src="/photos/resize?file=${encodeURIComponent(g.cover)}&w=240" alt="" />`
+            ? `<img src="/photos/resize?file=${encodeURIComponent(g.cover)}&w=240" alt="" onerror="this.onerror=null;this.removeAttribute('srcset');this.src='/photos/thumbnails/${encodeURIComponent(g.cover.replace(/\.[^.]+$/, ""))}.webp'" />`
             : '<div class="gallery-card-placeholder">--</div>';
           const meta = [g.artist, g.venue, g.date].filter(Boolean).join(" · ");
           return `

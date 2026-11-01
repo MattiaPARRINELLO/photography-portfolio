@@ -22,4 +22,20 @@ function isImageFilename(filename) {
     return IMAGE_EXT_RE.test(String(filename || ''));
 }
 
-module.exports = { getOriginalsDir, isImageFilename };
+/**
+ * URL statique de la miniature générée à l'upload (`photos/thumbnails/`).
+ *
+ * Contrairement à `/photos/resize` (rendu à la volée par sharp, soumis au
+ * rate-limit et aux limites de processus de l'hébergement), ce fichier est
+ * servi directement par le serveur web : c'est le repli fiable quand le
+ * redimensionnement dynamique échoue (429, 508, original absent).
+ */
+function getThumbnailUrl(filename) {
+    const name = String(filename || '');
+    if (!name) return null;
+    const base = name.replace(/\.[^.]+$/, '');
+    if (!base) return null;
+    return `/photos/thumbnails/${encodeURIComponent(base).replace(/'/g, '%27')}.webp`;
+}
+
+module.exports = { getOriginalsDir, isImageFilename, getThumbnailUrl };
