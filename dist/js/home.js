@@ -882,6 +882,18 @@
             img.sizes =
               "(max-width: 480px) 50vw, (max-width: 1024px) 33vw, (max-width: 1440px) 25vw, 20vw";
 
+            // Repli fiable : miniature statique générée à l'upload, servie par le
+            // serveur web (hors rate-limit et hors rendu sharp).
+            const thumbFallback = `/photos/thumbnails/${encodeURIComponent(
+              photo.filename.replace(/\.[^.]+$/, "")
+            )}.webp`;
+            img.addEventListener("error", () => {
+              if (img.dataset.thumbFallback) return;
+              img.dataset.thumbFallback = "1";
+              img.removeAttribute("srcset");
+              img.src = thumbFallback;
+            });
+
             // Store the resized-full URL on the element so we can preload it when appropriate
             try {
               img.dataset.full = `/photos/resize?file=${fileParam}&w=${clickWidth}`;

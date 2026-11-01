@@ -24,9 +24,13 @@ const ARTIST = 'Mattia Parrinello';
 
 // Anti-moissonnage : le moissonnage de galerie complète dépasse largement
 // cette limite, un visiteur normal ne l'atteint jamais.
+// 600 était trop bas : l'accueil sert ~150 vignettes et une galerie jusqu'à 50,
+// et la limite est partagée par tous les visiteurs derrière une même IP
+// (opérateurs mobiles en CGNAT) — d'où des vignettes cassées (429) en usage
+// normal. Les vignettes ont par ailleurs un repli statique (voir pages.js).
 const resizeLimiter = rateLimit({
     windowMs: 5 * 60 * 1000,
-    limit: 600,
+    limit: 1500,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     message: 'Trop de requêtes, réessayez plus tard.'

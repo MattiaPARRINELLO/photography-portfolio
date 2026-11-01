@@ -330,6 +330,26 @@ describe('Routes pages — branches non couvertes (SSR galeries)', function () {
   });
 
   // ========================================================================
+  // GET / — repli statique des vignettes (429/508 sharp)
+  // ========================================================================
+  describe('GET / avec repli de miniature', function () {
+    it('ajoute un onerror vers la miniature statique sur les vignettes SSR', function (done) {
+      fs.promises.readFile.mockResolvedValue(TEMPLATE_HOME);
+      photoService.getPhotosList.mockResolvedValue([
+        { url: '/photos/p1.jpg', filename: 'p1.jpg', date: new Date('2025-06-01') }
+      ]);
+      supertest(makeApp())
+        .get('/')
+        .expect(200)
+        .end(function (err, res) {
+          if (err) return done(err);
+          expect(res.text).toContain("this.src='/photos/thumbnails/p1.webp'");
+          done();
+        });
+    });
+  });
+
+  // ========================================================================
   // GET /texts.json — erreur de lecture (catch intérieur 253-254)
   // ========================================================================
   describe('GET /texts.json avec erreur de lecture', function () {
@@ -532,6 +552,27 @@ describe('Routes pages — branches non couvertes (SSR galeries)', function () {
         .end(function (err, res) {
           if (err) return done(err);
           expect(res.text).not.toContain('gallery-intro-grid');
+          done();
+        });
+    });
+  });
+
+  // ========================================================================
+  // GET /galeries/:slug — repli statique des vignettes (429/508 sharp)
+  // ========================================================================
+  describe('GET /galeries/:slug avec repli de miniature', function () {
+    it('ajoute un onerror vers la miniature statique sur chaque vignette', function (done) {
+      fs.promises.readFile.mockResolvedValue(TEMPLATE_GALLERY);
+      galleryService.getGalleryBySlug.mockReturnValue({
+        id: 'g-fb', slug: 'repli', title: 'Repli', artist: 'Artiste', venue: '', date: '', description: '', photos: ['p1.jpg'], cover: null, published: true, artistLinks: {}
+      });
+      supertest(makeApp())
+        .get('/galeries/repli')
+        .expect(200)
+        .end(function (err, res) {
+          if (err) return done(err);
+          expect(res.text).toContain("this.onerror=null");
+          expect(res.text).toContain("this.src='/photos/thumbnails/p1.webp'");
           done();
         });
     });

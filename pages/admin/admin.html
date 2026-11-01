@@ -810,7 +810,7 @@
             const item = document.createElement("div");
             item.className = "photo-card";
             item.innerHTML = `
-                        <img src="/photos/resize?file=${encodeURIComponent(photo.filename)}&w=320" alt="${photo.filename}" onerror="this.src='/photos/${encodeURIComponent(photo.filename)}'">
+                        <img src="/photos/resize?file=${encodeURIComponent(photo.filename)}&w=320" alt="${photo.filename}" onerror="this.onerror=null;this.removeAttribute('srcset');this.src='/photos/thumbnails/${encodeURIComponent(photo.filename.replace(/\.[^.]+$/, ""))}.webp'">
                         <div class="photo-card-body">
                             <div class="photo-card-name">${photo.filename}</div>
                             <div class="photo-card-meta">${formatFileSize(photo.size)} · ${new Date(photo.mtime).toLocaleDateString("fr-FR")}</div>

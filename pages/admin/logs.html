@@ -1070,7 +1070,7 @@
             <div class="photo-info">
               <span class="photo-rank">#${index + 1}</span>
               <div class="photo-thumbnail-container">
-                <img src="/photos/resize?file=${encodeURIComponent(photo.filename)}&w=240" alt="${photo.filename}" class="photo-thumbnail" onerror="this.src='/photos/${encodeURIComponent(photo.filename)}'" onclick="openPhotoModal('/photos/${encodeURIComponent(photo.filename)}', '${photo.filename}')">
+                <img src="/photos/resize?file=${encodeURIComponent(photo.filename)}&w=240" alt="${photo.filename}" class="photo-thumbnail" onerror="this.onerror=null;this.removeAttribute('srcset');this.src='/photos/thumbnails/${encodeURIComponent(photo.filename.replace(/\.[^.]+$/, ""))}.webp'" onclick="openPhotoModal('/photos/${encodeURIComponent(photo.filename)}', '${photo.filename}')">
               </div>
               <div style="flex:1;min-width:0;">
                 <div class="photo-name" title="${photo.filename}">${photo.filename}</div>
