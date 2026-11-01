@@ -10,7 +10,7 @@ const photoService = require('../utils/photoService');
 const linksService = require('../utils/linksService');
 const galleryService = require('../utils/galleryService');
 const { getPublicGalleries, isManifestlyFake } = require('../utils/dataSanity');
-const { getThumbnailUrl } = require('../utils/photoStorage');
+const { getThumbnailUrl, isPhotoRenderable, filterRenderablePhotos } = require('../utils/photoStorage');
 const { translateHtml, dict } = require('../utils/i18n');
 
 const router = express.Router();
@@ -669,13 +669,15 @@ function renderGalleryCard(g) {
     const coverAlt = g.artist
         ? `${g.artist} en concert${g.venue ? ', ' + g.venue : ''}, photo par Mattia Parrinello`
         : `${g.title}, photo par Mattia Parrinello`;
-    const cover = g.cover
-        ? `<img class="cover" src="/photos/resize?file=${encodeURIComponent(g.cover)}&amp;w=800" srcset="/photos/resize?file=${encodeURIComponent(g.cover)}&amp;w=400 400w, /photos/resize?file=${encodeURIComponent(g.cover)}&amp;w=800 800w, /photos/resize?file=${encodeURIComponent(g.cover)}&amp;w=1200 1200w" sizes="(max-width:768px) 94vw, (max-width:1024px) 48vw, 31vw" alt="${escapeAttr(coverAlt)}" loading="lazy" />`
+    const photos = filterRenderablePhotos(g.photos);
+    const coverFile = g.cover && isPhotoRenderable(g.cover) ? g.cover : null;
+    const cover = coverFile
+        ? `<img class="cover" src="/photos/resize?file=${encodeURIComponent(coverFile)}&amp;w=800" srcset="/photos/resize?file=${encodeURIComponent(coverFile)}&amp;w=400 400w, /photos/resize?file=${encodeURIComponent(coverFile)}&amp;w=800 800w, /photos/resize?file=${encodeURIComponent(coverFile)}&amp;w=1200 1200w" sizes="(max-width:768px) 94vw, (max-width:1024px) 48vw, 31vw" alt="${escapeAttr(coverAlt)}" loading="lazy" />`
         : '<div class="cover" style="background:#111"></div>';
     const metaParts = [g.venue, formatGalleryDate(g.date)].filter(Boolean);
     const meta = metaParts.join(' · ');
     const kicker = g.artist || 'Concert';
-    const count = `${g.photos.length} photo${g.photos.length > 1 ? 's' : ''}`;
+    const count = `${photos.length} photo${photos.length > 1 ? 's' : ''}`;
 
     return `
       <a class="gallery-card" href="/galeries/${encodeURIComponent(g.slug)}" aria-label="Voir la galerie ${escapeAttr(g.title)}">
@@ -829,11 +831,25 @@ router.get('/salle/:slug', async (req, res) => {
 
 router.get('/galeries/:slug', async (req, res) => {
     try {
-        const gallery = galleryService.getGalleryBySlug(req.params.slug);
-        if (!gallery || gallery.published === false
-            || (process.env.NODE_ENV === 'production' && isManifestlyFake(gallery))) {
+        const rawGallery = galleryService.getGalleryBySlug(req.params.slug);
+        if (!rawGallery || rawGallery.published === false
+            || (process.env.NODE_ENV === 'production' && isManifestlyFake(rawGallery))) {
             return res.status(404).sendFile(path.join(paths.pages, '404.html'), { dotfiles: 'allow' });
         }
+
+        // Ne jamais rendre une tuile dont le fichier n'existe plus (original ni
+        // miniature) : la photo n'aurait aucune image à afficher.
+        const galleryPhotos = filterRenderablePhotos(rawGallery.photos);
+        const hiddenPhotos = (Array.isArray(rawGallery.photos) ? rawGallery.photos : [])
+            .filter((f) => !galleryPhotos.includes(f));
+        if (hiddenPhotos.length > 0) {
+            console.warn(`[galeries/${rawGallery.slug}] ${hiddenPhotos.length} photo(s) ignorée(s), fichier introuvable : ${hiddenPhotos.join(', ')}`);
+        }
+        const gallery = {
+            ...rawGallery,
+            photos: galleryPhotos,
+            cover: rawGallery.cover && isPhotoRenderable(rawGallery.cover) ? rawGallery.cover : null
+        };
 
         const lang = req.lang === 'en' ? 'en' : 'fr';
         const isEn = lang === 'en';
