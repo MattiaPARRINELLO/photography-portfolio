@@ -11,7 +11,9 @@ jest.mock('../../server/config', function () {
       root: '/fake/root',
       pages: '/fake/pages',
       adminPages: '/fake/pages/admin',
-      texts: '/fake/config/texts.json'
+      texts: '/fake/config/texts.json',
+      photos: '/fake/photos',
+      photoOriginals: '/fake/photos-originals'
     }),
     getConfig: jest.fn().mockReturnValue({}),
     getPort: jest.fn().mockReturnValue(3000),
@@ -573,6 +575,32 @@ describe('Routes pages — branches non couvertes (SSR galeries)', function () {
           if (err) return done(err);
           expect(res.text).toContain("this.onerror=null");
           expect(res.text).toContain("this.src='/photos/thumbnails/p1.webp'");
+          done();
+        });
+    });
+  });
+
+  // ========================================================================
+  // GET /galeries/:slug — photos dont le fichier a disparu du serveur
+  // ========================================================================
+  describe('GET /galeries/:slug avec photo introuvable', function () {
+    it('ne rend pas la tuile des photos sans original ni miniature', function (done) {
+      fs.promises.readFile.mockResolvedValue(TEMPLATE_GALLERY);
+      fs.existsSync.mockImplementation(function (p) {
+        // Simule un fichier absent sur le disque (original ET miniature).
+        return String(p).indexOf('disparue') === -1;
+      });
+      galleryService.getGalleryBySlug.mockReturnValue({
+        id: 'g-miss', slug: 'photo-manquante', title: 'Photo manquante', artist: 'Artiste', venue: '', date: '', description: '', photos: ['p1.jpg', 'disparue.jpg'], cover: 'disparue.jpg', published: true, artistLinks: {}
+      });
+      supertest(makeApp())
+        .get('/galeries/photo-manquante')
+        .expect(200)
+        .end(function (err, res) {
+          fs.existsSync.mockImplementation(function () { return true; });
+          if (err) return done(err);
+          expect(res.text).toContain('p1.jpg');
+          expect(res.text).not.toContain('disparue.jpg');
           done();
         });
     });
