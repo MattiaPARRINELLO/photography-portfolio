@@ -1653,6 +1653,7 @@ video {
 
 .cs-main {
   display: block;
+  overflow-x: clip;
 }
 
 .cs img {
@@ -2368,43 +2369,9 @@ video {
 
 /* --- Mouvement ---------------------------------------------------------- */
 
-@keyframes cs-shutter {
-  from {
-    clip-path: inset(0 0 100% 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-@keyframes cs-drift {
-  from {
-    transform: scale(1);
-  }
-  to {
-    transform: scale(1.07);
-  }
-}
-
-.cs-js .cs-panel {
-  animation: cs-shutter 1.05s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.cs-col:first-child .cs-frame:first-child img {
-  animation: cs-drift 22s ease-in-out infinite alternate;
-}
-
-.cs-js .cs-reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.cs-js .cs-reveal.is-in {
-  opacity: 1;
-  transform: none;
-}
+/* Les animations d'entrée et de parallaxe sont pilotées par GSAP
+   (dist/js/home-sheet.js) : aucun état initial caché n'est posé en CSS, donc
+   le contenu reste visible si le script ne s'exécute pas. */
 
 /* --- Petits écrans ------------------------------------------------------ */
 
@@ -2576,19 +2543,6 @@ video {
 
   .cs-footer-right {
     text-align: left;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cs-js .cs-panel,
-  .cs-col:first-child .cs-frame:first-child img {
-    animation: none;
-  }
-
-  .cs-js .cs-reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
   }
 }
 
