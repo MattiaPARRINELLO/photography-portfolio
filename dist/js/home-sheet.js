@@ -277,6 +277,11 @@
       if (bootActive) {
         boot.style.pointerEvents = "none";
 
+        // Le panneau est couvert par la feuille : son texte et ses actions
+        // n'entrent qu'une fois la feuille repliée, à la suite du nom.
+        var panelBits = ".cs-panel .cs-lede, .cs-panel .cs-btn, .cs-panel-foot";
+        gsap.set(panelBits, { autoAlpha: 0, y: 18 });
+
         // Découpage par mots puis par lettres : les lettres sont des blocs
         // en ligne, donc la coupure de ligne doit rester entre deux mots.
         var label = bootName.textContent;
@@ -367,6 +372,20 @@
           // Les photos se posent pendant que la feuille découvre la planche.
           tl.add(landFrames, 0);
           tl.add(endBoot, 0.72);
+
+          // La feuille a disparu : la phrase, le bouton puis le pied du
+          // panneau se posent en cascade sous le nom déjà en place.
+          tl.to(
+            panelBits,
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: 0.55,
+              ease: "power3.out",
+              stagger: 0.07
+            },
+            0.74
+          );
         });
       } else {
         landFrames();
