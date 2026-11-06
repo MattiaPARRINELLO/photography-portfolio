@@ -63,6 +63,28 @@
       bootWords.length === 2 && panel && title && hasMotion && !introSeen
     );
 
+    // Bandeau de diagnostic : ?debug=1
+    if (/(?:\?|&)debug=1(?:&|$)/.test(window.location.search)) {
+      var badge = document.createElement("div");
+      badge.style.cssText =
+        "position:fixed;left:8px;bottom:8px;z-index:9999;padding:8px 10px;" +
+        "font:12px/1.4 monospace;background:#101421;color:#fff;border:1px solid #ff488b;border-radius:4px";
+      badge.textContent =
+        "gsap:" + (window.gsap ? "ok" : "KO") +
+        " · scrolltrigger:" + (window.ScrollTrigger ? "ok" : "KO") +
+        " · reduced:" + (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "oui" : "non") +
+        " · intro:" + (bootActive ? "jouee" : "sautee") +
+        " · vue:" + (function () {
+          try {
+            var at = parseInt(window.sessionStorage.getItem("cs-intro-at") || "0", 10);
+            return at ? Math.round((Date.now() - at) / 60000) + " min" : "jamais";
+          } catch (e) { return "?"; }
+        })() +
+        " · scenes:" + (window.gsap ? "v" + String(window.gsap.version) : "-");
+      document.body.appendChild(badge);
+      window.__dbgBadge = badge;
+    }
+
     function endBoot() {
       if (boot) boot.style.display = "none";
       if (title) title.style.visibility = "";
