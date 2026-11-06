@@ -547,25 +547,28 @@
               // rapprochent : ils ne se croisent pas.
               tl.to(
                 word,
-                { scale: targets[i].scale, duration: move, ease: "power3.out" },
+                // Réduction et glissement ensemble, sur les deux lignes.
+                { scale: targets[i].scale, duration: move * 0.7, ease: "power2.out" },
                 S
               ).to(
                 word,
-                // L'horizontal se place tôt, la montée reste progressive :
-                // les mots sont déjà côte à côte quand ils changent de ligne.
-                { x: targets[i].x, duration: move, ease: "power3.out" },
+                { x: targets[i].x, duration: move * 0.85, ease: "power2.out" },
                 S
               ).to(
                 word,
-                { y: targets[i].y, duration: move, ease: "power2.inOut" },
-                S
+                // La montée n'arrive qu'à la fin : les mots sont alors à leur
+                // taille finale et côte à côte, donc ils ne se chevauchent pas.
+                { y: targets[i].y, duration: move * 0.3, ease: "power2.inOut" },
+                S + move * 0.7
               );
             });
             // Le blanc de la photo devient l'encre du papier.
             if (hasPhoto) {
               // Le nom reste blanc tant que la photo est là, puis passe à
               // l'encre quand le voile blanc prend le dessus.
-              tl.to(bootName, { color: "#101421", duration: 0.35, ease: "power1.inOut" }, S + 0.6);
+              // Le nom reste blanc tant que la photo est là, puis bascule
+              // franchement en encre quand le voile a pris le dessus.
+              tl.to(bootName, { color: "#101421", duration: 0.22, ease: "power2.in" }, S + 0.8);
             }
           } else {
             // Repli sans mesure fiable : le nom s'efface.

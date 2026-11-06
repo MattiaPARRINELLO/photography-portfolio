@@ -1697,7 +1697,9 @@ video {
 
 html.cs-boot-on .cs-boot {
   display: grid;
-  place-items: center;
+  /* Nom calé à gauche : alignement vertical centré, alignement horizontal
+     sur la marge de la page. */
+  place-items: center start;
   position: fixed;
   inset: 0;
   z-index: 90;
@@ -1757,8 +1759,9 @@ html.cs-boot-on .cs-boot {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   max-width: 96vw;
+  margin-left: var(--pad);
   color: #ffffff;
   /* Calé une fois pour toutes en vw : le nom ne change plus de taille au
      démarrage (aucun saut à l'ouverture). */
@@ -1766,7 +1769,7 @@ html.cs-boot-on .cs-boot {
   font-weight: 600;
   line-height: 0.9;
   letter-spacing: -0.045em;
-  text-align: center;
+  text-align: left;
 }
 
 .cs-boot-word {
