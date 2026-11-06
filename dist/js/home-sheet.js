@@ -382,6 +382,18 @@
 
         Promise.all([fontsReady, minHold, photoReady]).then(function (result) {
           var photoUrl = result[2];
+
+          // Le nom occupe toute la largeur disponible : c'est ce qui donne aux
+          // lettres assez de surface pour qu'on y lise une photo.
+          if (!narrow) {
+            var current = parseFloat(getComputedStyle(bootName).fontSize);
+            var width = bootName.getBoundingClientRect().width;
+            var target = Math.min(window.innerWidth * 0.94, 2000);
+            if (width > 0) {
+              bootName.style.fontSize = Math.round(current * (target / width)) + "px";
+            }
+          }
+
           var p = panel.getBoundingClientRect();
           var card = bootCard.getBoundingClientRect();
           var tl = gsap.timeline();
@@ -447,10 +459,6 @@
                 ease: "power4.inOut"
               },
               S
-            ).to(
-              bootName,
-              { scale: scale * 1.018, duration: 0.06, yoyo: true, repeat: 1, ease: "sine.inOut" },
-              S + flipDur
             );
           }
 
