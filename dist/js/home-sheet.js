@@ -428,8 +428,8 @@
         // gauche, moitié droite depuis la droite, en se resserrant vers le
         // centre. Animé par colonne (six éléments) et non par image.
         gsap.set(cols, {
-          x: function (i) { return i < cols.length / 2 ? -90 : 90; },
-          opacity: 0.15
+          x: function (i) { return i < cols.length / 2 ? -60 : 60; },
+          opacity: 0.55
         });
 
         var fontsReady = document.fonts && document.fonts.ready
@@ -601,13 +601,14 @@
             {
               x: 0,
               opacity: 1,
-              duration: 0.95,
+              duration: 0.8,
               ease: "power3.out",
-              stagger: { each: 0.06, from: "center" }
+              stagger: { each: 0.05, from: "center" }
             },
-            // Décalé pour coïncider avec le moment où la feuille découvre
-            // la planche : sinon l'arrivée se passe sous le carton.
-            S + 0.5
+            // Démarre avec le repli (la timeline commence ~0,55 s après le
+            // chargement) : l'arrivée est encore en cours quand la feuille
+            // découvre la planche.
+            S
           );
 
           // Les voiles se lèvent colonne par colonne, depuis le centre :
