@@ -392,7 +392,7 @@
               new Promise(function (resolve) { window.setTimeout(resolve, 1200); })
             ])
           : Promise.resolve();
-        var minHold = new Promise(function (resolve) { window.setTimeout(resolve, 100); });
+        var minHold = new Promise(function (resolve) { window.setTimeout(resolve, 350); });
         var photoUrl = null;
         var hasPhoto = false;
         var applyPhoto = function (url) {
@@ -401,7 +401,7 @@
           hasPhoto = true;
           bootPhoto.src = url;
           if (bootPhoto.decode) bootPhoto.decode().catch(function () {});
-          gsap.to([bootPhoto, bootScrim], { autoAlpha: 1, duration: 0.45, ease: "power2.out" });
+          gsap.to([bootPhoto, bootScrim], { autoAlpha: 1, duration: 0.7, ease: "power2.out" });
         };
         pickBootPhoto().then(applyPhoto);
 
@@ -474,8 +474,8 @@
           }
 
           var tl = gsap.timeline();
-          var S = 0.22;
-          var move = narrow ? 0.62 : 0.72;
+          var S = narrow ? 0.45 : 0.55;
+          var move = narrow ? 0.95 : 1.15;
 
           // Les mots vont être transformés : on les promeut une fois pour
           // éviter de rastériser le texte à chaque image.
@@ -490,7 +490,7 @@
               width: p.width,
               height: p.height,
               duration: move,
-              ease: "power3.inOut"
+              ease: "power2.inOut"
             },
             S
           );
@@ -524,17 +524,17 @@
               // croisent pas au milieu du trajet.
               tl.to(
                 word,
-                { scale: targets[i].scale, duration: move * 0.55, ease: "power2.inOut" },
+                { scale: targets[i].scale, duration: move * 0.7, ease: "power2.inOut" },
                 S
               ).to(
                 word,
-                { x: targets[i].x, y: targets[i].y, duration: move * 0.45, ease: "power2.inOut" },
-                S + move * 0.55
+                { x: targets[i].x, y: targets[i].y, duration: move * 0.3, ease: "power2.inOut" },
+                S + move * 0.7
               );
             });
             // Le blanc de la photo devient l'encre du papier.
             if (hasPhoto) {
-              tl.to(bootName, { color: "#101421", duration: 0.35, ease: "power2.inOut" }, S);
+              tl.to(bootName, { color: "#101421", duration: 0.45, ease: "power2.inOut" }, S);
             }
           } else {
             // Repli sans mesure fiable : le nom s'efface.
@@ -545,7 +545,9 @@
           if (hasPhoto) {
             // La photo se lave tout de suite : le reste du repli se fait sur
             // une feuille blanche, bien moins coûteuse à redessiner.
-            tl.to(bootVeil, { autoAlpha: 1, duration: 0.32, ease: "power2.inOut" }, S);
+            // La photo se lave vite : le repli se fait ensuite sur du blanc,
+            // seule façon de rester à 60 fps pendant un mouvement long.
+            tl.to(bootVeil, { autoAlpha: 1, duration: 0.35, ease: "power2.inOut" }, S);
           }
 
 
