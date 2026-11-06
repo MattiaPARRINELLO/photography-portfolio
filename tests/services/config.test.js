@@ -57,7 +57,8 @@ describe('ServerConfig', function () {
     expect(paths.photos).toBe(path.join(ROOT_DIR, 'photos'));
     expect(paths.pages).toBe(path.join(ROOT_DIR, 'pages'));
     expect(paths.adminPages).toBe(path.join(ROOT_DIR, 'pages', 'admin'));
-    expect(paths.stats).toBe(path.join(ROOT_DIR, 'stats.json'));
+    expect(paths.analytics).toBe(path.join(ROOT_DIR, 'data', 'analytics'));
+    expect(paths.stats).toBeUndefined();
     expect(paths.texts).toBe(path.join(CONFIG_DIR, 'texts.json'));
     expect(paths.temp).toBe(path.join(ROOT_DIR, 'temp'));
   });

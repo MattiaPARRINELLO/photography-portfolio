@@ -68,8 +68,6 @@ class CampaignManager {
             medium: campaignData.medium,
             description: campaignData.description,
             createdAt: new Date().toISOString(),
-            visits: 0,
-            lastVisit: null,
             isActive: true
         };
 
@@ -84,29 +82,12 @@ class CampaignManager {
     }
 
     // Enregistrer une visite de campagne
-    recordCampaignVisit(campaignId, userAgent, ip) {
-        const data = this.readData();
-
-        if (data.campaigns[campaignId]) {
-            data.campaigns[campaignId].visits += 1;
-            data.campaigns[campaignId].lastVisit = new Date().toISOString();
-
-            // Optionnel: garder un historique des visites
-            if (!data.campaigns[campaignId].visitHistory) {
-                data.campaigns[campaignId].visitHistory = [];
-            }
-
-            data.campaigns[campaignId].visitHistory.push({
-                timestamp: new Date().toISOString(),
-                userAgent: userAgent,
-                ip: ip
-            });
-
-            this.saveData(data);
-            console.log(`📊 Visite enregistrée pour la campagne: ${campaignId}`);
-            return data.campaigns[campaignId];
-        }
-
+    // NOTE : les visites ne sont plus comptées ici. La détection de campagne
+    // est faite par le tracker client (?c, ?ref, ?utm_*) puis agrégée par
+    // AnalyticsService, sur le même socle que le reste des statistiques.
+    // Cette méthode est conservée pour compatibilité mais ne persiste rien :
+    // elle ne stockait précédemment que des User-Agent et des IP bruts.
+    recordCampaignVisit() {
         return null;
     }
 
@@ -138,40 +119,17 @@ class CampaignManager {
     }
 
     // Obtenir les statistiques des campagnes
+    // NOTE : les KPI (visites, engagement, conversions) sont désormais
+    // calculés par AnalyticsService à partir des signaux de session.
+    // Cette méthode ne sert plus qu'à exposer un résumé de déclaration.
     getCampaignStats() {
         const data = this.readData();
         const campaigns = Object.values(data.campaigns);
-
-        const stats = {
+        return {
             totalCampaigns: campaigns.length,
-            totalVisits: campaigns.reduce((sum, c) => sum + (c.visits || 0), 0),
-            todayVisits: 0,
+            activeCampaigns: campaigns.filter(c => c.isActive !== false).length,
             topSource: null
         };
-
-        // Calculer les visites d'aujourd'hui
-        const today = new Date().toDateString();
-        campaigns.forEach(campaign => {
-            if (campaign.visitHistory) {
-                stats.todayVisits += campaign.visitHistory.filter(visit =>
-                    new Date(visit.timestamp).toDateString() === today
-                ).length;
-            }
-        });
-
-        // Trouver la source la plus populaire
-        const sourceStats = {};
-        campaigns.forEach(campaign => {
-            sourceStats[campaign.source] = (sourceStats[campaign.source] || 0) + (campaign.visits || 0);
-        });
-
-        if (Object.keys(sourceStats).length > 0) {
-            stats.topSource = Object.keys(sourceStats).reduce((a, b) =>
-                sourceStats[a] > sourceStats[b] ? a : b
-            );
-        }
-
-        return stats;
     }
 
     // Vérifier si un ID de campagne existe

@@ -92,7 +92,7 @@ jest.mock('../../server/utils/textUtils', function () {
 });
 
 var nodemailer;
-var statsRouter;
+var contactRouter;
 
 function makeApp() {
   var app = express();
@@ -104,7 +104,7 @@ function makeApp() {
     saveUninitialized: true,
     cookie: { secure: false }
   }));
-  app.use('/', statsRouter);
+  app.use('/', contactRouter);
   return app;
 }
 
@@ -121,7 +121,7 @@ describe('Route contact POST /send-mail', function () {
     // compteur IP vierge, sinon les tests s'épuisent mutuellement.
     jest.resetModules();
     nodemailer = require('nodemailer');
-    statsRouter = require('../../server/routes/stats');
+    contactRouter = require('../../server/routes/contact');
   });
 
   function makeValidBody(overrides) {

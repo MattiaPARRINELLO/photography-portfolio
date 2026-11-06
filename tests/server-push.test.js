@@ -65,16 +65,8 @@ jest.mock('../server/utils/linksService', function () {
 
 jest.mock('../server/utils/campaignService', function () {
   return {
-    processCampaignFromQuery: jest.fn().mockReturnValue(null),
-    associateUserToCampaign: jest.fn(),
-    getCampaignInfo: jest.fn().mockReturnValue(null)
-  };
-});
-
-jest.mock('../server/middleware/tracking', function () {
-  return {
-    userTrackingMiddleware: jest.fn(function () { return function (req, res, next) { next(); }; }),
-    campaignMiddleware: jest.fn(function () { return function (req, res, next) { next(); }; })
+    parseCampaignQuery: jest.fn().mockReturnValue(null),
+    normalizeCampaign: jest.fn().mockReturnValue(null)
   };
 });
 
@@ -83,13 +75,10 @@ jest.mock('../server/routes/admin', function () { var e = require('express'); re
 jest.mock('../server/routes/photos', function () { var e = require('express'); return e.Router(); });
 jest.mock('../server/routes/image-resize', function () { var e = require('express'); return e.Router(); });
 jest.mock('../server/routes/content', function () { var e = require('express'); return e.Router(); });
-jest.mock('../server/routes/stats', function () { var e = require('express'); return e.Router(); });
+jest.mock('../server/routes/contact', function () { var e = require('express'); return e.Router(); });
+jest.mock('../server/routes/analytics', function () { var e = require('express'); return e.Router(); });
 jest.mock('../server/routes/signed-images', function () { var e = require('express'); return e.Router(); });
 
-jest.mock('../scripts/UserActivityLogger', function () {
-  return function () { return { log: jest.fn(), cleanOldLogs: jest.fn(), startPeriodicCleanup: jest.fn() }; };
-});
-jest.mock('../scripts/PhotoClickTracker', function () { return function () { return { recordPhotoClick: jest.fn() }; }; });
 jest.mock('../scripts/CampaignManager', function () {
   return function () { return { getAllCampaigns: jest.fn().mockReturnValue([]) }; };
 });

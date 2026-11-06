@@ -116,8 +116,7 @@ jest.mock('../../server/utils/linksService', function () {
 // ============================================================================
 jest.mock('../../server/utils/campaignService', function () {
   return {
-    processCampaignFromQuery: jest.fn().mockReturnValue(null),
-    getUserCampaignInfo: jest.fn().mockReturnValue(null)
+    parseCampaignQuery: jest.fn().mockReturnValue(null)
   };
 });
 
@@ -227,7 +226,7 @@ describe('Routes pages — branches non couvertes (SSR galeries)', function () {
     });
 
     it('injecte le script de nettoyage URL quand campagne detectee via ref', function (done) {
-      campaignService.processCampaignFromQuery.mockReturnValue({ ref: 'insta-bio', source: 'instagram' });
+      campaignService.parseCampaignQuery.mockReturnValue({ id: 'insta-bio', source: 'instagram' });
       supertest(makeApp())
         .get('/?ref=insta-bio')
         .expect(200)

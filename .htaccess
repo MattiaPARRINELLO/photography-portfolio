@@ -1,3 +1,26 @@
+# BEGIN hardening-mprnl (2026-11-03)
+# Blocage des fichiers sensibles. Source: ~/backups/hardening.block
+Options -Indexes
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Repertoires de versioning
+  RewriteRule (^|/)\.(git|svn|hg|bzr)(/|$) - [F,L]
+  # Fichiers d'environnement et secrets
+  RewriteRule (^|/)\.env($|\.) - [F,L]
+  RewriteRule (^|/)\.(htpasswd|htaccess|user\.ini|bash_history|git-credentials|netrc|npmrc)$ - [F,L]
+  RewriteRule (^|/)(id_rsa|id_ed25519|deploy_key)(\.pub)?$ - [F,L]
+  # Manifests et code serveur
+  RewriteRule (^|/)(package|package-lock|composer)\.(json|lock)$ - [F,L]
+  RewriteRule (^|/)(server|app)\.js$ - [F,L]
+  # Sauvegardes, dumps, cles, archives, docs internes
+  RewriteRule \.(sql|db|sqlite3?|bak|old|orig|save|swp|swo|log|ini|pem|key|crt|p12|pfx|zip|tar|gz|tgz|bz2|xz|7z|rar|phar|sh|md)$ - [F,L]
+</IfModule>
+<IfModule mod_authz_core.c>
+  <FilesMatch "(^\.env|^\.git|^\.svn|^(id_rsa|id_ed25519|deploy_key)(\.pub)?$|^(package|package-lock|composer)\.(json|lock)$|^(server|app)\.js$|\.(sql|db|bak|old|log|ini|pem|key|crt|p12|pfx|zip|tar|gz|phar|sh|md)$)">
+    Require all denied
+  </FilesMatch>
+</IfModule>
+# END hardening-mprnl
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
 PassengerAppRoot "/home/mattiapa/photo.mprnl.fr"
 PassengerBaseURI "/"
@@ -5,13 +28,6 @@ PassengerNodejs "/home/mattiapa/nodevenv/photo.mprnl.fr/20/bin/node"
 PassengerAppType node
 PassengerStartupFile server.js
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
-
-# php -- BEGIN cPanel-generated handler, do not edit
-# Définissez le package « ea-php84 » comme langage de programmation « PHP » par défaut.
-<IfModule mime_module>
-  AddHandler application/x-httpd-ea-php84 .php .php8 .phtml
-</IfModule>
-# php -- END cPanel-generated handler, do not edit
 
 
 # =============================================================
@@ -32,7 +48,7 @@ PassengerStartupFile server.js
 </FilesMatch>
 
 # 2) Dossiers internes du projet
-RedirectMatch 404 ^/(?:config|logs|coverage|temp|scripts|tests|server|graphify-out|node_modules)/
+RedirectMatch 404 ^/(?:config|logs|coverage|temp|scripts|tests|server|graphify-out|node_modules|data)/
 
 # 3) Fichiers internes à la racine du projet
 RedirectMatch 404 ^/(?:package|package-lock)\.json$
@@ -43,3 +59,10 @@ RedirectMatch 404 ^/.*/README\.md$
 #    Seules les vignettes (miniatures générées) et la route /photos/resize
 #    doivent être accessibles ; les originaux et le cache `resized/` non.
 RedirectMatch 404 ^/photos/(?!resize(?:\?|$)|thumbnails/).*\.(?:jpe?g|png|webp|gif)$
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Définissez le package « ea-php84 » comme langage de programmation « PHP » par défaut.
+<IfModule mime_module>
+  AddHandler application/x-httpd-ea-php84 .php .php8 .phtml
+</IfModule>
+# php -- END cPanel-generated handler, do not edit
