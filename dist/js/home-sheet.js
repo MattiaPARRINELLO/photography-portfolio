@@ -314,11 +314,24 @@
         var minHold = new Promise(function (resolve) { window.setTimeout(resolve, 550); });
 
         Promise.all([fontsReady, minHold]).then(function () {
-          var h = title.getBoundingClientRect();
-          var b = bootName.getBoundingClientRect();
           var p = panel.getBoundingClientRect();
           var card = bootCard.getBoundingClientRect();
           var tl = gsap.timeline();
+
+          // Le H1 et le nom du carton n'ont pas les mêmes métriques de ligne
+          // (line-height 0.95, boîte du bloc contre boîte en ligne). On cale
+          // donc l'encre sur l'encre : sans ça, le titre saute de 2-3 px au
+          // moment où le carton disparaît.
+          var inkOf = function (el) {
+            var range = document.createRange();
+            range.selectNodeContents(el);
+            return range.getBoundingClientRect();
+          };
+          var hInk = inkOf(title);
+          var bInk = inkOf(bootName);
+          var bBox = bootName.getBoundingClientRect();
+          var scale = parseFloat(getComputedStyle(title).fontSize) /
+            parseFloat(getComputedStyle(bootName).fontSize);
 
           // Repli de la feuille : elle atterrit exactement sur le panneau.
           tl.to(
@@ -335,15 +348,15 @@
           );
 
           // Le nom suit le même chemin et se pose sur le H1.
-          if (narrow || !b.width || !h.width) {
+          if (narrow || !bInk.width || !hInk.width) {
             tl.to(bootName, { scale: 0.9, autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 0.05);
           } else {
             tl.to(
               bootName,
               {
-                x: h.left - b.left,
-                y: h.top - b.top,
-                scale: h.width / b.width,
+                x: hInk.left - bBox.left - scale * (bInk.left - bBox.left),
+                y: hInk.top - bBox.top - scale * (bInk.top - bBox.top),
+                scale: scale,
                 duration: 0.7,
                 ease: "power4.inOut"
               },
