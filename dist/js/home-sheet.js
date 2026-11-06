@@ -43,8 +43,7 @@
     var bootPhoto = boot ? boot.querySelector(".cs-boot-photo") : null;
     var bootScrim = boot ? boot.querySelector(".cs-boot-scrim") : null;
     var bootVeil = boot ? boot.querySelector(".cs-boot-veil") : null;
-    var bootLight = boot ? boot.querySelector(".cs-boot-name-light") : null;
-    var bootInk = boot ? boot.querySelector(".cs-boot-name-ink") : null;
+    var bootWords = boot ? Array.prototype.slice.call(boot.querySelectorAll(".cs-boot-word")) : [];
     var panel = document.querySelector(".cs-panel");
     var title = document.querySelector(".cs-title");
 
@@ -54,7 +53,7 @@
 
     var bootActive = !!(
       boot && bootName && bootCard && bootPhoto && bootScrim && bootVeil &&
-      bootLight && bootInk && panel && title && hasMotion && !introSeen
+      bootWords.length === 2 && panel && title && hasMotion && !introSeen
     );
 
     function endBoot() {
@@ -358,16 +357,16 @@
       }
 
       // --- Carton-titre ----------------------------------------------------
-      // Une photo du dernier concert occupe tout l'écran, le nom est découpé
-      // dedans en blanc, puis la feuille se replie, se lave de blanc et
-      // devient le panneau de la page.
+      // Une photo du dernier concert occupe tout l'écran, le nom est posé
+      // dessus en deux lignes. Pendant le repli, les deux mots convergent
+      // vers les deux mots du H1 et se posent exactement dessus.
       if (bootActive) {
         boot.style.pointerEvents = "none";
         try { window.sessionStorage.setItem("cs-intro", "1"); } catch (e) {}
 
         var panelBits = ".cs-panel .cs-lede, .cs-panel .cs-btn, .cs-panel-foot";
         gsap.set(panelBits, { autoAlpha: 0, y: 18 });
-        gsap.set([bootLight, bootInk], { autoAlpha: 0 });
+        gsap.set(bootName, { autoAlpha: 0 });
 
         // Les tirages se développent dans le sillage de la feuille.
         gsap.set(cols, { filter: "grayscale(1) brightness(0.5)" });
@@ -384,56 +383,78 @@
           var p = panel.getBoundingClientRect();
           var card = bootCard.getBoundingClientRect();
 
-          // Le nom prend toute la largeur possible. On cale la taille sur le
-          // mot le plus long, mesuré au canvas avec la police et
-          // l'interlettrage réels : c'est le maximum admissible sans déborder.
+          // Taille du nom : le mot le plus long occupe 96 % de la largeur.
           var vw = window.innerWidth;
           var target = vw * (narrow ? 0.92 : 0.96);
           var cs = getComputedStyle(bootName);
-          var longest = "Mattia Parrinello".split(" ").reduce(function (a, b) {
-            return b.length > a.length ? b : a;
-          }, "");
+          var longest = bootWords.reduce(function (a, w) {
+            return w.textContent.length > a.textContent.length ? w : a;
+          });
           var emTrack = parseFloat(cs.letterSpacing) / (parseFloat(cs.fontSize) || 1);
           var canvas = document.createElement("canvas");
           var ctx = canvas.getContext("2d");
           if (ctx) {
             ctx.font = cs.fontWeight + " 100px " + cs.fontFamily;
-            var wordAt100 = ctx.measureText(longest).width + (longest.length - 1) * emTrack * 100;
+            var wordAt100 = ctx.measureText(longest.textContent).width +
+              (longest.textContent.length - 1) * emTrack * 100;
             if (wordAt100 > 0) {
               bootName.style.fontSize = Math.round((target / wordAt100) * 100) + "px";
             }
           }
 
-          var nameBox = bootName.getBoundingClientRect();
-          var hInk = (function () {
+          // Rectangles d'encre de chaque mot du H1, pour y poser les mots du
+          // carton au pixel près.
+          var inkRects = (function () {
+            var node = title.firstChild;
+            if (!node || node.nodeType !== 3) return null;
+            var text = node.nodeValue;
+            var cut = text.indexOf(" ");
+            if (cut < 0) return null;
             var range = document.createRange();
-            range.selectNodeContents(title);
-            return range.getBoundingClientRect();
+            var rects = [];
+            range.setStart(node, 0);
+            range.setEnd(node, cut);
+            rects.push(range.getBoundingClientRect());
+            range.setStart(node, cut + 1);
+            range.setEnd(node, text.length);
+            rects.push(range.getBoundingClientRect());
+            return rects;
           })();
-          var nameMid = {
-            x: nameBox.left + nameBox.width / 2,
-            y: nameBox.top + nameBox.height / 2
-          };
-          var hMid = {
-            x: hInk.left + hInk.width / 2,
-            y: hInk.top + hInk.height / 2
-          };
+
+          var targets = null;
+          if (inkRects) {
+            targets = bootWords.map(function (word, i) {
+              var box = word.getBoundingClientRect();
+              var range = document.createRange();
+              range.selectNodeContents(word);
+              var ink = range.getBoundingClientRect();
+              var to = inkRects[i];
+              if (!ink.width || !to.width || !box.width) return null;
+              var scale = to.width / ink.width;
+              return {
+                x: to.left - box.left - scale * (ink.left - box.left),
+                y: to.top - box.top - scale * (ink.top - box.top),
+                scale: scale
+              };
+            });
+          }
 
           var tl = gsap.timeline();
           var S = 0.5;
+          var move = 0.9;
 
           if (hasPhoto) {
             bootPhoto.style.backgroundImage = 'url("' + photoUrl.replace(/"/g, "") + '")';
             gsap.set([bootPhoto, bootScrim], { autoAlpha: 1 });
             // Inscription : le nom blanc se découvre par le bas.
             tl.fromTo(
-              bootLight,
+              bootName,
               { clipPath: "inset(100% 0% 0% 0%)", autoAlpha: 1 },
               { clipPath: "inset(0% 0% 0% 0%)", duration: 0.55, ease: "power3.out" },
               0
             );
           } else {
-            tl.to(bootInk, { autoAlpha: 1, duration: 0.4, ease: "power2.out" }, 0);
+            gsap.set(bootName, { color: "#0d060b", autoAlpha: 1 });
           }
 
           // Repli de la feuille, exactement sur le panneau.
@@ -444,29 +465,39 @@
               y: p.top - card.top,
               width: p.width,
               height: p.height,
-              duration: 0.74,
-              ease: "power4.inOut"
-            },
-            S
-          );
-
-          // Le nom se contracte vers le H1 et se dissout dans la feuille.
-          tl.to(
-            bootName,
-            {
-              x: hMid.x - nameMid.x,
-              y: hMid.y - nameMid.y,
-              scale: 0.34,
-              duration: 0.7,
+              duration: move,
               ease: "power3.inOut"
             },
             S
           );
-          tl.to(bootName, { autoAlpha: 0, duration: 0.32, ease: "power2.in" }, S + 0.4);
+
+          // Les deux mots rejoignent les deux mots du H1.
+          if (targets && targets[0] && targets[1]) {
+            bootWords.forEach(function (word, i) {
+              tl.to(
+                word,
+                {
+                  x: targets[i].x,
+                  y: targets[i].y,
+                  scale: targets[i].scale,
+                  duration: move,
+                  ease: "power3.inOut"
+                },
+                S
+              );
+            });
+            // Le blanc de la photo devient l'encre du papier.
+            if (hasPhoto) {
+              tl.to(bootName, { color: "#101421", duration: 0.42, ease: "power2.inOut" }, S + 0.42);
+            }
+          } else {
+            // Repli sans mesure fiable : le nom s'efface.
+            tl.to(bootName, { autoAlpha: 0, duration: 0.4, ease: "power2.in" }, S + 0.3);
+          }
 
           // La photo se lave de blanc : la feuille devient le panneau.
           if (hasPhoto) {
-            tl.to(bootVeil, { autoAlpha: 1, duration: 0.72, ease: "power2.inOut" }, S);
+            tl.to(bootVeil, { autoAlpha: 1, duration: 0.5, ease: "power2.inOut" }, S + 0.4);
           }
 
           // Les tirages se développent, colonne par colonne, depuis le centre.
@@ -483,14 +514,14 @@
           );
 
           landFrames(S);
-          tl.add(endBoot, S + 0.76);
+          tl.add(endBoot, S + move + 0.02);
 
           // La feuille a disparu : la phrase, le bouton puis le pied du
           // panneau se posent en cascade sous le nom déjà en place.
           tl.to(
             panelBits,
             { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out", stagger: 0.07 },
-            S + 0.78
+            S + move + 0.04
           );
         }).catch(function (error) {
           console.error("Intro:", error);

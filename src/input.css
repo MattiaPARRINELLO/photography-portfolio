@@ -1738,30 +1738,22 @@ html.cs-boot-on .cs-boot {
 .cs-boot-name {
   position: relative;
   z-index: 1;
-  display: grid;
-  justify-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   max-width: 96vw;
+  color: #ffffff;
   font-size: clamp(3rem, 10vw, 11rem);
   font-weight: 600;
   line-height: 0.9;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.045em;
   text-align: center;
-  transform-origin: 50% 50%;
 }
 
-.cs-boot-name > span {
-  grid-area: 1 / 1;
-}
-
-/* Nom en blanc sur la photo, puis en encre sur le panneau blanc. */
-.cs-boot-name-light {
-  color: #ffffff;
-  opacity: 0;
-}
-
-.cs-boot-name-ink {
-  color: var(--paper-ink);
-  opacity: 0;
+.cs-boot-word {
+  display: block;
+  white-space: nowrap;
+  transform-origin: 0 0;
 }
 
 /* Accordéon : la largeur des cadres est pilotée par GSAP. L'image survolée
