@@ -501,24 +501,24 @@
             ).to(bootName, { autoAlpha: 0, duration: move * 0.35, ease: "power2.in" }, S + move * 0.55);
           } else if (targets && targets[0] && targets[1]) {
             bootWords.forEach(function (word, i) {
-              // On réduit d'abord, on rapproche ensuite : les deux mots ne se
-              // croisent pas au milieu du trajet.
+              // Un seul mouvement continu : réduction, glissement et montée
+              // démarrent et finissent ensemble. La réduction est menée plus
+              // vite (power3.out), donc les mots sont déjà petits quand ils se
+              // rapprochent : ils ne se croisent pas.
               tl.to(
                 word,
-                // 1. Réduction : les mots atteignent leur taille finale avant
-                //    de se déplacer, donc ils ne peuvent plus se heurter.
-                { scale: targets[i].scale, duration: move * 0.55, ease: "power2.inOut" },
+                { scale: targets[i].scale, duration: move, ease: "power3.out" },
                 S
               ).to(
-                // 2. Glissement horizontal, sur leurs lignes respectives.
                 word,
-                { x: targets[i].x, duration: move * 0.85, ease: "power2.inOut" },
+                // L'horizontal se place tôt, la montée reste progressive :
+                // les mots sont déjà côte à côte quand ils changent de ligne.
+                { x: targets[i].x, duration: move, ease: "power3.out" },
                 S
               ).to(
-                // 3. Montée sur la ligne du titre, une fois côte à côte.
                 word,
-                { y: targets[i].y, duration: move * 0.45, ease: "power2.inOut" },
-                S + move * 0.55
+                { y: targets[i].y, duration: move, ease: "power2.inOut" },
+                S
               );
             });
             // Le blanc de la photo devient l'encre du papier.
