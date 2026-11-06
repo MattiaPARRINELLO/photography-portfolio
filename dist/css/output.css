@@ -1700,39 +1700,62 @@ html.cs-boot-on .cs-boot {
 .cs-boot-card {
   position: absolute;
   inset: 0;
+  overflow: hidden;
   background: var(--paper);
   border: 8px solid var(--bg);
+}
+
+/* La photo occupe toute la feuille, avec un voile sombre pour que le nom
+   blanc reste lisible quel que soit le tirage. */
+.cs-boot-photo {
+  position: absolute;
+  inset: 0;
+  background: var(--bg) center / cover no-repeat;
+  opacity: 0;
+}
+
+.cs-boot-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 6, 11, 0.34);
+  opacity: 0;
+}
+
+/* Voile blanc : la photo se lave pendant le repli et devient le panneau. */
+.cs-boot-veil {
+  position: absolute;
+  inset: 0;
+  background: var(--paper);
+  opacity: 0;
 }
 
 .cs-boot-name {
   position: relative;
   z-index: 1;
   display: grid;
+  justify-items: center;
+  max-width: 96vw;
   font-size: clamp(3rem, 10vw, 11rem);
   font-weight: 600;
-  line-height: 0.95;
-  letter-spacing: -0.045em;
-  white-space: nowrap;
-  transform-origin: 0 0;
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+  text-align: center;
+  transform-origin: 50% 50%;
 }
 
 .cs-boot-name > span {
   grid-area: 1 / 1;
 }
 
-/* Le nom rempli par une photo du dernier concert, puis résolu en encre. */
-.cs-boot-name-photo {
-  color: transparent;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  -webkit-background-clip: text;
-  background-clip: text;
+/* Nom en blanc sur la photo, puis en encre sur le panneau blanc. */
+.cs-boot-name-light {
+  color: #ffffff;
   opacity: 0;
 }
 
 .cs-boot-name-ink {
   color: var(--paper-ink);
+  opacity: 0;
 }
 
 /* Accordéon : la largeur des cadres est pilotée par GSAP. L'image survolée
@@ -2476,16 +2499,9 @@ html.cs-boot-on .cs-boot {
     border: 0;
   }
 
-  .cs-boot-name > span {
-    white-space: normal;
-  }
-
   .cs-boot-name {
-    max-width: 92vw;
+    max-width: 94vw;
     font-size: 18vw;
-    line-height: 1.02;
-    text-align: center;
-    white-space: normal;
   }
 
   .cs-sheet {
