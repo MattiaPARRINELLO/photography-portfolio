@@ -424,6 +424,14 @@
         });
         gsap.set(shades, { opacity: 0.66 });
 
+        // Les tirages arrivent par les côtés : moitié gauche depuis la
+        // gauche, moitié droite depuis la droite, en se resserrant vers le
+        // centre. Animé par colonne (six éléments) et non par image.
+        gsap.set(cols, {
+          x: function (i) { return i < cols.length / 2 ? -90 : 90; },
+          opacity: 0.15
+        });
+
         var fontsReady = document.fonts && document.fonts.ready
           ? Promise.race([
               document.fonts.ready,
@@ -586,6 +594,21 @@
             tl.to(bootVeil, { autoAlpha: 1, duration: 0.85, ease: "power1.inOut" }, S + 0.2);
           }
 
+
+          // Les colonnes se remettent en place en se resserrant.
+          tl.to(
+            cols,
+            {
+              x: 0,
+              opacity: 1,
+              duration: 0.95,
+              ease: "power3.out",
+              stagger: { each: 0.06, from: "center" }
+            },
+            // Décalé pour coïncider avec le moment où la feuille découvre
+            // la planche : sinon l'arrivée se passe sous le carton.
+            S + 0.5
+          );
 
           // Les voiles se lèvent colonne par colonne, depuis le centre :
           // c'est le « développement » des tirages.
