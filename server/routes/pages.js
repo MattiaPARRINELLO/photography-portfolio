@@ -178,8 +178,7 @@ function generateGalleryItemHtml(photo, index, dims) {
 
 // Route pour la page d'accueil
 router.get('/', (req, res) => {
-    const campaignRef = req.query.ref || req.query.utm_campaign;
-    const campaignInfo = campaignRef ? campaignService.processCampaignFromQuery(req.query) : null;
+    const campaignInfo = campaignService.parseCampaignQuery(req.query);
 
     servePage(req, res, {
         cacheKey: 'page:home',
@@ -284,7 +283,7 @@ router.get('/', (req, res) => {
             }
 
             // Si on a une campagne, ajouter un script pour nettoyer l'URL côté client
-            if (campaignRef) {
+            if (campaignInfo) {
                 const urlCleanScript = `<script>if (window.location.search.includes('ref=')) history.replaceState(null, null, window.location.pathname);</script>`;
                 htmlContent = htmlContent.replace('</body>', `${urlCleanScript}</body>`);
             }

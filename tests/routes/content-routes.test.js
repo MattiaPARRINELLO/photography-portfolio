@@ -1,15 +1,57 @@
 var express = require('express');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
+var os = require('os');
+var nodePath = require('path');
+
+
+// Chemin vers le vrai système de fichiers : le magasin analytique doit
+// écrire et relire de véritables fichiers JSONL, sans passer par le faux fs.
+// La fabrique du mock est hissée par Jest : tout ce qu'elle référence doit
+// être résolu à l'intérieur (via requireActual) pour rester disponible.
+var realFs = jest.requireActual('fs');
+var realOs = jest.requireActual('os');
+var realPath = jest.requireActual('path');
+var ANALYTICS_DIR = realPath.join(realOs.tmpdir(), 'pp-content-analytics-' + process.pid);
 
 jest.mock('fs', function () {
     var actual = jest.requireActual('fs');
+    var disk = jest.requireActual('fs');
+    var os = jest.requireActual('os');
+    var path = jest.requireActual('path');
+    var analyticsDir = path.join(os.tmpdir(), 'pp-content-analytics-' + process.pid);
     var store = {};
+    function isAnalytics(p) {
+        return typeof p === 'string' && p.indexOf(analyticsDir) === 0;
+    }
     return Object.assign({}, actual, {
-        existsSync: jest.fn(function (p) { return store[p] !== undefined; }),
-        readFileSync: jest.fn(function (p, enc) { return store[p] !== undefined ? store[p] : '{}'; }),
-        writeFileSync: jest.fn(function (p, d) { store[p] = d; }),
-        mkdirSync: jest.fn(),
+        existsSync: jest.fn(function (p) {
+            if (isAnalytics(p)) return disk.existsSync(p);
+            return store[p] !== undefined;
+        }),
+        readFileSync: jest.fn(function (p, enc) {
+            if (isAnalytics(p)) return disk.readFileSync(p, enc);
+            return store[p] !== undefined ? store[p] : '{}';
+        }),
+        writeFileSync: jest.fn(function (p, d) {
+            if (isAnalytics(p)) return disk.writeFileSync(p, d);
+            store[p] = d;
+        }),
+        appendFileSync: jest.fn(function (p, d) {
+            if (isAnalytics(p)) return disk.appendFileSync(p, d);
+            store[p] = (store[p] || '') + d;
+        }),
+        readdirSync: jest.fn(function (p) {
+            if (isAnalytics(p)) return disk.readdirSync(p);
+            return actual.readdirSync(p);
+        }),
+        unlinkSync: jest.fn(function (p) {
+            if (isAnalytics(p)) return disk.unlinkSync(p);
+            delete store[p];
+        }),
+        mkdirSync: jest.fn(function (p) {
+            if (isAnalytics(p)) return disk.mkdirSync(p, { recursive: true });
+        }),
         statSync: jest.fn(function () { return { size: 1024, mtime: new Date() }; })
     });
 });
@@ -75,6 +117,11 @@ function makeApp(opts) {
         getCampaignStats: jest.fn(),
         deleteCampaign: jest.fn()
     };
+    // Le service d'agrégation est réel : on le laisse lire son stockage
+    // (vide par défaut) pour ne pas masquer le calcul des KPI.
+    var AnalyticsStore = require('../../server/utils/analyticsStore');
+    var AnalyticsService = require('../../server/utils/analyticsService');
+    app.locals.analytics = new AnalyticsService(new AnalyticsStore({ dir: ANALYTICS_DIR, retentionDays: 90 }));
     app.use('/', contentRouter);
     return app;
 }
@@ -82,6 +129,17 @@ function makeApp(opts) {
 describe('Routes content', function () {
     var supertest;
     var DEFAULT_TEXTS;
+
+    afterAll(function () {
+        try {
+            if (realFs.existsSync(ANALYTICS_DIR)) {
+                realFs.readdirSync(ANALYTICS_DIR).forEach(function (f) {
+                    realFs.unlinkSync(realPath.join(ANALYTICS_DIR, f));
+                });
+                realFs.rmdirSync(ANALYTICS_DIR);
+            }
+        } catch (e) { /* nettoyage best-effort */ }
+    });
 
     beforeAll(function () {
         supertest = require('supertest');
@@ -296,16 +354,11 @@ describe('Routes content', function () {
     // GET /admin/api/campaigns
     // ================================================================
     describe('GET /admin/api/campaigns', function () {
-        it('retourne la liste des campagnes et les stats', function (done) {
+        it('retourne la liste des campagnes enrichie des KPI', function (done) {
             var app = makeApp({ admin: true });
             app.locals.campaignManager.getAllCampaigns.mockReturnValue([
-                { id: 'c1', name: 'Campagne 1' },
-                { id: 'c2', name: 'Campagne 2' }
+                { id: 'c1', name: 'Campagne 1' }
             ]);
-            app.locals.campaignManager.getCampaignStats.mockReturnValue({
-                totalCampaigns: 2,
-                totalVisits: 42
-            });
 
             supertest(app)
                 .get('/admin/api/campaigns')
@@ -313,13 +366,61 @@ describe('Routes content', function () {
                 .end(function (err, res) {
                     if (err) return done(err);
                     expect(res.body.campaigns).toEqual([
-                        { id: 'c1', name: 'Campagne 1' },
-                        { id: 'c2', name: 'Campagne 2' }
+                        {
+                            id: 'c1', name: 'Campagne 1',
+                            sessions: 0, avgEngagedMs: 0, engagementRate: 0,
+                            conversions: 0, conversionRate: 0, hasData: false
+                        }
                     ]);
-                    expect(res.body.stats).toEqual({
-                        totalCampaigns: 2,
-                        totalVisits: 42
-                    });
+                    // L'ancien bloc `stats` (visites brutes) n'existe plus
+                    expect(res.body.stats).toBeUndefined();
+                    done();
+                });
+        });
+
+        it('calcule les KPI de campagne depuis les signaux de session', function (done) {
+            var app = makeApp({ admin: true });
+            app.locals.campaignManager.getAllCampaigns.mockReturnValue([
+                { id: 'promo-ete', name: 'Promo Ete' }
+            ]);
+            // Deux signaux pour la même session : seul le dernier compte
+            app.locals.analytics.store.append({
+                v: 1, sid: 's1', hash: 'h1', ts: Date.now(), src: 'instagram',
+                camp: { id: 'promo-ete', source: 'instagram' },
+                pages: [{ id: '/', engagedMs: 5000, scrollMax: 0.8, fullscreenOpens: 0, photosViewed: 1, contactClicks: 0, mailtoClicks: 0 }]
+            });
+            app.locals.analytics.store.append({
+                v: 1, sid: 's1', hash: 'h1', ts: Date.now(), src: 'instagram',
+                camp: { id: 'promo-ete', source: 'instagram' },
+                pages: [{ id: '/', engagedMs: 20000, scrollMax: 0.8, fullscreenOpens: 0, photosViewed: 1, contactClicks: 1, mailtoClicks: 0 }]
+            });
+
+            supertest(app)
+                .get('/admin/api/campaigns?days=30')
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) return done(err);
+                    var campaign = res.body.campaigns[0];
+                    expect(campaign.hasData).toBe(true);
+                    expect(campaign.sessions).toBe(1);
+                    expect(campaign.avgEngagedMs).toBe(20000);
+                    expect(campaign.engagementRate).toBe(100);
+                    expect(campaign.conversions).toBe(1);
+                    expect(campaign.conversionRate).toBe(100);
+                    done();
+                });
+        });
+
+        it('accepte le sélecteur de période Tout', function (done) {
+            var app = makeApp({ admin: true });
+            app.locals.campaignManager.getAllCampaigns.mockReturnValue([]);
+
+            supertest(app)
+                .get('/admin/api/campaigns?days=all')
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) return done(err);
+                    expect(res.body.campaigns).toEqual([]);
                     done();
                 });
         });

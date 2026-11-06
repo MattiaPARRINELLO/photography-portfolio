@@ -12,11 +12,9 @@ const serverConfig = require('./server/config');
 const { requireAdminSession } = require('./server/middleware/auth');
 
 // Utilitaires
-const campaignService = require('./server/utils/campaignService');
 const llmsService = require('./server/utils/llmsService');
 
 // Middleware
-const { userTrackingMiddleware, campaignMiddleware } = require('./server/middleware/tracking');
 const languageMiddleware = require('./server/middleware/language');
 const { createPhotosStaticMiddleware } = require('./server/middleware/photosStatic');
 
@@ -26,22 +24,16 @@ const adminRouter = require('./server/routes/admin');
 const photosRouter = require('./server/routes/photos');
 const imageResizeRouter = require('./server/routes/image-resize');
 const contentRouter = require('./server/routes/content');
-const statsRouter = require('./server/routes/stats');
+const contactRouter = require('./server/routes/contact');
+const analyticsRouter = require('./server/routes/analytics');
 const signedImagesRouter = require('./server/routes/signed-images');
 const { handleEventBanner } = require('./server/routes/event-banner');
 
 // Classes de gestion
-const UserActivityLogger = require('./scripts/UserActivityLogger');
-const PhotoClickTracker = require('./scripts/PhotoClickTracker');
 const CampaignManager = require('./scripts/CampaignManager');
 
 // Initialisation des services
-const userLogger = new UserActivityLogger();
-const photoClickTracker = new PhotoClickTracker();
 const campaignManager = new CampaignManager();
-
-// Démarrer le nettoyage automatique des logs (toutes les 24h, rétention 7 jours)
-userLogger.startPeriodicCleanup(24, 7);
 
 // Initialisation de l'application Express
 const app = express();
@@ -61,7 +53,7 @@ app.use(helmet({
             styleSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "blob:"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            connectSrc: ["'self'", "https://cdn.jsdelivr.net", "https://broker.litlyx.com"],
+            connectSrc: ["'self'", "https://cdn.jsdelivr.net"],
             frameSrc: ["'self'"],
             objectSrc: ["'none'"],
             baseUri: ["'self'"],
@@ -95,7 +87,7 @@ app.use(languageMiddleware);
 // Empêcher l'accès direct aux fichiers internes du projet (.env, config/, logs/…).
 // En prod Apache sert le DocumentRoot à la place de Node : ce garde-fou est une
 // défense en profondeur, utile si le proxy Apache est mal configuré ou contourné.
-const BLOCKED_DIRS_RE = /^\/(?:config|logs|coverage|temp|scripts|tests|server|graphify-out|node_modules)(?:\/|$)/i;
+const BLOCKED_DIRS_RE = /^\/(?:config|logs|coverage|temp|scripts|tests|server|graphify-out|node_modules|data)(?:\/|$)/i;
 const BLOCKED_FILES_RE = /^\/(?:package|package-lock)\.json$/i;
 const BLOCKED_DOCS_RE = /^\/(?:AGENTS|AUDIT|REFACTORING_PLAN|REFACTORING_STATUS|TESTS_REPORT|CONFIG_README)\.md$/i;
 
@@ -205,14 +197,9 @@ app.get('/llms-full.md', (req, res) => {
 });
 
 // Rendre les services disponibles dans les routes
-app.locals.userLogger = userLogger;
-app.locals.photoClickTracker = photoClickTracker;
 app.locals.campaignManager = campaignManager;
-app.locals.campaignService = campaignService;
-
-// Middleware de tracking utilisateur et campagnes
-app.use(userTrackingMiddleware(userLogger, campaignManager));
-app.use(campaignMiddleware(campaignManager));
+app.locals.analytics = analyticsRouter.analytics;
+app.locals.analyticsStore = analyticsRouter.store;
 
 // Handler pour le bandeau événement (à définir AVANT les routes pour intercepter les appels)
 // Routes spécifiques pour l'API événement (AVANT les routers pour priorité)
@@ -225,7 +212,8 @@ app.use('/', photosRouter);
 // Route pour le proxy de redimensionnement d'images
 app.use('/photos', imageResizeRouter);
 app.use('/', contentRouter);
-app.use('/', statsRouter);
+app.use('/', contactRouter);
+app.use('/', analyticsRouter);
 app.use('/api', signedImagesRouter);
 
 // SEO: Page 404 HTML propre au lieu de JSON
@@ -247,7 +235,7 @@ app.listen(PORT, () => {
     console.log('   ├── Utilitaires: server/utils/');
     console.log('   ├── Middleware: server/middleware/');
     console.log('   ├── Routes: server/routes/');
-    console.log('   └── Services: UserActivityLogger, PhotoClickTracker, CampaignManager');
+    console.log('   └── Services: CampaignManager, AnalyticsService');
 });
 
 module.exports = app;

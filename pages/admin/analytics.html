@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <title>Analytics, Administration</title>
+    <link rel="icon" type="image/svg+xml" href="../../dist/assets/Logo_MP.svg" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #0f0f0f;
+        --surface: #1a1a1a;
+        --surface-hover: #222;
+        --border: #2a2a2a;
+        --text: #e5e5e5;
+        --text-muted: #888;
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --danger: #dc2626;
+        --radius: 8px;
+      }
+
+      body {
+        font-family: 'Inter', -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+
+      .hidden { display: none !important; }
+
+      .header {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: rgba(15, 15, 15, 0.92);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .header-inner {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 1.25rem;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .header-title { font-size: 0.95rem; font-weight: 600; }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 0.9rem;
+        border: none;
+        border-radius: var(--radius);
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s;
+        text-decoration: none;
+        color: #fff;
+      }
+
+      .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+      .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+      .btn-ghost:hover { background: var(--surface-hover); color: var(--text); }
+
+      .main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 1.5rem 1.25rem 3rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.25rem;
+      }
+
+      .card-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 0.15rem;
+      }
+
+      .card-sub {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+      }
+
+      /* Sélecteur de période */
+      .period-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .period-group {
+        display: inline-flex;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 3px;
+        gap: 3px;
+      }
+
+      .period-btn {
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-family: inherit;
+        font-size: 0.8rem;
+        font-weight: 500;
+        padding: 0.35rem 0.8rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+      }
+
+      .period-btn:hover { color: var(--text); }
+      .period-btn.active { background: var(--accent); color: #fff; }
+
+      .period-note { font-size: 0.72rem; color: var(--text-muted); }
+
+      /* Cartes KPI */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 0.75rem;
+      }
+
+      .kpi {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.1rem 1.15rem;
+      }
+
+      .kpi-label {
+        font-size: 0.72rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted);
+        margin-bottom: 0.4rem;
+      }
+
+      .kpi-value { font-size: 1.75rem; font-weight: 700; line-height: 1.15; }
+      .kpi-value small { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); }
+      .kpi-hint { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem; }
+
+      .kpi-value.good { color: var(--success); }
+      .kpi-value.warn { color: var(--warning); }
+      .kpi-value.bad { color: #f87171; }
+
+      /* Graphiques SVG */
+      .chart-wrap { width: 100%; overflow-x: auto; }
+      .chart-wrap svg { display: block; width: 100%; height: auto; }
+
+      .chart-grid line { stroke: var(--border); stroke-width: 1; }
+      .chart-bar { fill: rgba(59, 130, 246, 0.55); }
+      .chart-bar:hover { fill: rgba(59, 130, 246, 0.85); }
+      .chart-line { fill: none; stroke: var(--success); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+      .chart-area { fill: rgba(34, 197, 94, 0.12); stroke: none; }
+      .chart-label { fill: var(--text-muted); font-size: 10px; font-family: inherit; }
+      .chart-axis-title { fill: var(--text-muted); font-size: 10px; font-weight: 600; font-family: inherit; }
+
+      .legend { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+      .legend-item { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; color: var(--text-muted); }
+      .legend-swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+      /* Tableaux */
+      .table-scroll { overflow-x: auto; }
+
+      table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+
+      th {
+        text-align: left;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted);
+        padding: 0.5rem 0.7rem;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+
+      td {
+        padding: 0.6rem 0.7rem;
+        border-bottom: 1px solid rgba(42, 42, 42, 0.6);
+        vertical-align: middle;
+      }
+
+      tr:last-child td { border-bottom: none; }
+      tbody tr:hover { background: var(--surface-hover); }
+
+      .num { text-align: right; font-variant-numeric: tabular-nums; }
+      .title-cell { font-weight: 500; }
+      .sub-cell { font-size: 0.72rem; color: var(--text-muted); }
+
+      /* Barre de progression (intérêt visuel) */
+      .bar-track {
+        position: relative;
+        height: 6px;
+        min-width: 70px;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 99px;
+        overflow: hidden;
+      }
+
+      .bar-fill { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: var(--accent); }
+      .bar-fill.green { background: var(--success); }
+
+      .pill {
+        display: inline-block;
+        font-size: 0.68rem;
+        font-weight: 600;
+        padding: 2px 7px;
+        border-radius: 5px;
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+      }
+
+      .pill.muted { background: rgba(255, 255, 255, 0.07); color: var(--text-muted); }
+
+      .empty-state {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+
+      .empty-state strong { display: block; color: var(--text); margin-bottom: 0.3rem; font-size: 0.9rem; }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1.35fr 1fr;
+        gap: 1.25rem;
+      }
+
+      @media (max-width: 900px) {
+        .grid-2 { grid-template-columns: 1fr; }
+      }
+
+      .loading { color: var(--text-muted); font-size: 0.82rem; padding: 1.5rem 0; text-align: center; }
+      .error-text { color: #f87171; font-size: 0.85rem; text-align: center; padding: 1.5rem 0; }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-inner">
+        <span class="header-title">Analytics</span>
+        <a href="/admin" class="btn btn-ghost">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Administration
+        </a>
+      </div>
+    </header>
+
+    <main class="main">
+      <!-- Sélecteur de période -->
+      <div class="card">
+        <div class="period-bar">
+          <div class="period-group" role="group" aria-label="Sélecteur de période">
+            <button class="period-btn" data-days="7" type="button">7 jours</button>
+            <button class="period-btn active" data-days="30" type="button">30 jours</button>
+            <button class="period-btn" data-days="all" type="button">Tout</button>
+          </div>
+          <span class="period-note" id="period-note">Collecte sans cookie · anonymisation quotidienne · rétention 90 jours</span>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <section class="kpi-grid" id="kpi-grid" aria-live="polite">
+        <div class="kpi"><div class="kpi-label">Sessions</div><div class="kpi-value" id="kpi-sessions">—</div><div class="kpi-hint" id="kpi-sessions-hint"></div></div>
+        <div class="kpi"><div class="kpi-label">Rebond qualifié</div><div class="kpi-value" id="kpi-bounce">—</div><div class="kpi-hint" id="kpi-bounce-hint"></div></div>
+        <div class="kpi"><div class="kpi-label">Temps engagé moyen</div><div class="kpi-value" id="kpi-engaged">—</div><div class="kpi-hint" id="kpi-engaged-hint"></div></div>
+        <div class="kpi"><div class="kpi-label">Conversion contact</div><div class="kpi-value" id="kpi-conversion">—</div><div class="kpi-hint" id="kpi-conversion-hint"></div></div>
+      </section>
+
+      <!-- Graphique d'activité -->
+      <div class="card">
+        <div class="card-title">Activité</div>
+        <div class="card-sub">Sessions par jour et temps engagé moyen (onglet visible uniquement)</div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-swatch" style="background: rgba(59,130,246,0.55)"></span>Sessions</span>
+          <span class="legend-item"><span class="legend-swatch" style="background: var(--success)"></span>Temps engagé moyen</span>
+        </div>
+        <div class="chart-wrap" id="chart-daily"></div>
+      </div>
+
+      <!-- Galeries + sources -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Galeries les plus engageantes</div>
+          <div class="card-sub">Intérêt visuel = part des visiteurs ayant ouvert le plein écran / Fancybox</div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Concert</th>
+                  <th class="num">Sessions</th>
+                  <th class="num">Temps engagé</th>
+                  <th>Intérêt visuel</th>
+                </tr>
+              </thead>
+              <tbody id="galleries-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Sources de trafic qualifiées</div>
+          <div class="card-sub">Referrers nettoyés, classés par engagement réel</div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Source</th>
+                  <th class="num">Sessions</th>
+                  <th class="num">Engagement</th>
+                  <th class="num">Conv.</th>
+                </tr>
+              </thead>
+              <tbody id="sources-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top artistes / salles -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Top artistes</div>
+          <div class="card-sub">Classement par sessions réellement engagées</div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Artiste</th>
+                  <th class="num">Sessions</th>
+                  <th class="num">Temps engagé</th>
+                  <th class="num">Photos / visite</th>
+                </tr>
+              </thead>
+              <tbody id="artists-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Top salles</div>
+          <div class="card-sub">Où le public regarde le plus longtemps</div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Salle</th>
+                  <th class="num">Sessions</th>
+                  <th class="num">Temps engagé</th>
+                  <th class="num">Intérêt visuel</th>
+                </tr>
+              </thead>
+              <tbody id="venues-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        'use strict';
+
+        var currentDays = 30;
+
+        // ---- Formatage ------------------------------------------------
+
+        function formatDuration(ms) {
+          if (!ms || ms < 1000) return '0 s';
+          var totalSeconds = Math.round(ms / 1000);
+          var minutes = Math.floor(totalSeconds / 60);
+          var seconds = totalSeconds % 60;
+          if (minutes === 0) return seconds + ' s';
+          return minutes + ' min ' + String(seconds).padStart(2, '0');
+        }
+
+        function formatNumber(value) {
+          return new Intl.NumberFormat('fr-FR').format(value || 0);
+        }
+
+        function escapeHtml(value) {
+          return String(value === null || value === undefined ? '' : value)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        // ---- Rendu des KPI --------------------------------------------
+
+        function renderKpis(data) {
+          var k = data.kpis;
+          var periodDays = data.period.days;
+
+          document.getElementById('kpi-sessions').textContent = formatNumber(k.sessions);
+          document.getElementById('kpi-sessions-hint').textContent =
+            formatNumber(k.visitors) + ' visiteurs distincts · ' + formatNumber(k.engagedSessions) + ' engagées';
+
+          var bounce = document.getElementById('kpi-bounce');
+          bounce.textContent = k.smartBounceRate + '%';
+          bounce.className = 'kpi-value ' + (k.smartBounceRate >= 70 ? 'bad' : k.smartBounceRate >= 45 ? 'warn' : 'good');
+          document.getElementById('kpi-bounce-hint').textContent =
+            'Engagé = > 15 s actif, plein écran, 3 photos, conversion ou 2 pages';
+
+          document.getElementById('kpi-engaged').textContent = formatDuration(k.avgEngagedMs);
+          document.getElementById('kpi-engaged-hint').textContent =
+            'Médiane ' + formatDuration(k.medianEngagedMs) + ' · scroll moyen ' + k.avgScrollDepth + '%';
+
+          var conv = document.getElementById('kpi-conversion');
+          conv.textContent = k.contactConversionRate + '%';
+          document.getElementById('kpi-conversion-hint').textContent =
+            formatNumber(k.totalConversions) + ' sessions converties · ' + formatNumber(k.totalPhotoViews) + ' photos vues';
+
+          document.getElementById('period-note').textContent = periodDays
+            ? 'Période : ' + periodDays + ' derniers jours · collecte sans cookie · rétention 90 jours'
+            : "Période : tout l'historique · collecte sans cookie · rétention 90 jours";
+        }
+
+        // ---- Graphique quotidien (SVG inline) -------------------------
+
+        function renderDailyChart(daily) {
+          var host = document.getElementById('chart-daily');
+          if (!daily || !daily.length) {
+            host.innerHTML = '<div class="empty-state"><strong>Pas encore de données</strong>Les signaux apparaîtront ici dès les premières visites.</div>';
+            return;
+          }
+
+          var W = 1000;
+          var H = 260;
+          var PAD = { top: 16, right: 58, bottom: 34, left: 46 };
+          var innerW = W - PAD.left - PAD.right;
+          var innerH = H - PAD.top - PAD.bottom;
+
+          var maxSessions = Math.max.apply(null, daily.map(function (d) { return d.sessions; })) || 1;
+          var maxEngaged = Math.max.apply(null, daily.map(function (d) { return d.avgEngagedMs; })) || 1;
+
+          function x(i) { return PAD.left + (innerW * i) / Math.max(1, daily.length - 1); }
+          function ySessions(v) { return PAD.top + innerH - (innerH * v) / maxSessions; }
+          function yEngaged(v) { return PAD.top + innerH - (innerH * v) / maxEngaged; }
+
+          var svg = '';
+          svg += '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Sessions par jour et temps engagé moyen" preserveAspectRatio="xMidYMid meet">';
+
+          // Lignes de grille
+          var gridLines = 4;
+          for (var g = 0; g <= gridLines; g++) {
+            var gy = PAD.top + (innerH * g) / gridLines;
+            var gv = Math.round(maxSessions - (maxSessions * g) / gridLines);
+            svg += '<g class="chart-grid"><line x1="' + PAD.left + '" y1="' + gy + '" x2="' + (PAD.left + innerW) + '" y2="' + gy + '" /></g>';
+            svg += '<text class="chart-label" x="' + (PAD.left - 8) + '" y="' + (gy + 3) + '" text-anchor="end">' + gv + '</text>';
+          }
+
+          // Barres de sessions
+          var barW = Math.max(3, (innerW / daily.length) * 0.6);
+          daily.forEach(function (d, i) {
+            var cx = x(i);
+            var bh = Math.max(1, (innerH * d.sessions) / maxSessions);
+            svg += '<rect class="chart-bar" x="' + (cx - barW / 2) + '" y="' + (PAD.top + innerH - bh) +
+              '" width="' + barW + '" height="' + bh + '" rx="2"><title>' + d.date + ' : ' + d.sessions + ' sessions</title></rect>';
+          });
+
+          // Courbe du temps engagé
+          var points = daily.map(function (d, i) { return [x(i), yEngaged(d.avgEngagedMs)]; });
+          var linePath = points.map(function (p, i) {
+            return (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ' ' + p[1].toFixed(1);
+          }).join(' ');
+          var areaPath = linePath + ' L' + x(daily.length - 1).toFixed(1) + ' ' + (PAD.top + innerH) +
+            ' L' + x(0).toFixed(1) + ' ' + (PAD.top + innerH) + ' Z';
+          svg += '<path class="chart-area" d="' + areaPath + '" />';
+          svg += '<path class="chart-line" d="' + linePath + '" />';
+          points.forEach(function (p) {
+            svg += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.5" fill="var(--success)" />';
+          });
+
+          // Axe des dates (bornes + milieu pour éviter la surcharge)
+          var tickIndexes = daily.length <= 8
+            ? daily.map(function (_, i) { return i; })
+            : [0, Math.floor(daily.length / 2), daily.length - 1];
+          tickIndexes.forEach(function (i) {
+            svg += '<text class="chart-label" x="' + x(i).toFixed(1) + '" y="' + (PAD.top + innerH + 18) + '" text-anchor="middle">' +
+              daily[i].date.slice(5) + '</text>';
+          });
+
+          // Légende d'axe droite (temps engagé)
+          svg += '<text class="chart-axis-title" x="' + (W - 6) + '" y="' + (PAD.top + 8) + '" text-anchor="end">' +
+            formatDuration(maxEngaged) + '</text>';
+
+          svg += '</svg>';
+          host.innerHTML = svg;
+        }
+
+        // ---- Tableaux -------------------------------------------------
+
+        function rowGallery(g) {
+          var artist = g.artist ? escapeHtml(g.artist) + ' · ' : '';
+          return '<tr>' +
+            '<td><div class="title-cell">' + escapeHtml(g.title) + '</div><div class="sub-cell">' + artist + escapeHtml(g.venue || '') + '</div></td>' +
+            '<td class="num">' + formatNumber(g.sessions) + '</td>' +
+            '<td class="num">' + formatDuration(g.avgEngagedMs) + '</td>' +
+            '<td>' +
+              '<div style="display:flex;align-items:center;gap:0.5rem">' +
+                '<div class="bar-track"><div class="bar-fill ' + (g.visualInterestRate >= 40 ? 'green' : '') + '" style="width:' + g.visualInterestRate + '%"></div></div>' +
+                '<span style="font-variant-numeric:tabular-nums;min-width:34px">' + g.visualInterestRate + '%</span>' +
+              '</div>' +
+              '<div class="sub-cell">' + g.avgPhotosViewed + ' photos vues</div>' +
+            '</td>' +
+          '</tr>';
+        }
+
+        function rowSimple(entity, extra) {
+          return '<tr>' +
+            '<td><div class="title-cell">' + escapeHtml(entity.name) + '</div></td>' +
+            '<td class="num">' + formatNumber(entity.sessions) + '</td>' +
+            '<td class="num">' + formatDuration(entity.avgEngagedMs) + '</td>' +
+            '<td class="num">' + (extra === 'photos' ? (entity.avgPhotosViewed === null ? '—' : entity.avgPhotosViewed) : entity.visualInterestRate + '%') + '</td>' +
+          '</tr>';
+        }
+
+        function fillTable(id, rows, emptyMessage) {
+          var body = document.getElementById(id);
+          if (!rows.length) {
+            body.innerHTML = '<tr><td colspan="4" class="empty-state">' + emptyMessage + '</td></tr>';
+            return;
+          }
+          body.innerHTML = rows.join('');
+        }
+
+        function renderTables(data) {
+          fillTable('galleries-body', data.galleries.slice(0, 12).map(rowGallery), 'Aucune galerie visitée sur la période.');
+          fillTable('sources-body', data.sources.map(function (s) {
+            return '<tr>' +
+              '<td><span class="pill' + (s.source === 'direct' || s.source === 'referral' ? ' muted' : '') + '">' + escapeHtml(s.source) + '</span></td>' +
+              '<td class="num">' + formatNumber(s.sessions) + '</td>' +
+              '<td class="num">' + s.engagementRate + '%</td>' +
+              '<td class="num">' + s.conversions + '</td>' +
+            '</tr>';
+          }), 'Aucune source enregistrée.');
+          fillTable('artists-body', data.artists.artists.map(function (a) { return rowSimple(a, 'photos'); }), 'Aucun artiste suivi sur la période.');
+          fillTable('venues-body', data.artists.venues.map(function (v) { return rowSimple(v, 'interest'); }), 'Aucune salle suivie sur la période.');
+        }
+
+        // ---- Chargement -----------------------------------------------
+
+        function load(days) {
+          currentDays = days;
+          var host = document.getElementById('chart-daily');
+          host.innerHTML = '<div class="loading">Chargement des indicateurs…</div>';
+          ['galleries-body', 'sources-body', 'artists-body', 'venues-body'].forEach(function (id) {
+            document.getElementById(id).innerHTML = '<tr><td colspan="4" class="loading">…</td></tr>';
+          });
+
+          fetch('/admin/api/analytics?days=' + encodeURIComponent(days), { credentials: 'same-origin' })
+            .then(function (r) {
+              if (!r.ok) throw new Error('HTTP ' + r.status);
+              return r.json();
+            })
+            .then(function (data) {
+              renderKpis(data);
+              renderTables(data);
+              renderDailyChart(data.daily);
+            })
+            .catch(function (err) {
+              host.innerHTML = '<div class="error-text">Erreur de chargement : ' + escapeHtml(err.message) + '</div>';
+            });
+        }
+
+        // Sélecteur de période
+        Array.prototype.forEach.call(document.querySelectorAll('.period-btn'), function (btn) {
+          btn.addEventListener('click', function () {
+            Array.prototype.forEach.call(document.querySelectorAll('.period-btn'), function (b) {
+              b.classList.remove('active');
+            });
+            btn.classList.add('active');
+            var value = btn.getAttribute('data-days');
+            load(value === 'all' ? 'all' : Number(value));
+          });
+        });
+
+        load(30);
+      })();
+    </script>
+  </body>
+</html>

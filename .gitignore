@@ -63,8 +63,13 @@ bun.lock
 .playwright-cli/
 session-*.md
 
-# Données de tracking (sensibles, jamais commitées)
+# Données d'analytique (sensibles, jamais commitées)
 stats.json
+data/*
+!data/.gitkeep
+!data/analytics/
+data/analytics/*
+!data/analytics/.gitkeep
 
 # Docs de travail local
 BACKLINKS_PLAN.md

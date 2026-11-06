@@ -11,7 +11,6 @@ class ServerConfig {
     setupPaths() {
         this.paths = {
             root: path.resolve(__dirname, '..'),
-            stats: path.join(__dirname, '..', 'stats.json'),
             config: path.join(__dirname, '..', 'config', 'config.json'),
             texts: path.join(__dirname, '..', 'config', 'texts.json'),
             // Dossier servi publiquement (uniquement thumbnails/ + cache resized/)
@@ -23,7 +22,9 @@ class ServerConfig {
             pages: path.join(__dirname, '..', 'pages'),
             adminPages: path.join(__dirname, '..', 'pages', 'admin'),
             dist: path.join(__dirname, '..', 'dist'),
-            temp: path.join(__dirname, '..', 'temp')
+            temp: path.join(__dirname, '..', 'temp'),
+            // Journaux d'analytique (append-only, rétention 90 jours)
+            analytics: path.join(__dirname, '..', 'data', 'analytics')
         };
     }
 

@@ -82,8 +82,7 @@ jest.mock('../../server/utils/linksService', function () {
 
 jest.mock('../../server/utils/campaignService', function () {
   return {
-    processCampaignFromQuery: jest.fn().mockReturnValue(null),
-    getUserCampaignInfo: jest.fn().mockReturnValue(null)
+    parseCampaignQuery: jest.fn().mockReturnValue(null)
   };
 });
 

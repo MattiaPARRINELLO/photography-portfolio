@@ -213,6 +213,62 @@
         gap: 1rem;
       }
 
+      /* Sélecteur de période (identique au tableau de bord analytics) */
+      .period-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .period-group {
+        display: inline-flex;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 3px;
+        gap: 3px;
+      }
+
+      .period-btn {
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-family: inherit;
+        font-size: 0.8rem;
+        font-weight: 500;
+        padding: 0.35rem 0.8rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+      }
+
+      .period-btn:hover { color: var(--text); }
+      .period-btn.active { background: var(--accent); color: #fff; }
+
+      .card-sub {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.1rem;
+      }
+
+      /* KPI par campagne */
+      .kpi-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin: 0.5rem 0 0.35rem;
+        padding: 0.55rem 0.7rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+      }
+
+      .kpi-mini { display: flex; flex-direction: column; min-width: 78px; }
+      .kpi-mini-label { font-size: 0.66rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+      .kpi-mini-value { font-size: 0.95rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+
       .campaign-actions {
         display: flex;
         gap: 0.4rem;
@@ -307,25 +363,39 @@
         </form>
       </div>
 
-      <!-- Stats -->
+      <!-- Stats : memes KPI que le tableau de bord analytics -->
       <div class="card">
-        <div class="card-title">Statistiques</div>
-        <div class="stats-grid" id="campaign-stats">
+        <div class="period-bar">
+          <div>
+            <div class="card-title">Performance des campagnes</div>
+            <div class="card-sub">M&ecirc;me socle analytique que le tableau de bord&nbsp;: engagement, temps actif, conversions.</div>
+          </div>
+          <div class="period-group" role="group" aria-label="Selecteur de periode">
+            <button class="period-btn" data-days="7" type="button">7 jours</button>
+            <button class="period-btn active" data-days="30" type="button">30 jours</button>
+            <button class="period-btn" data-days="all" type="button">Tout</button>
+          </div>
+        </div>
+        <div class="stats-grid" id="campaign-stats" style="margin-top:1rem;">
           <div class="stat-card">
             <div class="stat-card-label">Total Campagnes</div>
             <div class="stat-card-value" id="total-campaigns">0</div>
           </div>
           <div class="stat-card">
-            <div class="stat-card-label">Total Visites</div>
-            <div class="stat-card-value" id="total-visits">0</div>
+            <div class="stat-card-label">Sessions generees</div>
+            <div class="stat-card-value" id="total-sessions">0</div>
           </div>
           <div class="stat-card">
-            <div class="stat-card-label">Aujourd'hui</div>
-            <div class="stat-card-value" id="today-visits">0</div>
+            <div class="stat-card-label">Taux d'engagement</div>
+            <div class="stat-card-value" id="engagement-rate">-</div>
           </div>
           <div class="stat-card">
-            <div class="stat-card-label">Top Source</div>
-            <div class="stat-card-value" id="top-source">-</div>
+            <div class="stat-card-label">Temps engage moyen</div>
+            <div class="stat-card-value" id="avg-engaged">-</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Conversions</div>
+            <div class="stat-card-value" id="total-conversions">0</div>
           </div>
         </div>
       </div>
@@ -346,13 +416,15 @@
 
     <script>
       let campaigns = [];
+      let currentDays = 30;
       const campaignForm = document.getElementById("campaign-form");
       const campaignsContainer = document.getElementById("campaigns-container");
       const loading = document.getElementById("loading");
       const totalCampaigns = document.getElementById("total-campaigns");
-      const totalVisits = document.getElementById("total-visits");
-      const todayVisits = document.getElementById("today-visits");
-      const topSource = document.getElementById("top-source");
+      const totalSessions = document.getElementById("total-sessions");
+      const engagementRate = document.getElementById("engagement-rate");
+      const avgEngaged = document.getElementById("avg-engaged");
+      const totalConversions = document.getElementById("total-conversions");
 
       async function checkAuth() {
         try {
@@ -383,21 +455,43 @@
         return await response.json();
       }
 
-      async function loadCampaigns() {
+      async function loadCampaigns(days) {
         try {
           loading.classList.remove("hidden");
-          const response = await fetch("/admin/api/campaigns");
+          const response = await fetch("/admin/api/campaigns?days=" + encodeURIComponent(days));
           if (!response.ok) throw new Error("Erreur de chargement");
           const data = await response.json();
           campaigns = data.campaigns || [];
           displayCampaigns();
-          updateStats(data.stats || {});
+          updateStats(campaigns);
         } catch (error) {
           console.error("Erreur:", error);
           campaignsContainer.innerHTML = '<div class="empty-state" style="color:#f87171;">Erreur de chargement</div>';
         } finally {
           loading.classList.add("hidden");
         }
+      }
+
+      // Sélecteur de période (même socle que le tableau de bord analytics)
+      Array.prototype.forEach.call(document.querySelectorAll(".period-btn"), function (btn) {
+        btn.addEventListener("click", function () {
+          Array.prototype.forEach.call(document.querySelectorAll(".period-btn"), function (b) {
+            b.classList.remove("active");
+          });
+          btn.classList.add("active");
+          const value = btn.getAttribute("data-days");
+          currentDays = value === "all" ? "all" : Number(value);
+          loadCampaigns(currentDays);
+        });
+      });
+
+      function formatDuration(ms) {
+        if (!ms || ms < 1000) return "0 s";
+        const totalSeconds = Math.round(ms / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        if (minutes === 0) return seconds + " s";
+        return minutes + " min " + String(seconds).padStart(2, "0");
       }
 
       function displayCampaigns() {
@@ -416,10 +510,18 @@
                 </div>
                 <div class="campaign-link">Lien: <code>${globalThis.location.origin}/?ref=${campaign.id}</code></div>
                 ${campaign.description ? `<p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.35rem;">${campaign.description}</p>` : ""}
+                ${
+                  campaign.hasData
+                    ? `<div class="kpi-row">
+                         <div class="kpi-mini"><span class="kpi-mini-label">Sessions</span><span class="kpi-mini-value">${campaign.sessions}</span></div>
+                         <div class="kpi-mini"><span class="kpi-mini-label">Engagement</span><span class="kpi-mini-value">${campaign.engagementRate}%</span></div>
+                         <div class="kpi-mini"><span class="kpi-mini-label">Temps engagé</span><span class="kpi-mini-value">${formatDuration(campaign.avgEngagedMs)}</span></div>
+                         <div class="kpi-mini"><span class="kpi-mini-label">Conversions</span><span class="kpi-mini-value">${campaign.conversions}</span></div>
+                       </div>`
+                    : '<div class="campaign-meta"><span>Aucun visiteur sur la période</span></div>'
+                }
                 <div class="campaign-meta">
-                  <span>Cree le ${new Date(campaign.createdAt).toLocaleDateString("fr-FR")}</span>
-                  <span>${campaign.visits || 0} visite(s)</span>
-                  <span>Derniere: ${campaign.lastVisit ? new Date(campaign.lastVisit).toLocaleDateString("fr-FR") : "Jamais"}</span>
+                  <span>Créé le ${new Date(campaign.createdAt).toLocaleDateString("fr-FR")}</span>
                 </div>
               </div>
               <div class="campaign-actions">
@@ -431,11 +533,18 @@
         `).join("");
       }
 
-      function updateStats(stats) {
-        totalCampaigns.textContent = stats.totalCampaigns || 0;
-        totalVisits.textContent = stats.totalVisits || 0;
-        todayVisits.textContent = stats.todayVisits || 0;
-        topSource.textContent = stats.topSource || "-";
+      function updateStats(campaignsList) {
+        const withData = campaignsList.filter((c) => c.hasData);
+        totalCampaigns.textContent = campaignsList.length;
+        totalSessions.textContent = withData.reduce((sum, c) => sum + c.sessions, 0);
+        const avgEngaged = withData.length
+          ? Math.round(withData.reduce((sum, c) => sum + c.avgEngagedMs, 0) / withData.length)
+          : 0;
+        engagementRate.textContent = withData.length
+          ? Math.round(withData.reduce((sum, c) => sum + c.engagementRate, 0) / withData.length) + "%"
+          : "-";
+        avgEngaged.textContent = withData.length ? formatDuration(avgEngaged) : "-";
+        totalConversions.textContent = withData.reduce((sum, c) => sum + c.conversions, 0);
       }
 
       function copyLink(campaignId) {
@@ -478,7 +587,7 @@
         try {
           const response = await fetch(`/admin/api/campaigns/${campaignId}`, { method: "DELETE" });
           if (!response.ok) throw new Error("Erreur");
-          await loadCampaigns();
+          await loadCampaigns(currentDays);
         } catch (error) {
           alert("Erreur lors de la suppression");
         }
@@ -499,7 +608,7 @@
           submitBtn.disabled = true;
           await createCampaign(campaignData);
           e.target.reset();
-          await loadCampaigns();
+          await loadCampaigns(currentDays);
           submitBtn.textContent = "Cree !";
           setTimeout(() => { submitBtn.textContent = "Generer le lien"; submitBtn.disabled = false; }, 2000);
         } catch (error) {
@@ -515,7 +624,7 @@
       globalThis.deleteCampaign = deleteCampaign;
 
       document.addEventListener("DOMContentLoaded", async () => {
-        if (await checkAuth()) await loadCampaigns();
+        if (await checkAuth()) await loadCampaigns(currentDays);
       });
     </script>
   </body>

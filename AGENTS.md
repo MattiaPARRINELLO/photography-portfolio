@@ -20,14 +20,15 @@ Tout ce qui suit est vérifié dans le dépôt sauf mention explicite « À conf
 - `server.js` — point d'entrée : helmet 8 + CSP, compression, express-session (`trust proxy: 1`), middleware de pré-compression `.br`/`.gz`, statics ciblés `/dist` et `/photos`, route dédiée `/robots.txt`, API bandeau événement, montage des routers, 404 → `pages/404.html`, gestionnaire d'erreur global.
 - `server/config.js` — singleton. Précédence : `CONFIG_FILE` (env) → `config/config.json` → `config/config.local.json` → `config/config.json.example`. Fusion superficielle des overrides locaux.
 - `server/middleware/auth.js` — auth admin : cookie HMAC `adminAuth` (+ session), header `x-admin-password`, `requireAdminSession` / `requireAdminPage`. `ADMIN_REMEMBER_SALT` obligatoire (throw au chargement).
-- `server/middleware/tracking.js` — `userTrackingMiddleware` (logs d'activité) et `campaignMiddleware` (campagnes via `?ref=`/`utm_campaign`).
-- `server/routes/` — `pages.js` (pages publiques + galeries + sitemap), `admin.js` (login, config, liens, uploads…), `photos.js` (`/photos-list`, `/admin/upload`, `/admin/photos`), `image-resize.js` (`/photos/resize?file=X&w=N`), `content.js` (textes + campagnes admin), `stats.js` (`/send-mail`, `/track`, `/stats`, `/log-action`, `/photo-click`, logs admin), `signed-images.js` (`/api/request-hd-access`, `/api/hd-image`, HMAC `IMAGE_SECRET_KEY`, validité 1 h), `event-banner.js` (handler partagé de l'API bandeau événement, monté par `server.js` et `admin.js`).
-- `server/utils/` — `galleryService.js` (CRUD galeries, slugify), `linksService.js` (liens + bandeau événement + JSON-LD de /links), `photoService.js` (liste photos triée par date), `campaignService.js`, `textUtils.js` (textes + injection meta/JSON-LD `@graph` à `@id` stables), `imageMeta.js` (dimensions des photos via sharp, cache mémoire → `width`/`height` anti-CLS), `dataSanity.js` (garde-fou prod : exclut des pages publiques les galeries aux données manifestement fictives, l'admin reste non filtré).
-- `scripts/` — `UserActivityLogger.js`, `PhotoClickTracker.js`, `CampaignManager.js` (instanciés dans `server.js`), `build-css.js`, `build-assets.js`, `generate-og-image.js` (og:image 1200×1200), `convert-thumbnails-to-webp.js`, `generate-placeholders.js`, `migrate-gallery-only-photos.js`, `test-email.js`, `untrack-config.sh`.
-- `pages/` — templates HTML publics + `pages/admin/` (admin.html, campaigns, galleries, links, logs, text-editor). **Refactoring JS inline en cours** : `home.html` fait encore 2282 lignes (voir `REFACTORING_PLAN.md` / `REFACTORING_STATUS.md`). Nouveau JS à placer dans `dist/js/`.
+- `server/middleware/` — `language.js` (détection de langue), `photosStatic.js` (statique des miniatures). Le tracking par cookies (`userTrackingMiddleware`/`campaignMiddleware`) a été supprimé : la collecte est désormais assurée par `dist/js/analytics-tracker.js` (sendBeacon, zéro cookie).
+- `server/routes/` — `pages.js` (pages publiques + galeries + sitemap), `admin.js` (login, config, liens, uploads…), `photos.js` (`/photos-list`, `/admin/upload`, `/admin/photos`), `image-resize.js` (`/photos/resize?file=X&w=N`), `content.js` (textes + campagnes admin), `contact.js` (`/send-mail`), `analytics.js` (`POST /api/track` public + `GET /admin/api/analytics` KPI), `signed-images.js` (`/api/request-hd-access`, `/api/hd-image`, HMAC `IMAGE_SECRET_KEY`, validité 1 h), `event-banner.js` (handler partagé de l'API bandeau événement, monté par `server.js` et `admin.js`).
+- `server/utils/` — `galleryService.js` (CRUD galeries, slugify), `linksService.js` (liens + bandeau événement + JSON-LD de /links), `photoService.js` (liste photos triée par date), `analyticsStore.js` (JSONL append-only, rétention 90 j), `analyticsService.js` (calcul des KPI), `campaignService.js` (parsing `?c`/`?ref`/`?utm_*`, sans état ni cookie), `textUtils.js` (textes + injection meta/JSON-LD `@graph` à `@id` stables), `imageMeta.js` (dimensions des photos via sharp, cache mémoire → `width`/`height` anti-CLS), `dataSanity.js` (garde-fou prod : exclut des pages publiques les galeries aux données manifestement fictives, l'admin reste non filtré).
+- `scripts/` — `CampaignManager.js` (instancié dans `server.js`, CRUD des campagnes déclarées), `build-css.js`, `build-assets.js`, `generate-og-image.js` (og:image 1200×1200), `convert-thumbnails-to-webp.js`, `generate-placeholders.js`, `migrate-gallery-only-photos.js`, `test-email.js`, `untrack-config.sh`.
+- `pages/` — templates HTML publics + `pages/admin/` (admin.html, analytics, campaigns, galleries, links, text-editor). **Refactoring JS inline en cours** : `home.html` fait encore 2282 lignes (voir `REFACTORING_PLAN.md` / `REFACTORING_STATUS.md`). Nouveau JS à placer dans `dist/js/`.
+- `dist/js/analytics-tracker.js` — tracker maison : temps engagé (`visibilitychange`), scroll, photos vues (IntersectionObserver), ouvertures Fancybox, conversions (`mailto`/`tel`/CTA/liens externes), capture de campagne depuis l'URL. Envoie un `session_flush` cumulé toutes les 10 s et à la sortie de page via `navigator.sendBeacon` (repli `fetch keepalive`). Continuité de session via `sessionStorage` (éphémère, jamais un cookie). Zéro donnée personnelle : hash SHA-256 quotidien (`sel + UA court + écran + timezone + jour`).
 - `dist/` — sorties de build **partiellement trackées par git** (voir « Fichiers générés »).
 - `photos-originals/` — originaux (hors statique, `PHOTOS_ORIGINALS_DIR`) ; `photos/thumbnails/` (générés à l'upload, seul `.gitkeep` + README trackés) ; `photos/resized/` (cache de redimensionnement, gitignoré).
-- `tests/` — 33 suites / 638 tests (voir Commandes). `tests/setup.js` injecte les variables d'env factices (chargé via `jest.config.js` → `setupFiles`).
+- `tests/` — 42 suites / 721 tests (voir Commandes). `tests/setup.js` injecte les variables d'env factices (chargé via `jest.config.js` → `setupFiles`).
 - `graphify-out/` — graphe de connaissance du code (voir « Outillage local »).
 - `AUDIT.md` — registre d'audit (sécurité/perf/SEO/a11y/qualité) avec identifiants d'items (ex. `Q-C2`, `V11`, `E5-REDIR`). Convention : les commits de correction marquent les items `CORRIGÉ` dans ce fichier.
 
@@ -52,7 +53,7 @@ Tout ce qui suit est vérifié dans le dépôt sauf mention explicite « À conf
 | Migration des originaux hors du statique | `npm run migrate:originals` (dry-run), puis `-- --apply` |
 | Recette de sécurité HTTP (instance locale isolée) | `npm run test:security` |
 
-**État vérifié** : `npx jest --ci --silent` → 33 suites passantes, 638 tests passants, 0 skip. `TESTS_REPORT.md` est daté (445 tests, 14 skips) et ne reflète plus l'état actuel.
+**État vérifié** : `npx jest --ci --silent` → 42 suites passantes, 721 tests passants, 0 skip. `TESTS_REPORT.md` est daté (445 tests, 14 skips) et ne reflète plus l'état actuel.
 
 ## Build, lint, tests et vérifications de types
 
@@ -106,7 +107,8 @@ Les tests injectent leurs propres valeurs via `tests/setup.js` — ne pas y mett
 ## Fichiers générés, sensibles ou interdits de modification
 
 - **Ne jamais modifier** : `dist/manifest.json`, `dist/css/output.<hash>.css(+.br/.gz)` (générés), les refs CSS dans `pages/*.html` (réécrites par le build), `coverage/`, `logs/`, `temp/`, `photos/resized/`, `photos/*.{jpg,jpeg,png,webp,gif}` et `photos/thumbnails/*` (contenu/utilisateur, gitignorés), `server.log`.
-- **Sensibles** : `.env` (non tracké, porteur de secrets — ne jamais afficher ses valeurs), `config/*.json` réels (non trackés), `stats.json` (données de tracking).
+- **Sensibles** : `.env` (non tracké, porteur de secrets — ne jamais afficher ses valeurs), `config/*.json` réels (non trackés), `data/analytics/` (journaux de session anonymisés, non trackés).
+- `data/analytics/` — stockage des analytics (JSONL append-only, rétention 90 j). Gitignoré, et protégé en prod par `BLOCKED_DIRS_RE` (`server.js`) + `RedirectMatch` (`.htaccess`). **Ne jamais y écrire de données identifiantes** : le serveur ne doit stocker ni IP, ni User-Agent, ni cookie.
 - Ancien artefact `dist/output.css` (legacy Tailwind) supprimé en `389a22b` — seul `dist/css/output.css` (pré-fingerprint) existe, ne pas le confondre avec `dist/css/output.<hash>.css`.
 - `AUDIT.md`, `REFACTORING_PLAN.md`, `REFACTORING_STATUS.md`, `photos/README.md`, `CONFIG_README.md`, `server/README.md` : documentation active, à tenir à jour en cas de changement correspondant.
 - `*.local.json` / `*.secret.json` dans `config/` : overrides locaux jamais commités (voir `CONFIG_README.md`).
@@ -120,7 +122,7 @@ Les tests injectent leurs propres valeurs via `tests/setup.js` — ne pas y mett
 
 ## Checklist de validation avant livraison
 
-- [ ] `npx jest --ci --silent` → tout vert (33 suites / 638 tests).
+- [ ] `npx jest --ci --silent` → tout vert (42 suites / 721 tests).
 - [ ] Le CSS modifié passe par le build : `npm run build:css && npm run build:assets`, puis `git status` cohérent (HTML + manifest + fingerprint).
 - [ ] Aucune valeur d'env réelle ajoutée/commitée.
 - [ ] Toujours relancer le serveur après un build CSS (`npm run dev`) et tester dans un vrai navigateur — les tests Jest ne couvrent pas le rendu client ni la CSP en conditions réelles.

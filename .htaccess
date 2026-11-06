@@ -32,7 +32,7 @@ PassengerStartupFile server.js
 </FilesMatch>
 
 # 2) Dossiers internes du projet
-RedirectMatch 404 ^/(?:config|logs|coverage|temp|scripts|tests|server|graphify-out|node_modules)/
+RedirectMatch 404 ^/(?:config|logs|coverage|temp|scripts|tests|server|graphify-out|node_modules|data)/
 
 # 3) Fichiers internes à la racine du projet
 RedirectMatch 404 ^/(?:package|package-lock)\.json$

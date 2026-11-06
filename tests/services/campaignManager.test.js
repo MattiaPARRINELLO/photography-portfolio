@@ -171,9 +171,10 @@ describe('CampaignManager', function () {
       expect(campaign.medium).toBe('social');
       expect(campaign.description).toBe('Une campagne de test');
       expect(campaign.createdAt).toBeDefined();
-      expect(campaign.visits).toBe(0);
-      expect(campaign.lastVisit).toBeNull();
       expect(campaign.isActive).toBe(true);
+      // Les visites ne sont plus comptées ici (agrégées par AnalyticsService)
+      expect(campaign.visits).toBeUndefined();
+      expect(campaign.lastVisit).toBeUndefined();
 
       var stored = readStore();
       expect(stored.campaigns['test-campaign']).toBeDefined();
@@ -199,74 +200,30 @@ describe('CampaignManager', function () {
   });
 
   // ================================================================
-  // recordCampaignVisit
+  // recordCampaignVisit — volontairement neutralisé
+  // Les KPI de campagne sont calculés par AnalyticsService à partir des
+  // signaux de session ; on ne stocke plus ni User-Agent ni IP.
   // ================================================================
   describe('recordCampaignVisit', function () {
-    it('incremente visits et ajoute une entree au visitHistory', function () {
+    it('ne persiste plus rien et ne renvoie aucune donnee', function () {
       cm.createCampaign(makeCampaignData({ id: 'c1' }));
 
       var result = cm.recordCampaignVisit('c1', 'Mozilla/5.0', '192.168.1.1');
 
-      expect(result.visits).toBe(1);
-      expect(result.visitHistory).toBeDefined();
-      expect(result.visitHistory.length).toBe(1);
-      expect(result.visitHistory[0].userAgent).toBe('Mozilla/5.0');
-      expect(result.visitHistory[0].ip).toBe('192.168.1.1');
-      expect(result.visitHistory[0].timestamp).toBeDefined();
-      expect(result.lastVisit).toBeDefined();
-      expect(result.lastVisit).not.toBeNull();
-    });
-
-    it('incremente visits a chaque visite successive', function () {
-      cm.createCampaign(makeCampaignData({ id: 'c1' }));
-
-      cm.recordCampaignVisit('c1', 'UA1', '10.0.0.1');
-      cm.recordCampaignVisit('c1', 'UA2', '10.0.0.2');
-      var result = cm.recordCampaignVisit('c1', 'UA3', '10.0.0.3');
-
-      expect(result.visits).toBe(3);
-      expect(result.visitHistory.length).toBe(3);
-      expect(result.visitHistory[0].userAgent).toBe('UA1');
-      expect(result.visitHistory[2].userAgent).toBe('UA3');
-    });
-
-    it('retourne null si le campaignId n\'existe pas', function () {
-      var result = cm.recordCampaignVisit('inexistant', 'UA', '1.1.1.1');
       expect(result).toBeNull();
-    });
-
-    it('cree le tableau visitHistory s\'il est absent', function () {
-      seed({
-        metadata: { version: '1.0' },
-        campaigns: {
-          'no-history': {
-            id: 'no-history',
-            name: 'Sans Historique',
-            source: 'email',
-            medium: 'newsletter',
-            description: '',
-            createdAt: new Date().toISOString(),
-            visits: 0,
-            lastVisit: null,
-            isActive: true
-          }
-        }
-      });
-
-      var result = cm.recordCampaignVisit('no-history', 'Chrome', '10.0.0.1');
-      expect(result.visitHistory).toBeDefined();
-      expect(result.visitHistory.length).toBe(1);
-      expect(result.visitHistory[0].userAgent).toBe('Chrome');
-    });
-
-    it('persiste les visites dans le fichier', function () {
-      cm.createCampaign(makeCampaignData({ id: 'c1' }));
-      cm.recordCampaignVisit('c1', 'UA', '1.1.1.1');
-      cm.recordCampaignVisit('c1', 'UA', '1.1.1.1');
 
       var stored = readStore();
-      expect(stored.campaigns.c1.visits).toBe(2);
-      expect(stored.campaigns.c1.visitHistory.length).toBe(2);
+      expect(stored.campaigns.c1.visits).toBeUndefined();
+      expect(stored.campaigns.c1.visitHistory).toBeUndefined();
+    });
+
+    it('ne modifie pas le fichier de donnees', function () {
+      cm.createCampaign(makeCampaignData({ id: 'c1' }));
+      var avant = readStore();
+
+      cm.recordCampaignVisit('c1', 'UA', '1.1.1.1');
+
+      expect(readStore()).toEqual(avant);
     });
   });
 
@@ -354,74 +311,33 @@ describe('CampaignManager', function () {
   });
 
   // ================================================================
-  // getCampaignStats
+  // getCampaignStats — résumé de déclaration uniquement
+  // Les KPI réels (sessions, engagement, conversions) viennent
+  // d'AnalyticsService via /admin/api/analytics.
   // ================================================================
   describe('getCampaignStats', function () {
-    it('calcule totalCampaigns et totalVisits', function () {
-      cm.createCampaign(makeCampaignData({ id: 'c1', source: 'instagram' }));
-      cm.createCampaign(makeCampaignData({ id: 'c2', source: 'facebook' }));
-      cm.createCampaign(makeCampaignData({ id: 'c3', source: 'instagram' }));
-
-      cm.recordCampaignVisit('c1', 'UA', '1.1.1.1');
-      cm.recordCampaignVisit('c1', 'UA', '1.1.1.1');
-      cm.recordCampaignVisit('c2', 'UA', '1.1.1.1');
-
-      var stats = cm.getCampaignStats();
-      expect(stats.totalCampaigns).toBe(3);
-      expect(stats.totalVisits).toBe(3);
-    });
-
-    it('calcule les visites du jour (todayVisits)', function () {
-      cm.createCampaign(makeCampaignData({ id: 'c1', source: 'facebook' }));
-      cm.recordCampaignVisit('c1', 'UA', '1.1.1.1');
-
-      var stats = cm.getCampaignStats();
-      expect(stats.todayVisits).toBe(1);
-    });
-
-    it('identifie la source la plus populaire (topSource)', function () {
+    it('compte les campagnes declarees et actives', function () {
       cm.createCampaign(makeCampaignData({ id: 'c1', source: 'instagram' }));
       cm.createCampaign(makeCampaignData({ id: 'c2', source: 'facebook' }));
 
-      cm.recordCampaignVisit('c1', 'UA', '1.1.1.1');
-      cm.recordCampaignVisit('c1', 'UA', '1.1.1.1');
-      cm.recordCampaignVisit('c1', 'UA', '1.1.1.1');
-      cm.recordCampaignVisit('c2', 'UA', '1.1.1.1');
+      var stats = cm.getCampaignStats();
+      expect(stats.totalCampaigns).toBe(2);
+      expect(stats.activeCampaigns).toBe(2);
+    });
+
+    it('n\'expose plus de compteurs de visites', function () {
+      cm.createCampaign(makeCampaignData({ id: 'c1' }));
 
       var stats = cm.getCampaignStats();
-      expect(stats.topSource).toBe('instagram');
+      expect(stats.totalVisits).toBeUndefined();
+      expect(stats.todayVisits).toBeUndefined();
+      expect(stats.topSource).toBeNull();
     });
 
     it('gere le cas sans aucune campagne', function () {
       var stats = cm.getCampaignStats();
       expect(stats.totalCampaigns).toBe(0);
-      expect(stats.totalVisits).toBe(0);
-      expect(stats.todayVisits).toBe(0);
-      expect(stats.topSource).toBeNull();
-    });
-
-    it('gere les campagnes sans visitHistory', function () {
-      seed({
-        metadata: { version: '1.0' },
-        campaigns: {
-          'sans-visites': {
-            id: 'sans-visites',
-            name: 'Sans visites',
-            source: 'email',
-            medium: 'newsletter',
-            description: '',
-            createdAt: new Date().toISOString(),
-            visits: 0,
-            lastVisit: null,
-            isActive: true
-          }
-        }
-      });
-
-      var stats = cm.getCampaignStats();
-      expect(stats.totalCampaigns).toBe(1);
-      expect(stats.totalVisits).toBe(0);
-      expect(stats.todayVisits).toBe(0);
+      expect(stats.activeCampaigns).toBe(0);
     });
   });
 

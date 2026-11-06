@@ -7,6 +7,14 @@ const { requireAdminSession, requireAdminPage } = require('../middleware/auth');
 const router = express.Router();
 const paths = serverConfig.getPaths();
 
+// Période d'analyse partagée avec le tableau de bord analytics
+function resolveDays(raw, fallback = 30) {
+    if (raw === 'all' || raw === 'null') return null;
+    if (raw === undefined || raw === '') return fallback;
+    const parsed = Number.parseInt(raw, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, 3650) : fallback;
+}
+
 // ===== ROUTES TEXTES =====
 
 // Route admin : récupérer les textes
@@ -105,12 +113,31 @@ router.post('/admin/api/campaigns', requireAdminSession, (req, res) => {
     }
 });
 
-// Route admin API : obtenir toutes les campagnes avec leurs stats
+// Route admin API : obtenir toutes les campagnes avec leurs KPI
+// (?days=7|30|all) — sélecteur de période comme sur le tableau de bord.
 router.get('/admin/api/campaigns', requireAdminSession, (req, res) => {
     try {
         const campaigns = req.app.locals.campaignManager.getAllCampaigns();
-        const stats = req.app.locals.campaignManager.getCampaignStats();
-        res.json({ campaigns, stats });
+
+        // Les KPI proviennent du même socle analytique que le dashboard :
+        // visites, engagement, temps engagé moyen et conversions.
+        const analytics = req.app.locals.analytics;
+        const perCampaign = analytics ? analytics.getDashboard(resolveDays(req.query.days)).campaigns : [];
+        const byId = new Map(perCampaign.map(c => [c.id, c]));
+
+        const enriched = campaigns.map(campaign => {
+            const metrics = byId.get(campaign.id) || null;
+            return Object.assign({}, campaign, {
+                sessions: metrics ? metrics.sessions : 0,
+                avgEngagedMs: metrics ? metrics.avgEngagedMs : 0,
+                engagementRate: metrics ? metrics.engagementRate : 0,
+                conversions: metrics ? metrics.conversions : 0,
+                conversionRate: metrics ? metrics.conversionRate : 0,
+                hasData: !!metrics
+            });
+        });
+
+        res.json({ campaigns: enriched });
     } catch (error) {
         console.error('❌ Erreur lors de la récupération des campagnes:', error);
         res.status(500).json({ error: 'Erreur lors de la récupération des campagnes' });

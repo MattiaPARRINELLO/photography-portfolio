@@ -9,15 +9,18 @@ server/
 ├── config.js                 # Configuration centralisée
 ├── middleware/
 │   ├── auth.js               # Authentification admin
-│   └── tracking.js           # Tracking utilisateurs et campagnes
+│   └── language.js           # Sélection de langue
 ├── routes/
 │   ├── admin.js              # Routes administration générales
+│   ├── analytics.js          # Ingestion /api/track + KPI /admin/api/analytics
+│   ├── contact.js            # Envoi d'emails (anti-spam)
 │   ├── content.js            # Routes textes et campagnes
 │   ├── pages.js              # Routes pages publiques
-│   ├── photos.js             # Routes gestion photos
-│   └── stats.js              # Routes logs et statistiques
+│   └── photos.js             # Routes gestion photos
 └── utils/
-    ├── campaignService.js    # Service de gestion des campagnes
+    ├── analyticsService.js   # Calcul des KPI (rebond qualifié, temps engagé…)
+    ├── analyticsStore.js     # Stockage JSONL append-only (rétention 90 j)
+    ├── campaignService.js    # Parsing des campagnes (?c / ?ref / ?utm_*)
     └── textUtils.js          # Utilitaires pour textes et meta tags
 ```
 
@@ -89,14 +92,18 @@ server/
 - CRUD campagnes (admin)
 - Gestion campagnes marketing
 
-#### `server/routes/stats.js` - Statistiques et Logs
+#### `server/routes/analytics.js` - Analytics (sans cookie)
 
-- Envoi emails
-- Tracking legacy (`/track`)
-- Logs d'actions utilisateurs
-- Statistiques photos
-- Administration logs
-- Nettoyage automatique
+- `POST /api/track` (public) — ingestion d'un signal de session cumulé,
+  assaini, sans IP ni User-Agent, rate-limité 60 signaux/minute/IP
+- `GET /admin/api/analytics?days=7|30|all` — KPI agrégés
+- `GET /admin/analytics` — page du tableau de bord (`requireAdminPage`)
+- `POST /admin/api/analytics/rotate` — purge manuelle de la rétention
+
+#### `server/routes/contact.js` - Contact
+
+- Envoi d'emails (anti-spam : honeypot, timestamp, CSRF, rate-limit 5/h/IP)
+- Timeouts SMTP bornés (ce serveur n'a pas de route IPv6)
 
 ## 🚀 Avantages de la Modularisation
 

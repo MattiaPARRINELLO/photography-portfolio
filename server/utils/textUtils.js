@@ -168,9 +168,11 @@ class TextUtils {
         additionalMetas += `    <meta name="geo.region" content="FR-IDF">\n`;
         additionalMetas += `    <meta name="geo.placename" content="Paris">\n`;
 
-        // Vérifier s'il y a des informations de campagne à injecter
+        // Vérifier s'il y a des informations de campagne à injecter.
+        // La campagne est désormais captée côté client (URL ?c / ?ref / ?utm_*)
+        // et transmise dans les signaux de session : plus aucun cookie à lire.
         let campaignScript = '';
-        const activeCampaignInfo = campaignInfo || (req.cookies && req.cookies.user_campaign_info ? JSON.parse(req.cookies.user_campaign_info) : null);
+        const activeCampaignInfo = campaignInfo || null;
 
         if (activeCampaignInfo) {
             campaignScript = `\n    <script>\n        // Informations de campagne injectées\n        window.campaignInfo = ${JSON.stringify(activeCampaignInfo)};\n    </script>`;

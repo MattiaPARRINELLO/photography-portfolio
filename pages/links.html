@@ -683,6 +683,7 @@
       </footer>
     </main>
 
+    <script defer src="/dist/js/analytics-tracker.js"></script>
     <script>
       // Typing animation, retire le curseur après l'animation
       const tagline = document.getElementById("tagline");
@@ -690,30 +691,6 @@
         setTimeout(() => {
           tagline.classList.add("typing-done");
         }, 3000);
-      }
-
-      // Track link clicks
-      document.querySelectorAll(".link-btn").forEach((link) => {
-        link.addEventListener("click", function (e) {
-          const linkId = this.dataset.linkId;
-          if (linkId && navigator.sendBeacon) {
-            navigator.sendBeacon(
-              "/api/track-link",
-              JSON.stringify({ linkId, timestamp: Date.now() }),
-            );
-          }
-        });
-      });
-
-      // Track event banner clicks
-      const eventBanner = document.querySelector(".event-banner");
-      if (eventBanner && navigator.sendBeacon) {
-        eventBanner.addEventListener("click", function () {
-          navigator.sendBeacon(
-            "/api/track-link",
-            JSON.stringify({ linkId: "event_banner", timestamp: Date.now() }),
-          );
-        });
       }
 
       // Haptic feedback on mobile (if available)

@@ -1,165 +1,81 @@
 var campaignService = require('../../server/utils/campaignService');
 
-describe('campaignService — edge cases', function () {
+// ================================================================
+// Service de campagnes — cas limites
+//
+// Le service est désormais sans état : ces cas vérifient la robustesse
+// du parsing (données absentes, malformées, types inattendus) et
+// confirment qu'aucun mécanisme de persistance n'a survécu.
+// ================================================================
 
-  var MS_24H = 24 * 60 * 60 * 1000;
+describe('campaignService — cas limites', function () {
 
-  beforeEach(function () {
-    campaignService.userCampaignCache.clear();
+  describe('parseCampaignQuery — types inattendus', function () {
+
+    it('ignore un tableau de paramètres', function () {
+      expect(campaignService.parseCampaignQuery(['ref=promo'])).toBeNull();
+    });
+
+    it('ignore une chaîne simple', function () {
+      expect(campaignService.parseCampaignQuery('ref=promo')).toBeNull();
+    });
+
+    it('ignore un nombre', function () {
+      expect(campaignService.parseCampaignQuery(42)).toBeNull();
+    });
+
+    it('ignore une valeur non chaîne pour un paramètre attendu', function () {
+      expect(campaignService.parseCampaignQuery({ ref: { nested: true } })).toBeNull();
+      expect(campaignService.parseCampaignQuery({ ref: 123 })).toBeNull();
+    });
+
+    it('ignore un paramètre c vide au profit de ref', function () {
+      expect(campaignService.parseCampaignQuery({ c: '', ref: 'secours' }).id).toBe('secours');
+    });
+
+    it('gère une URLSearchParams vide', function () {
+      expect(campaignService.parseCampaignQuery(new URLSearchParams())).toBeNull();
+    });
+
+    it('tolère les valeurs avec des caractères accentués', function () {
+      var result = campaignService.parseCampaignQuery({ ref: 'concertenfr' });
+      expect(result.id).toBe('concertenfr');
+    });
   });
 
-  // ================================================================
-  // cleanExpiredCampaigns (lignes 17-23)
-  // ================================================================
-  describe('cleanExpiredCampaigns', function () {
+  describe('normalizeCampaign — types inattendus', function () {
 
-    it('supprime les entrees expirees du cache', function () {
-      var expiredInfo = {
-        campaignId: 'old-camp',
-        campaignName: 'Old',
-        source: 'src',
-        medium: 'med',
-        timestamp: new Date(Date.now() - MS_24H - 1000).toISOString()
-      };
-      campaignService.associateUserToCampaign('expired-user', expiredInfo);
-
-      expect(campaignService.userCampaignCache.size).toBe(1);
-      campaignService.cleanExpiredCampaigns();
-      expect(campaignService.userCampaignCache.size).toBe(0);
-      expect(campaignService.getUserCampaignInfo('expired-user')).toBeNull();
+    it('ignore un tableau', function () {
+      expect(campaignService.normalizeCampaign(['id'])).toBeNull();
     });
 
-    it('conserve les entrees non expirees', function () {
-      var freshInfo = {
-        campaignId: 'fresh-camp',
-        campaignName: 'Fresh',
-        source: 'src',
-        medium: 'med',
-        timestamp: new Date(Date.now() - 1000).toISOString()
-      };
-      campaignService.associateUserToCampaign('fresh-user', freshInfo);
-
-      campaignService.cleanExpiredCampaigns();
-      expect(campaignService.userCampaignCache.size).toBe(1);
-      expect(campaignService.getUserCampaignInfo('fresh-user')).not.toBeNull();
+    it('ignore une fonction', function () {
+      expect(campaignService.normalizeCampaign(function () {})).toBeNull();
     });
 
-    it('ne plante pas avec un cache vide', function () {
-      expect(function () {
-        campaignService.cleanExpiredCampaigns();
-      }).not.toThrow();
-      expect(campaignService.userCampaignCache.size).toBe(0);
+    it('ignore un identifiant vide après nettoyage', function () {
+      expect(campaignService.normalizeCampaign({ id: '   ' })).toBeNull();
     });
 
-    it('supprime uniquement les entrees strictement plus vieilles que 24h', function () {
-      var justeDansLesLimites = {
-        campaignId: 'juste',
-        campaignName: 'Juste',
-        source: 's',
-        medium: 'm',
-        timestamp: new Date(Date.now() - MS_24H + 1000).toISOString()
-      };
-      var tresVieille = {
-        campaignId: 'trop-vieux',
-        campaignName: 'TropVieux',
-        source: 's',
-        medium: 'm',
-        timestamp: new Date(Date.now() - MS_24H - 60000).toISOString()
-      };
-
-      campaignService.associateUserToCampaign('limite', justeDansLesLimites);
-      campaignService.associateUserToCampaign('vieux', tresVieille);
-
-      campaignService.cleanExpiredCampaigns();
-
-      expect(campaignService.userCampaignCache.size).toBe(1);
-      expect(campaignService.getUserCampaignInfo('limite')).not.toBeNull();
-      expect(campaignService.getUserCampaignInfo('vieux')).toBeNull();
+    it('ignore une source non chaîne', function () {
+      expect(campaignService.normalizeCampaign({ id: 'promo', source: 12 })).toEqual({ id: 'promo', source: null });
     });
 
+    it('parse un JSON avec des champs superflus', function () {
+      expect(campaignService.normalizeCampaign('{"id":"p","source":"s","timestamp":"2026"}'))
+        .toEqual({ id: 'p', source: 's' });
+    });
   });
 
-  // ================================================================
-  // Cache expiry — entries expire after set duration
-  // ================================================================
-  describe('expiration du cache apres 24h', function () {
+  describe('aucune persistance résiduelle', function () {
 
-    var realDateNow;
-
-    beforeEach(function () {
-      realDateNow = Date.now;
+    it("n'expose aucun cache ni aucune méthode liée aux cookies", function () {
+      expect(campaignService.userCampaignCache).toBeUndefined();
+      expect(campaignService.cleanExpiredCampaigns).toBeUndefined();
+      expect(campaignService.associateUserToCampaign).toBeUndefined();
+      expect(campaignService.getUserCampaignInfo).toBeUndefined();
+      expect(campaignService.getCampaignInfo).toBeUndefined();
+      expect(campaignService.processCampaignFromQuery).toBeUndefined();
     });
-
-    afterEach(function () {
-      Date.now = realDateNow;
-    });
-
-    it('getUserCampaignInfo retourne la valeur avant expiration', function () {
-      var now = realDateNow.call(Date);
-      Date.now = function () { return now; };
-
-      var info = { campaignId: 'c1', campaignName: 'Test', timestamp: new Date(now).toISOString() };
-      campaignService.associateUserToCampaign('u1', info);
-
-      var result = campaignService.getUserCampaignInfo('u1');
-      expect(result).not.toBeNull();
-      expect(result.campaignId).toBe('c1');
-    });
-
-    it('cleanExpiredCampaigns supprime apres expiration via Date.now mock', function () {
-      var now = realDateNow.call(Date);
-      Date.now = function () { return now + MS_24H + 60000; };
-
-      var info = {
-        campaignId: 'c-old',
-        campaignName: 'Vieux',
-        timestamp: new Date(now).toISOString()
-      };
-      campaignService.associateUserToCampaign('u-old', info);
-
-      campaignService.cleanExpiredCampaigns();
-      expect(campaignService.userCampaignCache.size).toBe(0);
-    });
-
   });
-
-  // ================================================================
-  // getCampaignInfo — cookie invalide (ligne 98)
-  // ================================================================
-  describe('getCampaignInfo — cookie parsing error', function () {
-
-    it('ignore un cookie JSON invalide et retourne null', function () {
-      var req = {
-        cookies: { user_campaign_info: '{broken json!!!' }
-      };
-      var result = campaignService.getCampaignInfo(req, 'u1', null);
-      expect(result).toBeNull();
-    });
-
-    it('ne met pas a jour le cache quand le cookie est invalide', function () {
-      var req = {
-        cookies: { user_campaign_info: 'pas-du-json' }
-      };
-      campaignService.getCampaignInfo(req, 'u1', null);
-      expect(campaignService.userCampaignCache.size).toBe(0);
-    });
-
-  });
-
-  // ================================================================
-  // getUserCampaignInfo — edge cases
-  // ================================================================
-  describe('getUserCampaignInfo — cas limites', function () {
-
-    it('retourne null pour undefined userId', function () {
-      expect(campaignService.getUserCampaignInfo(undefined)).toBeNull();
-    });
-
-    it('retourne null quand le cache est vide', function () {
-      expect(campaignService.userCampaignCache.size).toBe(0);
-      expect(campaignService.getUserCampaignInfo('nimporte-qui')).toBeNull();
-    });
-
-  });
-
 });
