@@ -83,7 +83,7 @@ function buildHeroColumns(galleries, dimsFor, perColumn = 6, columns = 6) {
             const lazy = c > 1 || i > 0 ? ' loading="lazy"' : '';
             const priority = c === 0 && i === 0 ? ' fetchpriority="high"' : '';
             frames += `
-          <figure class="cs-frame"><img src="${resizeUrl(item.file, 480)}"${widthAttrs(dims, 480)} alt="Concert de ${esc(artistLabel(item.gallery))} à ${esc(venueLabel(item.gallery))}"${lazy}${priority}><figcaption class="cs-frame-strip">${esc(venueLabel(item.gallery))}</figcaption></figure>`;
+          <figure class="cs-frame"><img src="${resizeUrl(item.file, 480)}"${widthAttrs(dims, 480)} alt="Concert de ${esc(artistLabel(item.gallery))} à ${esc(venueLabel(item.gallery))}" decoding="async"${lazy}${priority}><figcaption class="cs-frame-strip">${esc(venueLabel(item.gallery))}</figcaption></figure>`;
         }
         html += `
         <div class="cs-col" style="--offset:${offsets[c % offsets.length]}px">${frames}
@@ -98,7 +98,7 @@ function buildStrips(galleries, dimsFor, perStrip = 6) {
         const photos = photosOf(gallery).slice(0, perStrip);
         const frames = photos.map((file, i) => {
             const dims = dimsFor(file);
-            return `<a class="cs-strip-frame" href="${resizeUrl(file, 1600)}" data-fancybox="strips" data-caption="${esc(artistLabel(gallery))} · ${esc(venueLabel(gallery))}"><img src="${resizeUrl(file, 400)}"${widthAttrs(dims, 400)} alt="Concert de ${esc(artistLabel(gallery))} à ${esc(venueLabel(gallery))}, photo ${i + 1}" loading="lazy"></a>`;
+            return `<a class="cs-strip-frame" href="${resizeUrl(file, 1600)}" data-fancybox="strips" data-caption="${esc(artistLabel(gallery))} · ${esc(venueLabel(gallery))}"><img src="${resizeUrl(file, 400)}"${widthAttrs(dims, 400)} alt="Concert de ${esc(artistLabel(gallery))} à ${esc(venueLabel(gallery))}, photo ${i + 1}" loading="lazy" decoding="async"></a>`;
         }).join('');
         const count = photosOf(gallery).length;
         return `
@@ -172,7 +172,7 @@ function buildMosaic(galleries, dimsFor, perGig = 4) {
         const dims = dimsFor(file);
         return `
         <figure class="cs-tile" data-gig="${esc(g.slug)}" data-year="${yearOf(g.date)}">
-          <a href="${resizeUrl(file, 1600)}" data-fancybox="planche" data-caption="${esc(artistLabel(g))} · ${esc(venueLabel(g))}"><img src="${resizeUrl(file, 400)}"${widthAttrs(dims, 400)} alt="Concert de ${esc(artistLabel(g))} à ${esc(venueLabel(g))}" loading="lazy"></a>
+          <a href="${resizeUrl(file, 1600)}" data-fancybox="planche" data-caption="${esc(artistLabel(g))} · ${esc(venueLabel(g))}"><img src="${resizeUrl(file, 400)}"${widthAttrs(dims, 400)} alt="Concert de ${esc(artistLabel(g))} à ${esc(venueLabel(g))}" loading="lazy" decoding="async"></a>
           <figcaption class="cs-tile-caption"><a href="/galeries/${esc(g.slug)}">${esc(artistLabel(g))}, ${esc(venueLabel(g))}</a></figcaption>
         </figure>`;
     }).join('');

@@ -1701,7 +1701,9 @@ html.cs-boot-on .cs-boot {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: var(--paper);
+  /* Fond sombre au départ : la photo se développe dessus, puis le voile
+     blanc en fait le panneau. Évite tout écran blanc vide. */
+  background: var(--bg);
   border: 8px solid var(--bg);
 }
 
@@ -1710,8 +1712,23 @@ html.cs-boot-on .cs-boot {
 .cs-boot-photo {
   position: absolute;
   inset: 0;
-  background: var(--bg) center / cover no-repeat;
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
   opacity: 0;
+}
+
+/* Voile par colonne : l'équivalent du développement, sans filtre animé. */
+.cs-col {
+  position: relative;
+}
+
+.cs-col-shade {
+  position: absolute;
+  inset: -40px;
+  background: var(--bg);
+  pointer-events: none;
 }
 
 .cs-boot-scrim {
@@ -1747,7 +1764,7 @@ html.cs-boot-on .cs-boot {
 .cs-boot-word {
   display: block;
   white-space: nowrap;
-  transform-origin: 0 0;
+  transform-origin: 50% 50%;
 }
 
 /* Accordéon : la largeur des cadres est pilotée par GSAP. L'image survolée

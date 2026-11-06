@@ -58,6 +58,7 @@
 
     function endBoot() {
       if (boot) boot.style.display = "none";
+      if (title) title.style.visibility = "";
       document.documentElement.classList.remove("cs-boot-on");
     }
 
@@ -83,6 +84,10 @@
 
         function scan(img) {
           if (!img.complete || !img.naturalWidth) return;
+          // On ne garde que les photos en paysage : c'est le cadrage qui
+          // remplit le mieux la feuille, sur ordinateur comme sur téléphone.
+          var ratio = img.naturalWidth / (img.naturalHeight || 1);
+          if (ratio < 1.2) return;
           try {
             var canvas = document.createElement("canvas");
             canvas.width = canvas.height = 24;
@@ -91,8 +96,9 @@
             var data = ctx.getImageData(0, 0, 24, 24).data;
             var good = 0;
             var total = 0;
-            for (var row = 0; row < 24; row++) {
-              for (var col = 0; col < 24; col++) {
+            // Bande centrale (le cadrage « cover » ne garde que le milieu).
+            for (var row = 7; row < 17; row++) {
+              for (var col = 7; col < 17; col++) {
                 var i = (row * 24 + col) * 4;
                 var v = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
                 if (v > 45 && v < 145) good++;
@@ -362,24 +368,47 @@
       // vers les deux mots du H1 et se posent exactement dessus.
       if (bootActive) {
         boot.style.pointerEvents = "none";
+        // Le vrai H1 attend sous le nom du carton : on le masque pour qu'il
+        // n'y ait pas deux titres superposés pendant l'intro.
+        title.style.visibility = "hidden";
         try { window.sessionStorage.setItem("cs-intro", "1"); } catch (e) {}
 
         var panelBits = ".cs-panel .cs-lede, .cs-panel .cs-btn, .cs-panel-foot";
         gsap.set(panelBits, { autoAlpha: 0, y: 18 });
-        gsap.set(bootName, { autoAlpha: 0 });
 
-        // Les tirages se développent dans le sillage de la feuille.
-        gsap.set(cols, { filter: "grayscale(1) brightness(0.5)" });
+        // Développement : un voile opaque par colonne, animé en opacité
+        // (aucun filtre animé, donc aucun recalcul d'image).
+        var shades = cols.map(function (col) {
+          var shade = document.createElement("div");
+          shade.className = "cs-col-shade";
+          col.appendChild(shade);
+          return shade;
+        });
+        gsap.set(shades, { opacity: 0.66 });
 
         var fontsReady = document.fonts && document.fonts.ready
-          ? document.fonts.ready
+          ? Promise.race([
+              document.fonts.ready,
+              new Promise(function (resolve) { window.setTimeout(resolve, 1200); })
+            ])
           : Promise.resolve();
-        var minHold = new Promise(function (resolve) { window.setTimeout(resolve, 250); });
-        var photoReady = pickBootPhoto();
+        var minHold = new Promise(function (resolve) { window.setTimeout(resolve, 100); });
+        var photoUrl = null;
+        var hasPhoto = false;
+        var applyPhoto = function (url) {
+          if (!url) return;
+          photoUrl = url;
+          hasPhoto = true;
+          bootPhoto.src = url;
+          if (bootPhoto.decode) bootPhoto.decode().catch(function () {});
+          gsap.to([bootPhoto, bootScrim], { autoAlpha: 1, duration: 0.45, ease: "power2.out" });
+        };
+        pickBootPhoto().then(applyPhoto);
 
-        Promise.all([fontsReady, minHold, photoReady]).then(function (result) {
-          var photoUrl = result[2];
-          var hasPhoto = !!photoUrl;
+        // Sur petit écran, le nom n'essaie pas d'épouser le H1 (deux lignes
+        // contre une) : on n'attend donc pas la police, l'intro démarre tout
+        // de suite et reste courte.
+        Promise.all(narrow ? [minHold] : [fontsReady, minHold]).then(function () {
           var p = panel.getBoundingClientRect();
           var card = bootCard.getBoundingClientRect();
 
@@ -422,7 +451,7 @@
           })();
 
           var targets = null;
-          if (inkRects) {
+          if (inkRects && !narrow) {
             targets = bootWords.map(function (word, i) {
               var box = word.getBoundingClientRect();
               var range = document.createRange();
@@ -431,31 +460,26 @@
               var to = inkRects[i];
               if (!ink.width || !to.width || !box.width) return null;
               var scale = to.width / ink.width;
+              // Origine au centre du mot : il rétrécit sur place au lieu de
+              // dériver vers son bord gauche, puis rejoint sa cible.
+              var bc = { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+              var ic = { x: ink.left + ink.width / 2, y: ink.top + ink.height / 2 };
+              var tc = { x: to.left + to.width / 2, y: to.top + to.height / 2 };
               return {
-                x: to.left - box.left - scale * (ink.left - box.left),
-                y: to.top - box.top - scale * (ink.top - box.top),
+                x: tc.x - bc.x - scale * (ic.x - bc.x),
+                y: tc.y - bc.y - scale * (ic.y - bc.y),
                 scale: scale
               };
             });
           }
 
           var tl = gsap.timeline();
-          var S = 0.5;
-          var move = 0.9;
+          var S = 0.22;
+          var move = narrow ? 0.62 : 0.72;
 
-          if (hasPhoto) {
-            bootPhoto.style.backgroundImage = 'url("' + photoUrl.replace(/"/g, "") + '")';
-            gsap.set([bootPhoto, bootScrim], { autoAlpha: 1 });
-            // Inscription : le nom blanc se découvre par le bas.
-            tl.fromTo(
-              bootName,
-              { clipPath: "inset(100% 0% 0% 0%)", autoAlpha: 1 },
-              { clipPath: "inset(0% 0% 0% 0%)", duration: 0.55, ease: "power3.out" },
-              0
-            );
-          } else {
-            gsap.set(bootName, { color: "#0d060b", autoAlpha: 1 });
-          }
+          // Les mots vont être transformés : on les promeut une fois pour
+          // éviter de rastériser le texte à chaque image.
+          gsap.set(bootWords, { willChange: "transform" });
 
           // Repli de la feuille, exactement sur le panneau.
           tl.to(
@@ -471,24 +495,46 @@
             S
           );
 
-          // Les deux mots rejoignent les deux mots du H1.
-          if (targets && targets[0] && targets[1]) {
+          if (narrow) {
+            // Sur téléphone : le nom se contracte vers le titre et s'efface.
+            var titleBox = title.getBoundingClientRect();
+            var nameRect = bootName.getBoundingClientRect();
+            var hMid2 = {
+              x: titleBox.left + titleBox.width / 2,
+              y: titleBox.top + titleBox.height / 2
+            };
+            var nMid = {
+              x: nameRect.left + nameRect.width / 2,
+              y: nameRect.top + nameRect.height / 2
+            };
+            tl.to(
+              bootName,
+              {
+                x: hMid2.x - nMid.x,
+                y: hMid2.y - nMid.y,
+                scale: 0.34,
+                duration: move * 0.8,
+                ease: "power2.inOut"
+              },
+              S
+            ).to(bootName, { autoAlpha: 0, duration: move * 0.35, ease: "power2.in" }, S + move * 0.55);
+          } else if (targets && targets[0] && targets[1]) {
             bootWords.forEach(function (word, i) {
+              // On réduit d'abord, on rapproche ensuite : les deux mots ne se
+              // croisent pas au milieu du trajet.
               tl.to(
                 word,
-                {
-                  x: targets[i].x,
-                  y: targets[i].y,
-                  scale: targets[i].scale,
-                  duration: move,
-                  ease: "power3.inOut"
-                },
+                { scale: targets[i].scale, duration: move * 0.55, ease: "power2.inOut" },
                 S
+              ).to(
+                word,
+                { x: targets[i].x, y: targets[i].y, duration: move * 0.45, ease: "power2.inOut" },
+                S + move * 0.55
               );
             });
             // Le blanc de la photo devient l'encre du papier.
             if (hasPhoto) {
-              tl.to(bootName, { color: "#101421", duration: 0.42, ease: "power2.inOut" }, S + 0.42);
+              tl.to(bootName, { color: "#101421", duration: 0.35, ease: "power2.inOut" }, S);
             }
           } else {
             // Repli sans mesure fiable : le nom s'efface.
@@ -497,21 +543,11 @@
 
           // La photo se lave de blanc : la feuille devient le panneau.
           if (hasPhoto) {
-            tl.to(bootVeil, { autoAlpha: 1, duration: 0.5, ease: "power2.inOut" }, S + 0.4);
+            // La photo se lave tout de suite : le reste du repli se fait sur
+            // une feuille blanche, bien moins coûteuse à redessiner.
+            tl.to(bootVeil, { autoAlpha: 1, duration: 0.32, ease: "power2.inOut" }, S);
           }
 
-          // Les tirages se développent, colonne par colonne, depuis le centre.
-          tl.to(
-            cols,
-            {
-              filter: "grayscale(0) brightness(1)",
-              duration: 1.1,
-              ease: "power2.out",
-              stagger: { each: 0.08, from: "center" },
-              clearProps: "filter"
-            },
-            S
-          );
 
           landFrames(S);
           tl.add(endBoot, S + move + 0.02);
