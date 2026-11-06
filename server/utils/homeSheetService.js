@@ -98,7 +98,7 @@ function buildStrips(galleries, dimsFor, perStrip = 6) {
         const photos = photosOf(gallery).slice(0, perStrip);
         const frames = photos.map((file, i) => {
             const dims = dimsFor(file);
-            return `<a class="cs-strip-frame" href="${resizeUrl(file, 1600)}" data-fancybox="strips" data-caption="${esc(artistLabel(gallery))} · ${esc(venueLabel(gallery))}"><img src="${resizeUrl(file, 400)}"${widthAttrs(dims, 400)} alt="Concert de ${esc(artistLabel(gallery))} à ${esc(venueLabel(gallery))}, photo ${i + 1}" loading="lazy"></a>`;
+            return `<a class="cs-strip-frame" href="${resizeUrl(file, 1600)}" data-preview="${resizeUrl(file, 960)}" data-fancybox="strips" data-caption="${esc(artistLabel(gallery))} · ${esc(venueLabel(gallery))}"><img src="${resizeUrl(file, 400)}"${widthAttrs(dims, 400)} alt="Concert de ${esc(artistLabel(gallery))} à ${esc(venueLabel(gallery))}, photo ${i + 1}" loading="lazy"></a>`;
         }).join('');
         const count = photosOf(gallery).length;
         return `
