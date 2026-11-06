@@ -161,6 +161,18 @@ app.use((req, res, next) => {
     return next();
 });
 
+// Les scripts ne sont pas fingerprintés : on les sert avec revalidation pour
+// que toute correction arrive vraiment (le CSS, lui, est hashé).
+app.use('/dist/js', express.static(path.join(__dirname, 'dist', 'js'), {
+    index: false,
+    maxAge: 0,
+    etag: true,
+    lastModified: true,
+    setHeaders: function (res) {
+        res.setHeader('Cache-Control', 'no-cache');
+    }
+}));
+
 // Static ciblé: ne sert que les dossiers nécessaires, pas le projet entier
 app.use('/dist', express.static(path.join(__dirname, 'dist'), {
     index: false,

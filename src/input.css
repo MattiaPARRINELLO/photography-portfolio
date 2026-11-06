@@ -1739,7 +1739,7 @@ html.cs-boot-on .cs-boot {
 .cs-boot-scrim {
   position: absolute;
   inset: 0;
-  background: rgba(13, 6, 11, 0.34);
+  background: rgba(13, 6, 11, 0.2);
   opacity: 0;
 }
 

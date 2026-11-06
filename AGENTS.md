@@ -149,6 +149,7 @@ Vérifié sur le serveur de production (`~/photo.mprnl.fr` sur `web2-fr.hosterfy
 - **Express 5** : les patterns de routes diffèrent d'Express 4 (attention aux wildcards et aux handlers d'erreur).
 - **Helmet 8 + CSP** : directives à maintenir explicitement, sinon tout casse silencieusement : `scriptSrcAttr: ["'unsafe-inline'"]` (événements inline), `scriptSrc` incluant jsdelivr/unpkg/`'unsafe-inline'`/`'unsafe-eval'`, `styleSrc` incluant jsdelivr + fonts.googleapis + `'unsafe-inline'`, `connectSrc` jsdelivr, `crossOriginEmbedderPolicy: false`, `crossOriginResourcePolicy: cross-origin`. Helmet 8 ajoute `upgrade-insecure-requests` automatiquement.
 - Le serveur pré-compresse (`Content-Encoding: br/gz`) les assets avec `Cache-Control: immutable` ; un nouveau type d'asset précompressé doit être ajouté au middleware de `server.js:93-142` et au serveur Express statique ciblé.
+- **Les scripts ne sont pas fingerprintés** : `/dist/js` est donc servi à part avec `Cache-Control: no-cache` (revalidation ETag). Sans ça, une correction JS n'arrive jamais chez un visiteur déjà venu (le `/dist` global est en `immutable, 1 an`).
 - `sharp` est une dépendance native ; si l'install échoue : `SHARP_IGNORE_INSTALL_ERROR=1`.
 - `photos/thumbnails/` doit exister pour que l'upload fonctionne (`.gitkeep` tracké).
 - Ne pas coder en dur des URLs externes ou domaines dans le code serveur sans raison : canonical et sitemap utilisent `https://www.photo.mprnl.fr` en dur dans `pages.js` (cohérent avec `SITE_URL`).
