@@ -51,7 +51,7 @@ Thumbs.db
 
 # Build
 /build
-/dist/
+/dist/*.map
 
 # Jest
 coverage/
