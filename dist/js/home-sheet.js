@@ -412,25 +412,6 @@
           var p = panel.getBoundingClientRect();
           var card = bootCard.getBoundingClientRect();
 
-          // Taille du nom : le mot le plus long occupe 96 % de la largeur.
-          var vw = window.innerWidth;
-          var target = vw * (narrow ? 0.92 : 0.96);
-          var cs = getComputedStyle(bootName);
-          var longest = bootWords.reduce(function (a, w) {
-            return w.textContent.length > a.textContent.length ? w : a;
-          });
-          var emTrack = parseFloat(cs.letterSpacing) / (parseFloat(cs.fontSize) || 1);
-          var canvas = document.createElement("canvas");
-          var ctx = canvas.getContext("2d");
-          if (ctx) {
-            ctx.font = cs.fontWeight + " 100px " + cs.fontFamily;
-            var wordAt100 = ctx.measureText(longest.textContent).width +
-              (longest.textContent.length - 1) * emTrack * 100;
-            if (wordAt100 > 0) {
-              bootName.style.fontSize = Math.round((target / wordAt100) * 100) + "px";
-            }
-          }
-
           // Rectangles d'encre de chaque mot du H1, pour y poser les mots du
           // carton au pixel près.
           var inkRects = (function () {
@@ -524,12 +505,14 @@
               // croisent pas au milieu du trajet.
               tl.to(
                 word,
-                { scale: targets[i].scale, duration: move * 0.7, ease: "power2.inOut" },
+                { scale: targets[i].scale, duration: move, ease: "power2.inOut" },
                 S
               ).to(
                 word,
-                { x: targets[i].x, y: targets[i].y, duration: move * 0.3, ease: "power2.inOut" },
-                S + move * 0.7
+                // Le déplacement démarre doucement et prend le relais quand
+                // les mots sont déjà petits : un seul chemin, sans cassure.
+                { x: targets[i].x, y: targets[i].y, duration: move, ease: "power2.in" },
+                S
               );
             });
             // Le blanc de la photo devient l'encre du papier.
@@ -563,6 +546,7 @@
           );
         }).catch(function (error) {
           console.error("Intro:", error);
+          gsap.set(".cs-col-shade", { opacity: 0 });
           endBoot();
           gsap.set(panelBits, { autoAlpha: 1, y: 0 });
         });

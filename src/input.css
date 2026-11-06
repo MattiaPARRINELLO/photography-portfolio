@@ -1759,7 +1759,9 @@ html.cs-boot-on .cs-boot {
   align-items: center;
   max-width: 96vw;
   color: #ffffff;
-  font-size: clamp(3rem, 10vw, 11rem);
+  /* Calé une fois pour toutes en vw : le nom ne change plus de taille au
+     démarrage (aucun saut à l'ouverture). */
+  font-size: 23.9vw;
   font-weight: 600;
   line-height: 0.9;
   letter-spacing: -0.045em;
@@ -2504,7 +2506,7 @@ html.cs-boot-on .cs-boot {
 
   .cs-boot-name {
     max-width: 94vw;
-    font-size: 18vw;
+    font-size: 22.9vw;
   }
 
   .cs-sheet {
