@@ -11,7 +11,7 @@
     <!-- META_PLACEHOLDER_END -->
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/dist/assets/Logo_MP.svg" />
-    <link rel="stylesheet" href="/dist/css/output.70436806.css" />
+    <link rel="stylesheet" href="/dist/css/output.9e0321c5.css" />
     <!-- Typographie : Switzer (Fontshare) -->
     <link rel="preconnect" href="https://api.fontshare.com" />
     <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
@@ -30,6 +30,14 @@
       media="print"
       onload="this.media = 'all'"
     />
+    <script>
+      // Carton-titre : visible dès la première peinture, retiré par le JS.
+      // Le délai est un filet de sécurité si GSAP ne se charge pas.
+      document.documentElement.classList.add("cs-boot-on");
+      window.setTimeout(function () {
+        document.documentElement.classList.remove("cs-boot-on");
+      }, 3000);
+    </script>
     <script defer src="/dist/js/vendor/gsap.min.js"></script>
     <script defer src="/dist/js/vendor/ScrollTrigger.min.js"></script>
     <script defer src="/dist/js/home-sheet.js"></script>
@@ -38,6 +46,12 @@
 
   <body class="cs">
     <a class="cs-skip" href="#cs-main">Aller au contenu</a>
+
+    <!-- Carton-titre : plein écran au chargement, puis il rejoint le H1 -->
+    <div class="cs-boot" aria-hidden="true">
+      <div class="cs-boot-bg"></div>
+      <span class="cs-boot-name">Mattia Parrinello</span>
+    </div>
     <main class="cs-main" id="cs-main" tabindex="-1">
       <!-- Première écran : la planche de tirages -->
       <section class="cs-hero" aria-label="Planche contact des concerts">

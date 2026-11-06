@@ -34,6 +34,23 @@
       gsap.registerPlugin(ScrollTrigger);
     }
 
+    // --- Carton-titre ----------------------------------------------------
+    // Le nom occupe tout l'écran au chargement, puis se réduit et vient se
+    // poser exactement sur le H1 de la page.
+    var boot = document.querySelector(".cs-boot");
+    var bootName = boot ? boot.querySelector(".cs-boot-name") : null;
+    var title = document.querySelector(".cs-title");
+    var bootActive = !!(boot && bootName && title && hasMotion);
+
+    function endBoot() {
+      if (boot) boot.style.display = "none";
+      document.documentElement.classList.remove("cs-boot-on");
+    }
+
+    if (!bootActive) {
+      endBoot();
+    }
+
     // Affiche avec un léger décalage les éléments qui viennent de réapparaître
     // après un changement de filtre.
     function revealFiltered() {
@@ -127,138 +144,97 @@
       window.Fancybox.bind('[data-fancybox="planche"]', {});
     }
 
-    // --- Loupe au survol des bandes de concerts -------------------------
-    // L'image survolée se détache au centre de l'écran, les autres tirages de
-    // la bande reculent. Uniquement sur les appareils à pointeur fin, et
-    // jamais si l'utilisateur a demandé moins de mouvement.
-    function initHoverPreview() {
+    // --- Accordéon des bandes de concerts --------------------------------
+    // L'image survolée s'élargit sur place, les autres se resserrent pour lui
+    // faire de la place. Aucun détachement : tout reste dans la bande.
+    function initRowAccordion() {
       if (!gsap || reduceMotion) return;
 
-      var preview = document.createElement("div");
-      preview.className = "cs-preview";
-      preview.setAttribute("aria-hidden", "true");
-      var previewImg = document.createElement("img");
-      previewImg.alt = "";
-      preview.appendChild(previewImg);
-      document.body.appendChild(preview);
+      gsap.utils.toArray(".cs-strip").forEach(function (strip) {
+        var box = strip.querySelector(".cs-strip-frames");
+        if (!box) return;
+        var frames = gsap.utils.toArray(box.children);
+        if (frames.length < 2) return;
+        var natural = [];
+        var hotIndex = -1;
 
-      var active = null;
-      var origin = null;
-      var rest = null;
-
-      function open(frame) {
-        var img = frame.querySelector("img");
-        if (!img) return;
-        var rect = img.getBoundingClientRect();
-        if (!rect.width) return;
-
-        var vw = window.innerWidth;
-        var vh = window.innerHeight;
-        var w = Math.min(vw * 0.62, 560);
-        var h = w * (rect.height / rect.width);
-        if (h > vh * 0.72) {
-          h = vh * 0.72;
-          w = h * (rect.width / rect.height);
+        function measure() {
+          natural = frames.map(function (f) {
+            return Math.round(f.getBoundingClientRect().width) || 1;
+          });
         }
 
-        origin = {
-          x: rect.left + rect.width / 2 - vw / 2,
-          y: rect.top + rect.height / 2 - vh / 2,
-          scale: rect.width / w
-        };
-
-        preview.style.backgroundImage = 'url("' + img.currentSrc.replace(/"/g, "") + '")';
-        previewImg.src = frame.dataset.preview || img.src;
-        gsap.killTweensOf(preview);
-        gsap.set(preview, {
-          width: w,
-          height: h,
-          xPercent: -50,
-          yPercent: -50,
-          x: origin.x,
-          y: origin.y,
-          scale: origin.scale,
-          autoAlpha: 1
-        });
-        gsap.to(preview, { x: 0, y: 0, scale: 1, duration: 0.55, ease: "power3.out" });
-
-        rest = Array.prototype.filter.call(
-          frame.parentElement.children,
-          function (other) { return other !== frame; }
-        );
-        gsap.to(frame, { autoAlpha: 0.18, duration: 0.3, overwrite: true });
-        gsap.to(rest, {
-          scale: 0.88,
-          autoAlpha: 0.4,
-          duration: 0.38,
-          ease: "power2.out",
-          overwrite: true
-        });
-      }
-
-      function close() {
-        if (!origin) return;
-        gsap.to(preview, {
-          x: origin.x,
-          y: origin.y,
-          scale: origin.scale,
-          autoAlpha: 0,
-          duration: 0.32,
-          ease: "power2.inOut",
-          overwrite: true
-        });
-        if (active) gsap.to(active, { autoAlpha: 1, duration: 0.3, overwrite: true });
-        if (rest) {
-          gsap.to(rest, { scale: 1, autoAlpha: 1, duration: 0.3, ease: "power2.out", overwrite: true });
+        function reset(animate) {
+          hotIndex = -1;
+          frames.forEach(function (f, j) {
+            if (animate) {
+              gsap.to(f, { width: natural[j], opacity: 1, duration: 0.45, ease: "power3.out", overwrite: true });
+            } else {
+              gsap.set(f, { width: natural[j], opacity: 1 });
+            }
+          });
         }
-        active = null;
-        rest = null;
-        origin = null;
-      }
 
-      // On écoute le pointeur, pas la souris : au doigt, un tap doit ouvrir
-      // la lightbox, jamais la loupe. Seul un vrai pointeur "mouse" déclenche.
-      gsap.utils.toArray(".cs-strip-frame").forEach(function (frame) {
-        frame.addEventListener("pointerenter", function (e) {
-          if (e.pointerType !== "mouse") return;
-          if (active === frame) return;
-          if (active) close();
-          active = frame;
-          open(frame);
-        });
-        frame.addEventListener("pointerleave", function (e) {
-          if (e.pointerType !== "mouse") return;
-          if (active === frame) close();
-        });
-      });
+        function open(index) {
+          var total = box.clientWidth;
+          var gap = 8;
+          var gaps = gap * (frames.length - 1);
+          var hot = Math.min(Math.max(total * 0.4, natural[index] * 1.2), total * 0.58);
+          var left = Math.max(total - hot - gaps, 80);
+          var sum = natural.reduce(function (a, w, j) { return j === index ? a : a + w; }, 0) || 1;
 
-      window.addEventListener("resize", close);
-      // La loupe ne doit pas rester collée à l'écran quand on fait défiler.
-      window.addEventListener("scroll", close, { passive: true });
-      document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") close();
+          frames.forEach(function (f, j) {
+            var width = j === index ? hot : Math.min(left * (natural[j] / sum), natural[j]);
+            gsap.to(f, {
+              width: Math.max(width, 24),
+              opacity: j === index ? 1 : 0.75,
+              duration: 0.5,
+              ease: "power3.out",
+              overwrite: true
+            });
+          });
+        }
+
+        measure();
+        strip.classList.add("cs-accordion");
+        reset(false);
+
+        frames.forEach(function (frame, index) {
+          frame.addEventListener("pointerenter", function (e) {
+            if (e.pointerType !== "mouse") return;
+            if (hotIndex === index) return;
+            hotIndex = index;
+            open(index);
+          });
+          frame.addEventListener("pointerleave", function (e) {
+            if (e.pointerType !== "mouse") return;
+            if (hotIndex === index) reset(true);
+          });
+        });
+
+        strip.addEventListener("pointerleave", function () {
+          if (hotIndex > -1) reset(true);
+        });
+
+        window.addEventListener("resize", function () {
+          measure();
+          reset(false);
+        });
       });
     }
 
-    initHoverPreview();
+    initRowAccordion();
 
     if (!hasMotion) return;
 
     var mm = gsap.matchMedia();
 
     mm.add("(prefers-reduced-motion: no-preference)", function () {
-      // --- Ouverture : les tirages se posent sur la table -----------------
-      // Chaque image arrive de sa propre direction, légèrement inclinée, puis
-      // se cale dans la planche. Le panneau s'ouvre ensuite comme un
-      // obturateur.
-      var panelContent = ".cs-panel .cs-lede, .cs-panel .cs-btn, .cs-panel-foot";
       var frames = gsap.utils.toArray(".cs-sheet .cs-frame");
-      var title = document.querySelector(".cs-title");
-      // Sur un écran étroit, le panneau est dans le flux : le masquer pour
-      // l'ouvrir laisserait un trou. Il reste en place, seules les lettres
-      // du titre montent.
+      var panelContent = ".cs-panel .cs-lede, .cs-panel .cs-btn, .cs-panel-foot";
       var narrow = window.matchMedia("(max-width: 900px)").matches;
 
+      // --- Les tirages se posent sur la table ------------------------------
       gsap.set(frames, {
         x: function () { return gsap.utils.random(-180, 180); },
         y: function () { return gsap.utils.random(-150, 150); },
@@ -268,32 +244,7 @@
       });
       if (!narrow) gsap.set(panelContent, { autoAlpha: 0, y: 16 });
 
-      // Découpe le titre en lettres pour un relevé caractère par caractère.
-      // L'aria-label garde la phrase entière pour les lecteurs d'écran.
-      var chars = [];
-      if (title) {
-        var label = title.textContent;
-        title.setAttribute("aria-label", label);
-        title.textContent = "";
-        Array.prototype.forEach.call(label, function (ch) {
-          if (ch === " ") {
-            title.appendChild(document.createTextNode(" "));
-            return;
-          }
-          var span = document.createElement("span");
-          span.className = "cs-char";
-          span.setAttribute("aria-hidden", "true");
-          span.textContent = ch;
-          title.appendChild(span);
-          chars.push(span);
-        });
-        // Masque le temps du relevé : les lettres montent depuis sous la
-        // ligne du titre sans traverser la phrase en dessous.
-        title.style.overflow = "hidden";
-        gsap.set(chars, { yPercent: 115, autoAlpha: 0, rotation: 4 });
-      }
-
-      var intro = gsap.timeline();
+      var intro = gsap.timeline({ delay: bootActive ? 0.5 : 0 });
 
       intro.to(frames, {
         x: 0,
@@ -312,45 +263,66 @@
             ".cs-panel",
             { clipPath: "inset(0% 0% 100% 0%)" },
             { clipPath: "inset(0% 0% 0% 0%)", duration: 0.65, ease: "power4.inOut" },
-            0.34
+            0.2
           )
-          // Un éclair d'obturateur, bref, au moment où le panneau s'ouvre.
-          .fromTo(
-            ".cs-flash",
-            { autoAlpha: 0 },
-            {
-              keyframes: [
-                { autoAlpha: 0.18, duration: 0.05 },
-                { autoAlpha: 0, duration: 0.18, ease: "power2.out" }
-              ]
-            },
-            0.48
+          .to(
+            panelContent,
+            { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out", stagger: 0.06 },
+            0.6
           );
       }
 
-      intro
-        .to(
-          chars,
-          {
-            yPercent: 0,
-            autoAlpha: 1,
-            rotation: 0,
-            duration: 0.8,
-            ease: "power4.out",
-            stagger: 0.028,
-            onComplete: function () {
-              title.style.overflow = "";
-            }
-          },
-          narrow ? 0.1 : 0.5
-        );
+      // --- Carton-titre : le nom se réduit jusqu'au H1 ---------------------
+      if (bootActive) {
+        var startBoot = function () {
+          var h = title.getBoundingClientRect();
+          var b = bootName.getBoundingClientRect();
+          var tl = gsap.timeline({ delay: 0.35 });
 
-      if (!narrow) {
-        intro.to(
-          panelContent,
-          { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out", stagger: 0.06 },
-          0.72
-        );
+          boot.style.pointerEvents = "none";
+
+          if (narrow || !b.width || !h.width) {
+            // Écran étroit : le nom tient sur deux lignes, il ne peut pas
+            // épouser la ligne unique du H1. Il se retire en douceur.
+            tl.to(bootName, {
+              scale: 0.84,
+              y: -24,
+              autoAlpha: 0,
+              duration: 0.6,
+              ease: "power3.inOut"
+            }).to(".cs-boot-bg", { autoAlpha: 0, duration: 0.5, ease: "power2.in" }, 0.1);
+          } else {
+            // FLIP : même texte, même graisse, on rapporte la largeur du nom
+            // plein écran sur celle du H1.
+            tl.to(bootName, {
+              x: h.left - b.left,
+              y: h.top - b.top,
+              scale: h.width / b.width,
+              duration: 0.85,
+              ease: "power4.inOut"
+            })
+              .to(".cs-boot-bg", { autoAlpha: 0, duration: 0.55, ease: "power2.in" }, 0.45)
+              .fromTo(
+                ".cs-flash",
+                { autoAlpha: 0 },
+                {
+                  keyframes: [
+                    { autoAlpha: 0.16, duration: 0.06 },
+                    { autoAlpha: 0, duration: 0.22, ease: "power2.out" }
+                  ]
+                },
+                0.72
+              );
+          }
+
+          tl.add(endBoot);
+        };
+
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(startBoot);
+        } else {
+          startBoot();
+        }
       }
 
       // --- La planche glisse doucement pendant la sortie du hero -----------
