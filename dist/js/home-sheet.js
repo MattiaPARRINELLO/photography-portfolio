@@ -505,19 +505,27 @@
               // croisent pas au milieu du trajet.
               tl.to(
                 word,
-                { scale: targets[i].scale, duration: move, ease: "power2.inOut" },
+                // 1. Réduction : les mots atteignent leur taille finale avant
+                //    de se déplacer, donc ils ne peuvent plus se heurter.
+                { scale: targets[i].scale, duration: move * 0.55, ease: "power2.inOut" },
                 S
               ).to(
+                // 2. Glissement horizontal, sur leurs lignes respectives.
                 word,
-                // Le déplacement démarre doucement et prend le relais quand
-                // les mots sont déjà petits : un seul chemin, sans cassure.
-                { x: targets[i].x, y: targets[i].y, duration: move, ease: "power2.in" },
+                { x: targets[i].x, duration: move * 0.85, ease: "power2.inOut" },
                 S
+              ).to(
+                // 3. Montée sur la ligne du titre, une fois côte à côte.
+                word,
+                { y: targets[i].y, duration: move * 0.45, ease: "power2.inOut" },
+                S + move * 0.55
               );
             });
             // Le blanc de la photo devient l'encre du papier.
             if (hasPhoto) {
-              tl.to(bootName, { color: "#101421", duration: 0.45, ease: "power2.inOut" }, S);
+              // Le nom reste blanc tant que la photo est là, puis passe à
+              // l'encre quand le voile blanc prend le dessus.
+              tl.to(bootName, { color: "#101421", duration: 0.35, ease: "power1.inOut" }, S + 0.6);
             }
           } else {
             // Repli sans mesure fiable : le nom s'efface.
@@ -530,7 +538,9 @@
             // une feuille blanche, bien moins coûteuse à redessiner.
             // La photo se lave vite : le repli se fait ensuite sur du blanc,
             // seule façon de rester à 60 fps pendant un mouvement long.
-            tl.to(bootVeil, { autoAlpha: 1, duration: 0.35, ease: "power2.inOut" }, S);
+            // Le voile blanc doit être complet avant l'atterrissage, sinon le
+            // panneau apparaîtrait sur une feuille encore grise.
+            tl.to(bootVeil, { autoAlpha: 1, duration: 0.85, ease: "power1.inOut" }, S + 0.2);
           }
 
 
