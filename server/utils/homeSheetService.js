@@ -105,7 +105,7 @@ function buildStrips(galleries, dimsFor, perStrip = 6) {
       <article class="cs-strip" data-gig="${esc(gallery.slug)}" data-year="${yearOf(gallery.date)}">
         <div class="cs-strip-frames">${frames}</div>
         <p class="cs-strip-caption">
-          <span class="cs-strip-name">${esc(gallery.title || artistLabel(gallery))}</span>
+          <a class="cs-strip-name" href="/galeries/${esc(gallery.slug)}">${esc(gallery.title || artistLabel(gallery))}</a>
           <span class="cs-strip-desc">${count} photos · ${esc(gallery.city || venueLabel(gallery))}</span>
           <span class="cs-strip-date">${shortDate(gallery.date)}</span>
         </p>
@@ -145,26 +145,35 @@ function buildIndex(galleries) {
     });
 
     html += `
-      <p class="cs-index-reset"><button type="button" class="cs-linkbtn" data-filter-gig="">Tout afficher</button></p>`;
+      <div class="cs-index-foot">
+        <p class="cs-index-status" aria-live="polite"></p>
+        <button type="button" class="cs-linkbtn" data-filter-gig="">Tout afficher</button>
+      </div>`;
     return html;
 }
 
 // --- 4. Planche dense : 4 images par concert -----------------------------
 function buildMosaic(galleries, dimsFor, perGig = 4) {
-    const tiles = [];
-    galleries.forEach(g => {
+    // Sélection en tourniquet : les colonnes de la planche mélangent les
+    // concerts au lieu d'empiler quatre images de la même date.
+    const picks = galleries.map(g => {
         const photos = photosOf(g);
         const slice = photos.slice(5, 5 + perGig);
-        const picked = slice.length ? slice : photos.slice(0, perGig);
-        picked.forEach(file => tiles.push({ g, file }));
+        return { g, files: slice.length ? slice : photos.slice(0, perGig) };
     });
+    const tiles = [];
+    for (let round = 0; round < perGig; round++) {
+        picks.forEach(({ g, files }) => {
+            if (files[round]) tiles.push({ g, file: files[round] });
+        });
+    }
 
     return tiles.map(({ g, file }) => {
         const dims = dimsFor(file);
         return `
         <figure class="cs-tile" data-gig="${esc(g.slug)}" data-year="${yearOf(g.date)}">
           <a href="${resizeUrl(file, 1600)}" data-fancybox="planche" data-caption="${esc(artistLabel(g))} · ${esc(venueLabel(g))}"><img src="${resizeUrl(file, 400)}"${widthAttrs(dims, 400)} alt="Concert de ${esc(artistLabel(g))} à ${esc(venueLabel(g))}" loading="lazy"></a>
-          <figcaption class="cs-tile-caption">${esc(artistLabel(g))}, ${esc(venueLabel(g))}</figcaption>
+          <figcaption class="cs-tile-caption"><a href="/galeries/${esc(g.slug)}">${esc(artistLabel(g))}, ${esc(venueLabel(g))}</a></figcaption>
         </figure>`;
     }).join('');
 }

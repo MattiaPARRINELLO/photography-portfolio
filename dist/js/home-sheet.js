@@ -17,6 +17,12 @@
     var rows = Array.prototype.slice.call(document.querySelectorAll("[data-filter-gig]"));
     var yearButtons = Array.prototype.slice.call(document.querySelectorAll("[data-filter-year]"));
     var stateEl = document.getElementById("cs-filter-state");
+    var indexStatus = document.querySelector(".cs-index-status");
+    var titles = {};
+    strips.forEach(function (strip) {
+      var name = strip.querySelector(".cs-strip-name");
+      if (name) titles[strip.dataset.gig] = name.textContent.trim();
+    });
 
     function apply() {
       var visible = 0;
@@ -51,6 +57,10 @@
       if (stateEl) {
         if (!state.year && !state.gig) stateEl.textContent = "";
         else stateEl.textContent = visible + (visible > 1 ? " concerts affichés" : " concert affiché");
+      }
+
+      if (indexStatus) {
+        indexStatus.textContent = state.gig ? titles[state.gig] || "" : "";
       }
     }
 
