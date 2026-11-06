@@ -47,9 +47,16 @@
     var panel = document.querySelector(".cs-panel");
     var title = document.querySelector(".cs-title");
 
-    // L'intro ne joue qu'une fois par session : au retour, la page est là.
+    // L'intro ne joue qu'une fois toutes les 20 minutes : au retour immédiat
+    // (navigation, rechargement), la page est là tout de suite ; après une
+    // pause on la revoit. `?intro=1` la force.
+    var forceIntro = /(?:\?|&)intro=1(?:&|$)/.test(window.location.search);
     var introSeen = false;
-    try { introSeen = window.sessionStorage.getItem("cs-intro") === "1"; } catch (e) {}
+    try {
+      var introAt = parseInt(window.sessionStorage.getItem("cs-intro-at") || "0", 10);
+      introSeen = introAt > 0 && (Date.now() - introAt) < 20 * 60 * 1000;
+    } catch (e) {}
+    if (forceIntro) introSeen = false;
 
     var bootActive = !!(
       boot && bootName && bootCard && bootPhoto && bootScrim && bootVeil &&
@@ -376,7 +383,7 @@
         // Le vrai H1 attend sous le nom du carton : on le masque pour qu'il
         // n'y ait pas deux titres superposés pendant l'intro.
         title.style.visibility = "hidden";
-        try { window.sessionStorage.setItem("cs-intro", "1"); } catch (e) {}
+        try { window.sessionStorage.setItem("cs-intro-at", String(Date.now())); } catch (e) {}
 
         var panelBits = ".cs-panel .cs-lede, .cs-panel .cs-btn, .cs-panel-foot";
         gsap.set(panelBits, { autoAlpha: 0, y: 18 });
