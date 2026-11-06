@@ -1673,23 +1673,18 @@ video {
   margin: 0;
 }
 
-/* Éclair d'obturateur : une seule fois, à l'ouverture. */
-.cs-flash {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  background: #ffffff;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+/* Lettres du carton-titre, découpées par GSAP. */
+.cs-boot-word {
+  display: inline-block;
+  white-space: nowrap;
 }
 
-/* Lettres du titre, découpées par GSAP pour le relevé d'ouverture. */
-.cs-char {
+.cs-boot-char {
   display: inline-block;
 }
 
-/* Carton-titre : le nom plein écran qui rejoint le H1. */
+/* Carton-titre : la feuille blanche du panneau, plein écran, avec le nom,
+   qui se replie jusqu'à sa cellule dans la planche. */
 .cs-boot {
   display: none;
 }
@@ -1702,10 +1697,11 @@ html.cs-boot-on .cs-boot {
   z-index: 90;
 }
 
-.cs-boot-bg {
+.cs-boot-card {
   position: absolute;
   inset: 0;
-  background: var(--bg);
+  background: var(--paper);
+  border: 8px solid var(--bg);
 }
 
 .cs-boot-name {
@@ -1716,7 +1712,7 @@ html.cs-boot-on .cs-boot {
   font-weight: 600;
   line-height: 0.95;
   letter-spacing: -0.045em;
-  color: var(--ink);
+  color: var(--paper-ink);
   white-space: nowrap;
   transform-origin: 0 0;
 }
@@ -2458,6 +2454,10 @@ html.cs-boot-on .cs-boot {
 /* --- Petits écrans ------------------------------------------------------ */
 
 @media (max-width: 900px) {
+  .cs-boot-card {
+    border: 0;
+  }
+
   .cs-boot-name {
     max-width: 92vw;
     font-size: 18vw;

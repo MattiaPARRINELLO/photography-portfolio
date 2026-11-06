@@ -39,8 +39,10 @@
     // poser exactement sur le H1 de la page.
     var boot = document.querySelector(".cs-boot");
     var bootName = boot ? boot.querySelector(".cs-boot-name") : null;
+    var bootCard = boot ? boot.querySelector(".cs-boot-card") : null;
+    var panel = document.querySelector(".cs-panel");
     var title = document.querySelector(".cs-title");
-    var bootActive = !!(boot && bootName && title && hasMotion);
+    var bootActive = !!(boot && bootName && bootCard && panel && title && hasMotion);
 
     function endBoot() {
       if (boot) boot.style.display = "none";
@@ -241,7 +243,6 @@
 
     mm.add("(prefers-reduced-motion: no-preference)", function () {
       var frames = gsap.utils.toArray(".cs-sheet .cs-frame");
-      var panelContent = ".cs-panel .cs-lede, .cs-panel .cs-btn, .cs-panel-foot";
       var narrow = window.matchMedia("(max-width: 900px)").matches;
 
       // --- Les tirages se posent sur la table ------------------------------
@@ -252,87 +253,110 @@
         scale: function () { return gsap.utils.random(0.7, 0.86); },
         autoAlpha: 0
       });
-      if (!narrow) gsap.set(panelContent, { autoAlpha: 0, y: 16 });
 
-      var intro = gsap.timeline({ delay: bootActive ? 0.5 : 0 });
-
-      intro.to(frames, {
-        x: 0,
-        y: 0,
-        rotation: 0,
-        scale: 1,
-        autoAlpha: 1,
-        duration: 1,
-        ease: "expo.out",
-        stagger: { each: 0.012, from: "random" }
-      });
-
-      if (!narrow) {
-        intro
-          .fromTo(
-            ".cs-panel",
-            { clipPath: "inset(0% 0% 100% 0%)" },
-            { clipPath: "inset(0% 0% 0% 0%)", duration: 0.65, ease: "power4.inOut" },
-            0.2
-          )
-          .to(
-            panelContent,
-            { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out", stagger: 0.06 },
-            0.6
-          );
+      function landFrames() {
+        gsap.to(frames, {
+          x: 0,
+          y: 0,
+          rotation: 0,
+          scale: 1,
+          autoAlpha: 1,
+          duration: 1,
+          ease: "expo.out",
+          stagger: { each: 0.012, from: "random" }
+        });
       }
 
-      // --- Carton-titre : le nom se réduit jusqu'au H1 ---------------------
+      // --- Carton-titre ----------------------------------------------------
+      // La feuille du panneau occupe tout l'écran, le nom s'y inscrit lettre
+      // à lettre, puis la feuille se replie jusqu'à sa cellule dans la
+      // planche et le nom se pose sur le H1. Un seul mouvement continu.
+      //
+      // L'inscription démarre tout de suite ; le repli attend seulement que
+      // Switzer soit chargée, parce qu'il se cale sur la largeur réelle du H1.
       if (bootActive) {
-        var startBoot = function () {
+        boot.style.pointerEvents = "none";
+
+        // Découpage par mots puis par lettres : les lettres sont des blocs
+        // en ligne, donc la coupure de ligne doit rester entre deux mots.
+        var label = bootName.textContent;
+        var chars = [];
+        bootName.textContent = "";
+        label.split(" ").forEach(function (word, wi) {
+          if (wi > 0) bootName.appendChild(document.createTextNode(" "));
+          var box = document.createElement("span");
+          box.className = "cs-boot-word";
+          box.setAttribute("aria-hidden", "true");
+          Array.prototype.forEach.call(word, function (ch) {
+            var span = document.createElement("span");
+            span.className = "cs-boot-char";
+            span.textContent = ch;
+            box.appendChild(span);
+            chars.push(span);
+          });
+          bootName.appendChild(box);
+        });
+
+        if (chars.length) {
+          gsap.set(chars, { yPercent: 55, autoAlpha: 0 });
+          gsap.to(chars, {
+            yPercent: 0,
+            autoAlpha: 1,
+            duration: 0.4,
+            ease: "power4.out",
+            stagger: 0.012
+          });
+        }
+
+        var fontsReady = document.fonts && document.fonts.ready
+          ? document.fonts.ready
+          : Promise.resolve();
+        var minHold = new Promise(function (resolve) { window.setTimeout(resolve, 550); });
+
+        Promise.all([fontsReady, minHold]).then(function () {
           var h = title.getBoundingClientRect();
           var b = bootName.getBoundingClientRect();
-          var tl = gsap.timeline({ delay: 0.35 });
+          var p = panel.getBoundingClientRect();
+          var card = bootCard.getBoundingClientRect();
+          var tl = gsap.timeline();
 
-          boot.style.pointerEvents = "none";
-
-          if (narrow || !b.width || !h.width) {
-            // Écran étroit : le nom tient sur deux lignes, il ne peut pas
-            // épouser la ligne unique du H1. Il se retire en douceur.
-            tl.to(bootName, {
-              scale: 0.84,
-              y: -24,
-              autoAlpha: 0,
-              duration: 0.6,
-              ease: "power3.inOut"
-            }).to(".cs-boot-bg", { autoAlpha: 0, duration: 0.5, ease: "power2.in" }, 0.1);
-          } else {
-            // FLIP : même texte, même graisse, on rapporte la largeur du nom
-            // plein écran sur celle du H1.
-            tl.to(bootName, {
-              x: h.left - b.left,
-              y: h.top - b.top,
-              scale: h.width / b.width,
-              duration: 0.85,
+          // Repli de la feuille : elle atterrit exactement sur le panneau.
+          tl.to(
+            bootCard,
+            {
+              x: p.left - card.left,
+              y: p.top - card.top,
+              width: p.width,
+              height: p.height,
+              duration: 0.7,
               ease: "power4.inOut"
-            })
-              .to(".cs-boot-bg", { autoAlpha: 0, duration: 0.55, ease: "power2.in" }, 0.45)
-              .fromTo(
-                ".cs-flash",
-                { autoAlpha: 0 },
-                {
-                  keyframes: [
-                    { autoAlpha: 0.16, duration: 0.06 },
-                    { autoAlpha: 0, duration: 0.22, ease: "power2.out" }
-                  ]
-                },
-                0.72
-              );
+            },
+            0
+          );
+
+          // Le nom suit le même chemin et se pose sur le H1.
+          if (narrow || !b.width || !h.width) {
+            tl.to(bootName, { scale: 0.9, autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 0.05);
+          } else {
+            tl.to(
+              bootName,
+              {
+                x: h.left - b.left,
+                y: h.top - b.top,
+                scale: h.width / b.width,
+                duration: 0.7,
+                ease: "power4.inOut"
+              },
+              0
+            );
           }
 
-          tl.add(endBoot);
-        };
-
-        if (document.fonts && document.fonts.ready) {
-          document.fonts.ready.then(startBoot);
-        } else {
-          startBoot();
-        }
+          // Les photos se posent pendant que la feuille découvre la planche.
+          tl.add(landFrames, 0);
+          tl.add(endBoot, 0.72);
+        });
+      } else {
+        landFrames();
       }
 
       // --- La planche glisse doucement pendant la sortie du hero -----------
