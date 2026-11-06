@@ -12,6 +12,7 @@ const galleryService = require('../utils/galleryService');
 const { getPublicGalleries, isManifestlyFake } = require('../utils/dataSanity');
 const { getThumbnailUrl, isPhotoRenderable, filterRenderablePhotos } = require('../utils/photoStorage');
 const { translateHtml, dict } = require('../utils/i18n');
+const homeSheet = require('../utils/homeSheetService');
 
 const router = express.Router();
 const paths = serverConfig.getPaths();
@@ -78,52 +79,70 @@ function getVenueCity(venueName) {
     return venue ? venue.city : null;
 }
 
-// SEO: Génère le bloc hero HTML pour la page d'accueil (H1 + intro + artistes + lieux + CTA)
-function generateHomeHeroHtml(req) {
+// SEO: Génère le panneau de la planche contact (H1 + phrase + actions)
+function generateHomeHeroHtml(req, stats) {
     const isEn = !!(req && (req.lang === 'en' || (req.query && req.query.lang === 'en')));
     const seo = loadSeoData();
     const pageSeo = (seo.pages && seo.pages.home) || {};
-    const artists = seo.artists || [];
-    const venues = seo.venues || [];
-    const introText = isEn ? (seo.intro_text_en || seo.intro_text || '') : (seo.intro_text || '');
-    const h1 = isEn ? (pageSeo.h1_en || pageSeo.h1) : pageSeo.h1;
+    const photos = (stats && stats.photos) || 0;
+    const gigs = (stats && stats.gigs) || 0;
+    const venues = (stats && stats.venues) || 0;
+    const h1 = (pageSeo.h1 || 'Mattia Parrinello').split(' - ')[0].trim();
 
-    // SEO: Liste des artistes avec noms comme mots-clés
-    const artistNames = artists.map(a => a.name).join(' · ');
-    // SEO: Liste des lieux avec noms comme mots-clés locaux, avec badge pour salles mises en avant
-    const venueItemsHtml = venues.map(v => {
-        const text = `${v.name} (${v.city})`;
-        if (v.highlight) {
-            return `<span class="inline-flex items-center"><span>${text}</span>&nbsp;<span class="inline-block text-[0.65rem] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wide bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 align-middle leading-none" title="${v.highlight}">${v.highlight}</span></span>`;
-        }
-        return `<span>${text}</span>`;
-    }).join(' <span class="text-gray-400 dark:text-gray-500 select-none">·</span> ');
+    const lede = isEn
+        ? `Concert photographer in Paris. ${photos} frames shot from the pit, from La Boule Noire to Paris La Défense Arena.`
+        : `Photographe de concert à Paris. ${photos} images prises dans la fosse, de La Boule Noire à Paris La Défense Arena.`;
+    const cta = isEn ? 'Book a show' : 'Me confier un concert';
+    const linkWork = isEn ? 'Galleries' : 'Galeries';
+    const linkAbout = isEn ? 'About' : 'À propos';
+    const linkContact = isEn ? 'Contact' : 'Contact';
+    const suffix = isEn ? '?lang=en' : '';
+    const meta = isEn
+        ? `${gigs} shows · ${venues} venues`
+        : `${gigs} concerts · ${venues} salles`;
 
-    const ctaLabel = isEn ? 'View my work' : 'Voir mes projets';
-    const artistsLabel = isEn ? 'Artists photographed' : 'Artistes photographiés';
-    const venuesLabel = isEn ? 'Venues & festivals' : 'Salles & festivals';
     return `
-            <div class="home-hero px-5 md:px-0 pt-10 pb-6">
-        <!-- SEO: H1 optimisé avec mots-clés principaux -->
-        <h1 class="text-3xl md:text-4xl font-bold font-signika mb-4">${h1 || 'Mattia Parrinello, Photographe de Concert à Paris'}</h1>
-        <!-- SEO: Paragraphe d'introduction riche en mots-clés -->
-        <p class="text-base md:text-lg text-gray-700 dark:text-gray-300 max-w-3xl mb-6 leading-relaxed">${introText}</p>
-        <!-- SEO: Section artistes, mots-clés noms propres -->
-        <div class="mb-4">
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-signika uppercase tracking-wider mb-1">${artistsLabel}</p>
-          <p class="text-sm md:text-base text-gray-600 dark:text-gray-300">${artistNames}</p>
-        </div>
-        <!-- SEO: Section lieux, mots-clés locaux -->
-        <div class="mb-6">
-          <p class="text-sm text-gray-500 dark:text-gray-400 font-signika uppercase tracking-wider mb-1">${venuesLabel}</p>
-          <p class="text-sm md:text-base text-gray-600 dark:text-gray-300">${venueItemsHtml}</p>
-        </div>
-                <!-- SEO: CTA vers contact + galerie -->
-                <div class="mt-6 flex items-center gap-10">
-                    <a href="/galeries${isEn ? '?lang=en' : ''}" class="cta-contact primary inline-block px-6 py-3 text-sm font-signika font-bold rounded-lg transition duration-300">${ctaLabel}</a>
-                </div>
-      </div>`;
+        <div class="cs-panel">
+          <h1 class="cs-title">${h1}</h1>
+          <p class="cs-lede">${lede}</p>
+          <a class="cs-btn" href="/contact${suffix}">${cta}</a>
+          <div class="cs-panel-foot">
+            <span class="cs-panel-meta">${meta}</span>
+            <nav class="cs-panel-links" aria-label="${isEn ? 'Main' : 'Navigation principale'}">
+              <a href="/galeries${suffix}">${linkWork}</a>
+              <a href="/a-propos${suffix}">${linkAbout}</a>
+              <a href="/contact${suffix}">${linkContact}</a>
+              <a href="/${isEn ? '' : '?lang=en'}" hreflang="${isEn ? 'fr' : 'en'}" lang="${isEn ? 'fr' : 'en'}">${isEn ? 'FR' : 'EN'}</a>
+            </nav>
+          </div>
+        </div>`;
 }
+
+// SEO: Noms propres (artistes + salles) en colonnes, sans logo ni encadré
+function generateHomeProofHtml(req) {
+    const isEn = !!(req && (req.lang === 'en' || (req.query && req.query.lang === 'en')));
+    const seo = loadSeoData();
+    const artistNames = (seo.artists || []).map(a => a.name).filter(Boolean);
+    const venueNames = (seo.venues || []).map(v => v.name).filter(Boolean);
+    const artistsCols = artistNames.map(n => `<li>${n}</li>`).join('');
+    const venuesCols = venueNames.map(n => `<li>${n}</li>`).join('');
+
+    return `
+    <section class="cs-proof" id="artistes">
+      <h2 class="cs-h2">${isEn ? 'Artists & venues' : 'Artistes &amp; salles'}</h2>
+      <div class="cs-proof-cols">
+        <div class="cs-proof-col">
+          <p class="cs-proof-kind">${isEn ? 'Artists' : 'Artistes'}</p>
+          <ul class="cs-proof-list cs-proof-list--2">${artistsCols}</ul>
+        </div>
+        <div class="cs-proof-col">
+          <p class="cs-proof-kind">${isEn ? 'Venues' : 'Salles'}</p>
+          <ul class="cs-proof-list cs-proof-list--2">${venuesCols}</ul>
+        </div>
+      </div>
+    </section>`;
+}
+
 
 // Helper to generate HTML for a gallery item
 function generateGalleryItemHtml(photo, index, dims) {
@@ -227,33 +246,41 @@ router.get('/', (req, res) => {
                 console.error('CSS Inline Error:', e);
             }
 
-            // SEO: Injecter le bloc hero (H1, intro, artistes, lieux, CTA), lang-aware
-            htmlContent = htmlContent.replace('<!-- SEO_HERO_PLACEHOLDER -->', generateHomeHeroHtml(req));
+            // --- Planche contact : concerts + photos groupées par date ---
+            let heroStats = null;
+            try {
+                const galleries = getPublicGalleries()
+                    .filter(g => g && g.published !== false && Array.isArray(g.photos) && g.photos.length);
+                const files = new Set();
+                galleries.forEach(g => g.photos.forEach(f => { if (f) files.add(f); }));
+                const dimsMap = new Map();
+                await Promise.all([...files].map(async f => {
+                    dimsMap.set(f, await imageMeta.getImageDimensions(f));
+                }));
+                const dimsFor = (f) => dimsMap.get(f) || null;
 
-            // SEO: Injecter le bloc post-galerie (collaborations + CTA secondaire), lang-aware
-            const seoBottom = loadSeoData();
-            const bottomIsEn = req.lang === 'en';
-            const bottomArtists = (seoBottom.artists || []).map(a => a.name).join(', ');
-            const bottomVenues = (seoBottom.venues || []).map(v => v.name).join(', ');
-            const bottomHtml = bottomIsEn ? `
-    <div class="container mx-auto px-5 md:px-0 py-12">
-      <section class="max-w-3xl mb-10">
-        <h2 class="text-2xl font-bold font-signika mb-4 text-black dark:text-white">Collaborations & events</h2>
-        <p class="text-base text-gray-700 dark:text-gray-300 mb-3">I've had the chance to photograph artists like <strong>${bottomArtists}</strong>, in iconic venues: <strong>${bottomVenues}</strong>.</p>
-        <p class="text-base text-gray-700 dark:text-gray-300 mb-6">Music media, emerging artist, label or venue, I'm available to capture the energy of your events across France.</p>
-        <a href="/contact?lang=en" class="cta-contact inline-block px-6 py-3 text-sm font-signika font-bold rounded-lg transition duration-300">Let's talk about your project</a>
-      </section>
-    </div>` : `
-    <div class="container mx-auto px-5 md:px-0 py-12">
-    <!-- SEO: Section collaborations, renforce les mots-clés et le maillage -->
-      <section class="max-w-3xl mb-10">
-        <h2 class="text-2xl font-bold font-signika mb-4 text-black dark:text-white">Collaborations & événements</h2>
-        <p class="text-base text-gray-700 dark:text-gray-300 mb-3">J'ai eu la chance de photographier des artistes comme <strong>${bottomArtists}</strong>, dans des salles emblématiques : <strong>${bottomVenues}</strong>.</p>
-        <p class="text-base text-gray-700 dark:text-gray-300 mb-6">Média musical, artiste émergent, label ou salle de concert, je suis disponible pour capturer l'énergie de vos événements partout en France.</p>
-        <a href="/contact" class="cta-contact inline-block px-6 py-3 text-sm font-signika font-bold rounded-lg transition duration-300">Discutons de votre projet</a>
-      </section>
-    </div>`;
-            htmlContent = htmlContent.replace('<!-- SEO_BOTTOM_PLACEHOLDER -->', bottomHtml);
+                const venues = new Set(galleries.map(g => g.venue || g.city).filter(Boolean));
+                heroStats = {
+                    gigs: galleries.length,
+                    photos: galleries.reduce((n, g) => n + g.photos.length, 0),
+                    venues: venues.size
+                };
+
+                htmlContent = htmlContent.replace('<!-- HOME_SHEET_PLACEHOLDER -->', homeSheet.buildHeroColumns(galleries, dimsFor));
+                htmlContent = htmlContent.replace('<!-- HOME_STRIPS_PLACEHOLDER -->', homeSheet.buildStrips(galleries, dimsFor));
+                htmlContent = htmlContent.replace('<!-- HOME_INDEX_PLACEHOLDER -->', homeSheet.buildIndex(galleries));
+                htmlContent = htmlContent.replace('<!-- HOME_MOSAIC_PLACEHOLDER -->', homeSheet.buildMosaic(galleries, dimsFor));
+            } catch (error) {
+                console.error('Planche contact:', error);
+                ['HOME_SHEET_PLACEHOLDER', 'HOME_STRIPS_PLACEHOLDER', 'HOME_INDEX_PLACEHOLDER', 'HOME_MOSAIC_PLACEHOLDER']
+                    .forEach(p => { htmlContent = htmlContent.replace(`<!-- ${p} -->`, ''); });
+            }
+
+            // SEO: Injecter le panneau d'accueil (H1, phrase, actions), lang-aware
+            htmlContent = htmlContent.replace('<!-- SEO_HERO_PLACEHOLDER -->', generateHomeHeroHtml(req, heroStats));
+
+            // SEO: Injecter les noms propres (artistes + salles) en colonnes
+            htmlContent = htmlContent.replace('<!-- SEO_BOTTOM_PLACEHOLDER -->', generateHomeProofHtml(req));
 
             // --- LCP OPTIMIZATION: Server-Side Rendering of first images ---
             try {
@@ -281,6 +308,10 @@ router.get('/', (req, res) => {
                 // Fallback: retirer le placeholder
                 htmlContent = htmlContent.replace('<!-- SERVER_RENDERED_GALLERY -->', '');
             }
+
+            // Version anglaise des blocs statiques (le hero et les noms propres
+            // sont déjà rendus dans la bonne langue).
+            htmlContent = translateHtml(htmlContent, req.lang === 'en' ? 'en' : 'fr');
 
             // Si on a une campagne, ajouter un script pour nettoyer l'URL côté client
             if (campaignInfo) {

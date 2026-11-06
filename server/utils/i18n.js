@@ -163,6 +163,25 @@ function t(lang, path) {
 
 // Dictionnaire FR→EN plat, ordonné long→court (remplace les 80+ appels r() inline)
 const _enDict = {
+  // Accueil — planche contact
+  'Deux saisons dans la fosse. La lumière tombe mal, les visages bougent, et c\'est exactement ce que je viens chercher.': 'Two seasons in the pit. The light falls wrong, faces move, and that is exactly what I come for.',
+  'Cliquez une date pour isoler ce concert dans les bandes et dans la planche. Les images s\'ouvrent en grand.': 'Click a date to isolate that show in the strips and on the sheet. Images open full size.',
+  'photographie les concerts depuis la fosse. Tournées rap, festivals, clubs : il cherche la lumière qui tombe mal et le geste qui dure une seconde.': 'photographs shows from the pit. Rap tours, festivals, clubs: he looks for the light that falls wrong and the gesture that lasts a second.',
+  'Ses images sont publiées par des médias musicaux, des labels et des artistes. Pour une date, une accréditation ou une série, écrivez-lui.': 'His images are published by music media, labels and artists. For a date, an accreditation or a series, write to him.',
+  'Un concert à couvrir ? Dites-moi la date et la salle.': 'A show to cover? Tell me the date and the venue.',
+  'Le carnet de route': 'The tour log',
+  'Les concerts': 'The shows',
+  'La planche': 'The sheet',
+  'Tout afficher': 'Show everything',
+  'Artistes & salles': 'Artists & venues',
+  'Photographe de concert, Paris': 'Concert photographer, Paris',
+  '220 images · 11 concerts': '220 images · 11 shows',
+  'Me confier un concert': 'Book a show',
+  'À propos': 'About',
+  '>Tout<': '>All<',
+  'Artistes': 'Artists',
+  'Salles': 'Venues',
+  'Galeries': 'Galleries',
   // Nav
   'GALERIES': 'GALLERIES',
   'À PROPOS': 'ABOUT',
