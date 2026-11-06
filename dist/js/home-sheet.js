@@ -166,7 +166,9 @@
 
         function reset(animate) {
           hotIndex = -1;
+          strip.classList.remove("is-hot-row");
           frames.forEach(function (f, j) {
+            f.classList.remove("is-hot");
             if (animate) {
               gsap.to(f, { width: natural[j], opacity: 1, duration: 0.45, ease: "power3.out", overwrite: true });
             } else {
@@ -179,12 +181,19 @@
           var total = box.clientWidth;
           var gap = 8;
           var gaps = gap * (frames.length - 1);
-          var hot = Math.min(Math.max(total * 0.4, natural[index] * 1.2), total * 0.58);
+          var rowHeight = 190;
+          var maxHeight = 230; // 40 px de débordement, la taille de l'interstice
+          // L'image garde son format : on plafonne sa largeur par la hauteur
+          // qu'elle peut prendre sans manger la légende du dessus.
+          var ratio = natural[index] / rowHeight;
+          var hot = Math.min(total * 0.42, maxHeight * ratio);
+          hot = Math.max(hot, natural[index] * 1.05);
           var left = Math.max(total - hot - gaps, 80);
           var sum = natural.reduce(function (a, w, j) { return j === index ? a : a + w; }, 0) || 1;
 
           frames.forEach(function (f, j) {
             var width = j === index ? hot : Math.min(left * (natural[j] / sum), natural[j]);
+            f.classList.toggle("is-hot", j === index);
             gsap.to(f, {
               width: Math.max(width, 24),
               opacity: j === index ? 1 : 0.75,
@@ -193,6 +202,7 @@
               overwrite: true
             });
           });
+          strip.classList.add("is-hot-row");
         }
 
         measure();

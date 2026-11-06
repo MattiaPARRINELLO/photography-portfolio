@@ -1727,14 +1727,36 @@ html.cs-boot-on .cs-boot {
   transform-origin: 0 0;
 }
 
-/* Accordéon : la largeur des cadres est pilotée par GSAP. */
-.cs-accordion .cs-strip-frame {
-  overflow: hidden;
-}
-
+/* Accordéon : la largeur des cadres est pilotée par GSAP. L'image survolée
+   garde son format : sa hauteur suit sa largeur et elle dépasse la bande vers
+   le haut, dans l'interstice, sans jamais couvrir la légende. */
 .cs-accordion .cs-strip-frame img {
   width: 100%;
-  object-fit: cover;
+}
+
+@media (min-width: 901px) {
+  .cs-accordion .cs-strip-frames {
+    height: 190px;
+  }
+
+  .cs-accordion .cs-strip-frame {
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .cs-accordion .cs-strip-frame img {
+    height: 190px;
+    object-fit: cover;
+  }
+
+  .cs-accordion .cs-strip-frame.is-hot img {
+    height: auto;
+    object-fit: contain;
+  }
+
+  .cs-accordion.is-hot-row .cs-strip-frames {
+    overflow: visible;
+  }
 }
 
 .cs .cs-skip {
