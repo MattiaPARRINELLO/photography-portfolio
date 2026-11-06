@@ -80,10 +80,11 @@ function buildHeroColumns(galleries, dimsFor, perColumn = 6, columns = 6) {
             cursor++;
             if (!item) continue;
             const dims = dimsFor(item.file);
-            const lazy = c > 1 || i > 0 ? ' loading="lazy"' : '';
-            const priority = c === 0 && i === 0 ? ' fetchpriority="high"' : '';
+            const first = c === 0 && i === 0;
+            const second = c === 0 && i === 1;
+            const priority = first ? ' fetchpriority="high"' : second ? '' : ' fetchpriority="low"';
             frames += `
-          <figure class="cs-frame"><img src="${resizeUrl(item.file, 480)}"${widthAttrs(dims, 480)} alt="Concert de ${esc(artistLabel(item.gallery))} à ${esc(venueLabel(item.gallery))}" decoding="async"${lazy}${priority}><figcaption class="cs-frame-strip">${esc(venueLabel(item.gallery))}</figcaption></figure>`;
+          <figure class="cs-frame"><img src="${resizeUrl(item.file, 320)}"${widthAttrs(dims, 320)} alt="Concert de ${esc(artistLabel(item.gallery))} à ${esc(venueLabel(item.gallery))}" decoding="async"${priority}><figcaption class="cs-frame-strip">${esc(venueLabel(item.gallery))}</figcaption></figure>`;
         }
         html += `
         <div class="cs-col" style="--offset:${offsets[c % offsets.length]}px">${frames}

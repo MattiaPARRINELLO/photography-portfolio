@@ -89,11 +89,14 @@
       if (boot) boot.style.display = "none";
       if (title) title.style.visibility = "";
       document.documentElement.classList.remove("cs-boot-on");
-      // Aucun voile de colonne ne doit survivre à l'intro.
-      var shades = document.querySelectorAll(".cs-col-shade");
-      for (var i = 0; i < shades.length; i++) {
-        shades[i].parentNode.removeChild(shades[i]);
-      }
+      // Nettoyage différé : retirer six nœuds pendant le basculement
+      // provoquerait un à-coup sur les machines modestes.
+      window.setTimeout(function () {
+        var shades = document.querySelectorAll(".cs-col-shade");
+        for (var i = 0; i < shades.length; i++) {
+          if (shades[i].parentNode) shades[i].parentNode.removeChild(shades[i]);
+        }
+      }, 600);
     }
 
     if (!bootActive) {
@@ -373,6 +376,7 @@
       var narrow = window.matchMedia("(max-width: 900px)").matches;
 
       function scrambleFrames() {
+        if (bootActive) return; // la planche est couverte : inutile de l'animer
         gsap.set(frames, {
           x: function () { return gsap.utils.random(-180, 180); },
           y: function () { return gsap.utils.random(-150, 150); },
@@ -497,6 +501,8 @@
           gsap.set(bootWords, { willChange: "transform" });
 
           // Repli de la feuille, exactement sur le panneau.
+          // Repli de la feuille sur le panneau : la photo garde son cadrage
+          // (aucune déformation), c'est la feuille entière qui rétrécit.
           tl.to(
             bootCard,
             {
@@ -591,7 +597,10 @@
             S
           );
 
-          landFrames(S);
+          if (!bootActive) landFrames(S);
+          // Fondu très court de la feuille avant de la retirer : la planche
+          // se peint progressivement au lieu d'apparaître d'un coup.
+          tl.to(bootCard, { autoAlpha: 0, duration: 0.22, ease: "power1.out" }, S + move - 0.12);
           tl.add(endBoot, S + move + 0.02);
 
           // La feuille a disparu : la phrase, le bouton puis le pied du

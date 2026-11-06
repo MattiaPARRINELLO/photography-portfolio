@@ -1701,6 +1701,7 @@ html.cs-boot-on .cs-boot {
   position: absolute;
   inset: 0;
   overflow: hidden;
+  will-change: transform;
   /* Fond sombre au départ : la photo se développe dessus, puis le voile
      blanc en fait le panneau. Évite tout écran blanc vide. */
   background: var(--bg);
@@ -1996,6 +1997,8 @@ html.cs-boot-on .cs-boot {
 /* --- Les concerts ------------------------------------------------------- */
 
 .cs-work {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 3000px;
   display: grid;
   grid-template-columns: 13% 1fr;
   gap: clamp(24px, 3vw, 48px);
@@ -2127,6 +2130,8 @@ html.cs-boot-on .cs-boot {
 /* --- Carnet de route ---------------------------------------------------- */
 
 .cs-index {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
   padding: clamp(80px, 10vw, 140px) var(--pad) 0;
 }
 
@@ -2273,6 +2278,8 @@ html.cs-boot-on .cs-boot {
 /* --- La planche dense --------------------------------------------------- */
 
 .cs-mosaic {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 2800px;
   padding: clamp(80px, 10vw, 140px) var(--pad) 0;
 }
 
@@ -2340,6 +2347,8 @@ html.cs-boot-on .cs-boot {
 /* --- À propos ----------------------------------------------------------- */
 
 .cs-about {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 520px;
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 24px;
@@ -2406,6 +2415,8 @@ html.cs-boot-on .cs-boot {
 /* --- Artistes & salles -------------------------------------------------- */
 
 .cs-proof {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 24px;
