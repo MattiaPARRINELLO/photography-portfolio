@@ -637,101 +637,114 @@
             { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out", stagger: 0.07 },
             S + move + 0.04
           );
+          tl.add(initScrollAnimations, S + move + 0.1);
         }).catch(function (error) {
           console.error("Intro:", error);
           gsap.set(".cs-col-shade", { opacity: 0 });
           endBoot();
           gsap.set(panelBits, { autoAlpha: 1, y: 0 });
         });
-      } else if (!introSeen) {
-        scrambleFrames();
-        landFrames(0);
+      } else {
+        // Pas d'intro (déjà vue) : la planche et les animations de
+        // défilement sont là tout de suite.
+        if (!introSeen) {
+          scrambleFrames();
+          landFrames(0);
+        }
+        initScrollAnimations();
       }
 
-      // --- La planche glisse doucement pendant la sortie du hero -----------
-      gsap.utils.toArray(".cs-col").forEach(function (col, i) {
-        var drift = [46, 24, 62, 34, 54, 18][i % 6];
-        gsap.to(col, {
-          y: -drift,
-          ease: "none",
-          scrollTrigger: {
-            trigger: ".cs-hero",
-            start: "top top",
-            end: "bottom top",
-            scrub: true
-          }
-        });
-      });
-
-      // --- Une seule image bouge en continu : le premier tirage -----------
-      gsap.to(".cs-col:first-child .cs-frame:first-child img", {
-        scale: 1.07,
-        duration: 22,
-        ease: "sine.inOut",
-        yoyo: true,
-        repeat: -1
-      });
-
-      // --- Titres et paragraphes, une entrée par bloc ---------------------
-      gsap.utils
-        .toArray(
-          ".cs-h2, .cs-statement, .cs-index-note, .cs-facts, .cs-bio p, .cs-proof-kind, .cs-proof-list, .cs-proof-col, .cs-cta-sentence, .cs-cta .cs-btn, .cs-footer > *"
-        )
-        .forEach(function (el) {
-          gsap.from(el, {
-            autoAlpha: 0,
-            y: 26,
-            duration: 0.7,
-            ease: "power2.out",
-            scrollTrigger: { trigger: el, start: "top 92%", once: true }
+      // --- Animations de défilement ---------------------------------------
+      // Créées seulement une fois l'intro terminée : leur initialisation
+      // (mesures, ScrollTrigger.refresh) bloquait le fil principal pendant
+      // l'animation d'ouverture.
+      function initScrollAnimations() {
+        // --- La planche glisse doucement pendant la sortie du hero -----------
+        gsap.utils.toArray(".cs-col").forEach(function (col, i) {
+          var drift = [46, 24, 62, 34, 54, 18][i % 6];
+          gsap.to(col, {
+            y: -drift,
+            ease: "none",
+            scrollTrigger: {
+              trigger: ".cs-hero",
+              start: "top top",
+              end: "bottom top",
+              scrub: true
+            }
           });
         });
 
-      // --- Chaque bande de concert arrive de la droite --------------------
-      gsap.utils.toArray(".cs-strip").forEach(function (strip) {
-        gsap.from(strip, {
-          autoAlpha: 0,
-          x: 44,
-          duration: 0.85,
-          ease: "power3.out",
-          scrollTrigger: { trigger: strip, start: "top 88%", once: true }
+        // --- Une seule image bouge en continu : le premier tirage -----------
+        gsap.to(".cs-col:first-child .cs-frame:first-child img", {
+          scale: 1.07,
+          duration: 22,
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: -1
         });
-      });
 
-      // --- Le carnet de route se remplit ligne à ligne --------------------
-      ScrollTrigger.batch(".cs-index-group", {
-        start: "top 88%",
-        once: true,
-        onEnter: function (groups) {
-          groups.forEach(function (group) {
-            gsap.from(group.querySelectorAll(".cs-row, .cs-index-year"), {
+        // --- Titres et paragraphes, une entrée par bloc ---------------------
+        gsap.utils
+          .toArray(
+            ".cs-h2, .cs-statement, .cs-index-note, .cs-facts, .cs-bio p, .cs-proof-kind, .cs-proof-list, .cs-proof-col, .cs-cta-sentence, .cs-cta .cs-btn, .cs-footer > *"
+          )
+          .forEach(function (el) {
+            gsap.from(el, {
               autoAlpha: 0,
-              y: 14,
-              duration: 0.5,
-              stagger: 0.045,
-              ease: "power1.out"
+              y: 26,
+              duration: 0.7,
+              ease: "power2.out",
+              scrollTrigger: { trigger: el, start: "top 92%", once: true }
             });
           });
-        }
-      });
 
-      // --- La planche se pose tuile par tuile -----------------------------
-      ScrollTrigger.batch(".cs-tile", {
-        start: "top 94%",
-        once: true,
-        interval: 0.08,
-        batchMax: 12,
-        onEnter: function (batch) {
-          gsap.from(batch, {
+        // --- Chaque bande de concert arrive de la droite --------------------
+        gsap.utils.toArray(".cs-strip").forEach(function (strip) {
+          gsap.from(strip, {
             autoAlpha: 0,
-            y: 22,
-            scale: 0.985,
-            duration: 0.6,
-            stagger: 0.045,
-            ease: "power2.out"
+            x: 44,
+            duration: 0.85,
+            ease: "power3.out",
+            scrollTrigger: { trigger: strip, start: "top 88%", once: true }
           });
-        }
-      });
+        });
+
+        // --- Le carnet de route se remplit ligne à ligne --------------------
+        ScrollTrigger.batch(".cs-index-group", {
+          start: "top 88%",
+          once: true,
+          onEnter: function (groups) {
+            groups.forEach(function (group) {
+              gsap.from(group.querySelectorAll(".cs-row, .cs-index-year"), {
+                autoAlpha: 0,
+                y: 14,
+                duration: 0.5,
+                stagger: 0.045,
+                ease: "power1.out"
+              });
+            });
+          }
+        });
+
+        // --- La planche se pose tuile par tuile -----------------------------
+        ScrollTrigger.batch(".cs-tile", {
+          start: "top 94%",
+          once: true,
+          interval: 0.08,
+          batchMax: 12,
+          onEnter: function (batch) {
+            gsap.from(batch, {
+              autoAlpha: 0,
+              y: 22,
+              scale: 0.985,
+              duration: 0.6,
+              stagger: 0.045,
+              ease: "power2.out"
+            });
+          }
+        });
+
+      }
 
       return function () {
         intro.kill();
