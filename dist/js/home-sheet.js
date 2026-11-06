@@ -60,6 +60,11 @@
       if (boot) boot.style.display = "none";
       if (title) title.style.visibility = "";
       document.documentElement.classList.remove("cs-boot-on");
+      // Aucun voile de colonne ne doit survivre à l'intro.
+      var shades = document.querySelectorAll(".cs-col-shade");
+      for (var i = 0; i < shades.length; i++) {
+        shades[i].parentNode.removeChild(shades[i]);
+      }
     }
 
     if (!bootActive) {
@@ -543,6 +548,19 @@
             tl.to(bootVeil, { autoAlpha: 1, duration: 0.85, ease: "power1.inOut" }, S + 0.2);
           }
 
+
+          // Les voiles se lèvent colonne par colonne, depuis le centre :
+          // c'est le « développement » des tirages.
+          tl.to(
+            shades,
+            {
+              opacity: 0,
+              duration: 0.9,
+              ease: "power2.out",
+              stagger: { each: 0.06, from: "center" }
+            },
+            S
+          );
 
           landFrames(S);
           tl.add(endBoot, S + move + 0.02);
