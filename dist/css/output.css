@@ -1707,14 +1707,32 @@ html.cs-boot-on .cs-boot {
 .cs-boot-name {
   position: relative;
   z-index: 1;
-  display: inline-block;
+  display: grid;
   font-size: clamp(3rem, 10vw, 11rem);
   font-weight: 600;
   line-height: 0.95;
   letter-spacing: -0.045em;
-  color: var(--paper-ink);
   white-space: nowrap;
   transform-origin: 0 0;
+}
+
+.cs-boot-name > span {
+  grid-area: 1 / 1;
+}
+
+/* Le nom rempli par une photo du dernier concert, puis résolu en encre. */
+.cs-boot-name-photo {
+  color: transparent;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  opacity: 0;
+}
+
+.cs-boot-name-ink {
+  color: var(--paper-ink);
 }
 
 /* Accordéon : la largeur des cadres est pilotée par GSAP. L'image survolée
@@ -2456,6 +2474,10 @@ html.cs-boot-on .cs-boot {
 @media (max-width: 900px) {
   .cs-boot-card {
     border: 0;
+  }
+
+  .cs-boot-name > span {
+    white-space: normal;
   }
 
   .cs-boot-name {

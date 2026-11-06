@@ -40,9 +40,19 @@
     var boot = document.querySelector(".cs-boot");
     var bootName = boot ? boot.querySelector(".cs-boot-name") : null;
     var bootCard = boot ? boot.querySelector(".cs-boot-card") : null;
+    var bootPhoto = boot ? boot.querySelector(".cs-boot-name-photo") : null;
+    var bootInk = boot ? boot.querySelector(".cs-boot-name-ink") : null;
     var panel = document.querySelector(".cs-panel");
     var title = document.querySelector(".cs-title");
-    var bootActive = !!(boot && bootName && bootCard && panel && title && hasMotion);
+
+    // L'intro ne joue qu'une fois par session : au retour, la page est là.
+    var introSeen = false;
+    try { introSeen = window.sessionStorage.getItem("cs-intro") === "1"; } catch (e) {}
+
+    var bootActive = !!(
+      boot && bootName && bootCard && bootPhoto && bootInk &&
+      panel && title && hasMotion && !introSeen
+    );
 
     function endBoot() {
       if (boot) boot.style.display = "none";
@@ -51,6 +61,80 @@
 
     if (!bootActive) {
       endBoot();
+    }
+
+    // Choisit, parmi les tirages déjà chargés, celui qui se lit le mieux une
+    // fois découpé dans les lettres : on mesure la bande centrale (la seule
+    // que le cadrage laisse voir) et on garde le plus de pixels dans la plage
+    // de gris qui reste lisible sur le blanc du carton.
+    function pickBootPhoto() {
+      return new Promise(function (resolve) {
+        var nodes = Array.prototype.slice.call(
+          document.querySelectorAll(".cs-sheet .cs-frame img")
+        ).slice(0, 14);
+        if (!nodes.length) return resolve(null);
+
+        var best = null;
+        var pending = 0;
+        var settled = false;
+        var deadline = window.setTimeout(finish, 550);
+
+        function scan(img) {
+          if (!img.complete || !img.naturalWidth) return;
+          try {
+            var canvas = document.createElement("canvas");
+            canvas.width = canvas.height = 24;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, 24, 24);
+            var data = ctx.getImageData(0, 0, 24, 24).data;
+            var good = 0;
+            var total = 0;
+            for (var row = 8; row < 16; row++) {
+              for (var col = 0; col < 24; col++) {
+                var i = (row * 24 + col) * 4;
+                var v = 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+                if (v > 45 && v < 145) good++;
+                total++;
+              }
+            }
+            var share = good / Math.max(total, 1);
+            if (!best || share > best.share) {
+              best = { share: share, url: img.getAttribute("src") || "" };
+            }
+          } catch (e) { /* canvas indisponible : on garde la première */ }
+        }
+
+        function finish() {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(deadline);
+          var chosen = (best && best.url) || nodes[0].getAttribute("src") || "";
+          var url = chosen.replace(/([?&])w=\d+/, "$1w=1600");
+          var probe = new Image();
+          probe.onload = function () { resolve(url); };
+          probe.onerror = function () { resolve(null); };
+          probe.src = url;
+        }
+
+        nodes.forEach(function (img) {
+          if (img.complete && img.naturalWidth) {
+            scan(img);
+            return;
+          }
+          pending++;
+          img.addEventListener("load", function () {
+            pending--;
+            scan(img);
+            if (!pending) finish();
+          }, { once: true });
+          img.addEventListener("error", function () {
+            pending--;
+            if (!pending) finish();
+          }, { once: true });
+        });
+
+        if (!pending) finish();
+      });
     }
 
     // Affiche avec un léger décalage les éléments qui viennent de réapparaître
@@ -243,18 +327,20 @@
 
     mm.add("(prefers-reduced-motion: no-preference)", function () {
       var frames = gsap.utils.toArray(".cs-sheet .cs-frame");
+      var cols = gsap.utils.toArray(".cs-col");
       var narrow = window.matchMedia("(max-width: 900px)").matches;
 
-      // --- Les tirages se posent sur la table ------------------------------
-      gsap.set(frames, {
-        x: function () { return gsap.utils.random(-180, 180); },
-        y: function () { return gsap.utils.random(-150, 150); },
-        rotation: function () { return gsap.utils.random(-11, 11); },
-        scale: function () { return gsap.utils.random(0.7, 0.86); },
-        autoAlpha: 0
-      });
+      function scrambleFrames() {
+        gsap.set(frames, {
+          x: function () { return gsap.utils.random(-180, 180); },
+          y: function () { return gsap.utils.random(-150, 150); },
+          rotation: function () { return gsap.utils.random(-11, 11); },
+          scale: function () { return gsap.utils.random(0.7, 0.86); },
+          autoAlpha: 0
+        });
+      }
 
-      function landFrames() {
+      function landFrames(at) {
         gsap.to(frames, {
           x: 0,
           y: 0,
@@ -263,65 +349,43 @@
           autoAlpha: 1,
           duration: 1,
           ease: "expo.out",
-          stagger: { each: 0.012, from: "random" }
+          stagger: { each: 0.012, from: "random" },
+          delay: at || 0
         });
       }
 
       // --- Carton-titre ----------------------------------------------------
-      // La feuille du panneau occupe tout l'écran, le nom s'y inscrit lettre
-      // à lettre, puis la feuille se replie jusqu'à sa cellule dans la
-      // planche et le nom se pose sur le H1. Un seul mouvement continu.
+      // La feuille du panneau occupe tout l'écran, le nom s'y inscrit avec
+      // une photo du dernier concert, puis la feuille se replie jusqu'à sa
+      // cellule, le nom se résout en encre et se pose sur le H1.
       //
-      // L'inscription démarre tout de suite ; le repli attend seulement que
-      // Switzer soit chargée, parce qu'il se cale sur la largeur réelle du H1.
+      // Démarrage immédiat ; le repli attend que Switzer soit chargée et que
+      // la photo du nom soit prête.
       if (bootActive) {
         boot.style.pointerEvents = "none";
+        try { window.sessionStorage.setItem("cs-intro", "1"); } catch (e) {}
 
-        // Le panneau est couvert par la feuille : son texte et ses actions
-        // n'entrent qu'une fois la feuille repliée, à la suite du nom.
         var panelBits = ".cs-panel .cs-lede, .cs-panel .cs-btn, .cs-panel-foot";
         gsap.set(panelBits, { autoAlpha: 0, y: 18 });
+        // Le nom en encre est visible dès la première peinture : la photo le
+        // remplit quand elle est prête, sans jamais laisser un écran vide.
+        gsap.set(bootPhoto, { autoAlpha: 0 });
 
-        // Découpage par mots puis par lettres : les lettres sont des blocs
-        // en ligne, donc la coupure de ligne doit rester entre deux mots.
-        var label = bootName.textContent;
-        var chars = [];
-        bootName.textContent = "";
-        label.split(" ").forEach(function (word, wi) {
-          if (wi > 0) bootName.appendChild(document.createTextNode(" "));
-          var box = document.createElement("span");
-          box.className = "cs-boot-word";
-          box.setAttribute("aria-hidden", "true");
-          Array.prototype.forEach.call(word, function (ch) {
-            var span = document.createElement("span");
-            span.className = "cs-boot-char";
-            span.textContent = ch;
-            box.appendChild(span);
-            chars.push(span);
-          });
-          bootName.appendChild(box);
-        });
-
-        if (chars.length) {
-          gsap.set(chars, { yPercent: 55, autoAlpha: 0 });
-          gsap.to(chars, {
-            yPercent: 0,
-            autoAlpha: 1,
-            duration: 0.4,
-            ease: "power4.out",
-            stagger: 0.012
-          });
-        }
+        // Les tirages se développent dans le sillage de la feuille.
+        gsap.set(cols, { filter: "grayscale(1) brightness(0.5)" });
 
         var fontsReady = document.fonts && document.fonts.ready
           ? document.fonts.ready
           : Promise.resolve();
-        var minHold = new Promise(function (resolve) { window.setTimeout(resolve, 550); });
+        var minHold = new Promise(function (resolve) { window.setTimeout(resolve, 250); });
+        var photoReady = pickBootPhoto();
 
-        Promise.all([fontsReady, minHold]).then(function () {
+        Promise.all([fontsReady, minHold, photoReady]).then(function (result) {
+          var photoUrl = result[2];
           var p = panel.getBoundingClientRect();
           var card = bootCard.getBoundingClientRect();
           var tl = gsap.timeline();
+          var S = 0.5; // début du repli
 
           // Le H1 et le nom du carton n'ont pas les mêmes métriques de ligne
           // (line-height 0.95, boîte du bloc contre boîte en ligne). On cale
@@ -337,8 +401,24 @@
           var bBox = bootName.getBoundingClientRect();
           var scale = parseFloat(getComputedStyle(title).fontSize) /
             parseFloat(getComputedStyle(bootName).fontSize);
+          var hasPhoto = !!photoUrl;
+          var flip = narrow || !bInk.width || !hInk.width;
 
-          // Repli de la feuille : elle atterrit exactement sur le panneau.
+          if (hasPhoto) {
+            bootPhoto.style.backgroundImage = 'url("' + photoUrl.replace(/"/g, "") + '")';
+          }
+
+          // 1. La photo monte dans les lettres du nom.
+          if (hasPhoto) {
+            tl.fromTo(
+              bootPhoto,
+              { clipPath: "inset(100% 0% 0% 0%)", autoAlpha: 1 },
+              { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "power3.out" },
+              0
+            ).to(bootInk, { autoAlpha: 0, duration: 0.3, ease: "power2.out" }, 0.15);
+          }
+
+          // 2. Le repli de la feuille, exactement sur le panneau.
           tl.to(
             bootCard,
             {
@@ -346,15 +426,16 @@
               y: p.top - card.top,
               width: p.width,
               height: p.height,
-              duration: 0.7,
+              duration: 0.74,
               ease: "power4.inOut"
             },
-            0
+            S
           );
 
-          // Le nom suit le même chemin et se pose sur le H1.
-          if (narrow || !bInk.width || !hInk.width) {
-            tl.to(bootName, { scale: 0.9, autoAlpha: 0, duration: 0.4, ease: "power2.in" }, 0.05);
+          // 3. Le nom suit le même chemin, puis se pose d'un petit rebond.
+          var flipDur = 0.62;
+          if (flip) {
+            tl.to(bootName, { scale: 0.9, autoAlpha: 0, duration: 0.4, ease: "power2.in" }, S);
           } else {
             tl.to(
               bootName,
@@ -362,18 +443,41 @@
                 x: hInk.left - bBox.left - scale * (bInk.left - bBox.left),
                 y: hInk.top - bBox.top - scale * (bInk.top - bBox.top),
                 scale: scale,
-                duration: 0.7,
+                duration: flipDur,
                 ease: "power4.inOut"
               },
-              0
+              S
+            ).to(
+              bootName,
+              { scale: scale * 1.018, duration: 0.06, yoyo: true, repeat: 1, ease: "sine.inOut" },
+              S + flipDur
             );
           }
 
-          // Les photos se posent pendant que la feuille découvre la planche.
-          tl.add(landFrames, 0);
-          tl.add(endBoot, 0.72);
+          // 4. La photo se résout en encre pendant la descente.
+          if (hasPhoto) {
+            tl.to(bootPhoto, { autoAlpha: 0, duration: 0.34, ease: "power2.in" }, S + 0.36)
+              .to(bootInk, { autoAlpha: 1, duration: 0.34, ease: "power2.out" }, S + 0.36);
+          }
 
-          // La feuille a disparu : la phrase, le bouton puis le pied du
+          // 5. Les tirages se développent, colonne par colonne, depuis le centre.
+          tl.to(
+            cols,
+            {
+              filter: "grayscale(0) brightness(1)",
+              duration: 1.1,
+              ease: "power2.out",
+              stagger: { each: 0.08, from: "center" },
+              clearProps: "filter"
+            },
+            S
+          );
+
+          // 6. Les photos se posent pendant que la feuille découvre la planche.
+          landFrames(S);
+          tl.add(endBoot, S + 0.76);
+
+          // 7. La feuille a disparu : la phrase, le bouton puis le pied du
           // panneau se posent en cascade sous le nom déjà en place.
           tl.to(
             panelBits,
@@ -384,11 +488,18 @@
               ease: "power3.out",
               stagger: 0.07
             },
-            0.74
+            S + 0.78
           );
+        }).catch(function (error) {
+          // Si l'intro casse, la page doit rester utilisable : on retire le
+          // carton et on rend le panneau tel quel.
+          console.error("Intro:", error);
+          endBoot();
+          gsap.set(panelBits, { autoAlpha: 1, y: 0 });
         });
-      } else {
-        landFrames();
+      } else if (!introSeen) {
+        scrambleFrames();
+        landFrames(0);
       }
 
       // --- La planche glisse doucement pendant la sortie du hero -----------
