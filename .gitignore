@@ -73,3 +73,6 @@ data/analytics/*
 
 # Docs de travail local
 BACKLINKS_PLAN.md
+
+# Artefacts d'inspection design (tasteskill)
+.taste-skill/
