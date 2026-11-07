@@ -744,11 +744,7 @@
             );
           }
 
-          if (narrow) {
-            // Sur téléphone : le nom s'efface sur place, la feuille reste
-            // plein écran puis se dissout sur la page.
-            tl.to(bootName, { autoAlpha: 0, y: -16, duration: 0.4, ease: "power2.in" }, S + 0.2);
-          } else if (targets && targets[0] && targets[1]) {
+          if (!narrow && targets && targets[0] && targets[1]) {
             // Un seul mouvement, conduit par un paramètre unique :
             //  - les deux mots rétrécissent autour du centre du bloc, donc
             //    l'interligne suit la taille des lettres ;
@@ -849,26 +845,28 @@
           if (!bootActive) landFrames(S);
           // Fondu très court de la feuille avant de la retirer : la planche
           // se peint progressivement au lieu d'apparaître d'un coup.
-          var cardFade = narrow ? 0.32 : 0.22;
-          var cardFadeAt = S + move - cardFade;
-          tl.to(bootCard, { autoAlpha: 0, duration: cardFade, ease: "power1.out" }, cardFadeAt);
           if (narrow) {
-            // Le panneau est déjà là, sous la photo : on rend le titre tout de
-            // suite pour ne pas laisser une carte blanche vide pendant le
-            // fondu.
+            // Téléphone : le nom s'efface sur la photo, puis la feuille glisse
+            // vers le bas et découvre la page déjà composée, du titre vers la
+            // planche. Pas de fondu croisé : la photo reste opaque.
+            tl.to(bootName, { autoAlpha: 0, duration: 0.22, ease: "power1.in" }, S);
             tl.add(function () {
               if (title) title.style.visibility = "";
-            }, cardFadeAt);
+            }, S + 0.08);
+            tl.to(panelBits, { autoAlpha: 1, y: 0, duration: 0.2, ease: "none" }, S + 0.08);
+            tl.to(bootCard, { yPercent: 100, duration: 0.62, ease: "power3.inOut" }, S + 0.1);
+            tl.add(endBoot, S + 0.75);
+          } else {
+            tl.to(bootCard, { autoAlpha: 0, duration: 0.22, ease: "power1.out" }, S + move - 0.12);
+            tl.add(endBoot, S + move + 0.02);
+            // La feuille a disparu : la phrase, le bouton puis le pied du
+            // panneau se posent en cascade sous le nom déjà en place.
+            tl.to(
+              panelBits,
+              { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out", stagger: 0.07 },
+              S + move + 0.04
+            );
           }
-          tl.add(endBoot, S + move + 0.02);
-
-          // La feuille a disparu : la phrase, le bouton puis le pied du
-          // panneau se posent en cascade sous le nom déjà en place.
-          tl.to(
-            panelBits,
-            { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out", stagger: 0.07 },
-            narrow ? cardFadeAt + 0.06 : S + move + 0.04
-          );
           tl.add(initScrollAnimations, S + move + 0.1);
           tl.add(function () { gsap.set(bootWords, { willChange: "auto" }); }, S + move + 0.15);
           if (!slowNet) tl.add(loadLateFrames, S + move + 0.6);
