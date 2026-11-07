@@ -520,25 +520,48 @@
         }
 
         // La cible est lue sous le pointeur à chaque déplacement, et non à
-        // l'entrée dans un cadre. En quittant un cadre pour son voisin, la
-        // rangée se resserrait d'abord, le cadre visé glissait sous le
-        // curseur et l'animation repartait sur un troisième : d'où le saut.
+        // l'entrée dans un cadre : quitter un cadre pour son voisin remettrait
+        // la rangée à plat, le cadre visé glisserait sous le curseur et
+        // l'animation repartirait sur un troisième.
         function frameUnder(e) {
-          var el = document.elementFromPoint(e.clientX, e.clientY);
-          var frame = el && el.closest ? el.closest(".cs-strip-frame") : null;
-          if (!frame || frame.parentNode !== box) return -1;
-          return frames.indexOf(frame);
+          var r = boxRect;
+          if (!r || e.clientY < r.top || e.clientY > r.bottom) return -1;
+          var x = e.clientX - r.left;
+          for (var i = 0; i < targets.length; i++) {
+            if (x < lefts[i] + targets[i]) return x >= lefts[i] ? i : -1;
+          }
+          return -1;
         }
+
+        strip.addEventListener("pointerenter", function (e) {
+          if (e.pointerType && e.pointerType !== "mouse") return;
+          cacheBox();
+        });
 
         strip.addEventListener("pointermove", function (e) {
           if (e.pointerType !== "mouse") return;
           var index = frameUnder(e);
           if (index < 0 || index === hotIndex) return;
-          hotIndex = index;
-          open(index);
+          clearTimeout(pending);
+          if (hotIndex < 0) {
+            // Première entrée dans la rangée : on répond tout de suite.
+            hotIndex = index;
+            open(index);
+            return;
+          }
+          // Changement de photo dans une rangée déjà ouverte : on attend que
+          // le curseur s'arrête. Sans ça, un balayage relance l'animation à
+          // chaque cadre et toute la rangée tremble.
+          pending = setTimeout(function () {
+            if (hotIndex === index) return;
+            hotIndex = index;
+            open(index);
+          }, DWELL);
         });
 
-        strip.addEventListener("pointerleave", function () {
+        strip.addEventListener("pointerleave", function (e) {
+          if (e.pointerType && e.pointerType !== "mouse") return;
+          clearTimeout(pending);
           if (hotIndex > -1) reset(true);
         });
 
@@ -702,45 +725,29 @@
           // éviter de rastériser le texte à chaque image.
           gsap.set(bootWords, { willChange: "transform" });
 
-          // Repli de la feuille, exactement sur le panneau.
           // Repli de la feuille sur le panneau : la photo garde son cadrage
           // (aucune déformation), c'est la feuille entière qui rétrécit.
-          tl.to(
-            bootCard,
-            {
-              x: p.left - card.left,
-              y: p.top - card.top,
-              width: p.width,
-              height: p.height,
-              duration: move,
-              ease: "power2.inOut"
-            },
-            S
-          );
-
-          if (narrow) {
-            // Sur téléphone : le nom se contracte vers le titre et s'efface.
-            var titleBox = title.getBoundingClientRect();
-            var nameRect = bootName.getBoundingClientRect();
-            var hMid2 = {
-              x: titleBox.left + titleBox.width / 2,
-              y: titleBox.top + titleBox.height / 2
-            };
-            var nMid = {
-              x: nameRect.left + nameRect.width / 2,
-              y: nameRect.top + nameRect.height / 2
-            };
+          // Sur téléphone on ne replie pas : le panneau est au-dessus de la
+          // planche, le carton rétréci laissait voir la planche derrière lui.
+          if (!narrow) {
             tl.to(
-              bootName,
+              bootCard,
               {
-                x: hMid2.x - nMid.x,
-                y: hMid2.y - nMid.y,
-                scale: 0.34,
-                duration: move * 0.8,
+                x: p.left - card.left,
+                y: p.top - card.top,
+                width: p.width,
+                height: p.height,
+                duration: move,
                 ease: "power2.inOut"
               },
               S
-            ).to(bootName, { autoAlpha: 0, duration: move * 0.35, ease: "power2.in" }, S + move * 0.55);
+            );
+          }
+
+          if (narrow) {
+            // Sur téléphone : le nom s'efface sur place, la feuille reste
+            // plein écran puis se dissout sur la page.
+            tl.to(bootName, { autoAlpha: 0, y: -16, duration: 0.4, ease: "power2.in" }, S + 0.2);
           } else if (targets && targets[0] && targets[1]) {
             // Un seul mouvement, conduit par un paramètre unique :
             //  - les deux mots rétrécissent autour du centre du bloc, donc
@@ -842,7 +849,17 @@
           if (!bootActive) landFrames(S);
           // Fondu très court de la feuille avant de la retirer : la planche
           // se peint progressivement au lieu d'apparaître d'un coup.
-          tl.to(bootCard, { autoAlpha: 0, duration: 0.22, ease: "power1.out" }, S + move - 0.12);
+          var cardFade = narrow ? 0.32 : 0.22;
+          var cardFadeAt = S + move - cardFade;
+          tl.to(bootCard, { autoAlpha: 0, duration: cardFade, ease: "power1.out" }, cardFadeAt);
+          if (narrow) {
+            // Le panneau est déjà là, sous la photo : on rend le titre tout de
+            // suite pour ne pas laisser une carte blanche vide pendant le
+            // fondu.
+            tl.add(function () {
+              if (title) title.style.visibility = "";
+            }, cardFadeAt);
+          }
           tl.add(endBoot, S + move + 0.02);
 
           // La feuille a disparu : la phrase, le bouton puis le pied du
@@ -850,7 +867,7 @@
           tl.to(
             panelBits,
             { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out", stagger: 0.07 },
-            S + move + 0.04
+            narrow ? cardFadeAt + 0.06 : S + move + 0.04
           );
           tl.add(initScrollAnimations, S + move + 0.1);
           tl.add(function () { gsap.set(bootWords, { willChange: "auto" }); }, S + move + 0.15);

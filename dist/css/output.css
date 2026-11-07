@@ -2581,6 +2581,21 @@ html.cs-boot-on .cs-boot {
     display: none;
   }
 
+  /* Planche mobile : toutes les images à la même hauteur. Sans ça, une
+     colonne de portraits faisait deux fois la hauteur de l'autre et laissait
+     un grand vide sous elle. */
+  .cs-sheet .cs-frame img {
+    height: 32vw;
+    -o-object-fit: cover;
+       object-fit: cover;
+  }
+
+  /* Une bande par concert : le blanc de 45 px est une mesure de bureau, sur
+     un téléphone il sépare trop les concerts. */
+  .cs-strip {
+    margin-bottom: 30px;
+  }
+
   .cs-panel {
     position: static;
     order: -1;
