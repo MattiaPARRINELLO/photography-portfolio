@@ -508,6 +508,109 @@
 
     initRowAccordion();
 
+    // --- Le repère au crayon gras sur les tirages -------------------------
+    // Le geste du tireur : un cercle tracé à main levée autour de la photo
+    // survolée, comme sur une planche contact annotée. Un seul élément, placé
+    // sur l'image au moment du survol, donc jamais rogné par la planche.
+    function initTirageMarks() {
+      var frames = Array.prototype.slice.call(document.querySelectorAll(".cs-frame, .cs-tile"));
+      if (!frames.length) return;
+
+      var mark = document.createElement("div");
+      mark.className = "cs-mark";
+      mark.setAttribute("aria-hidden", "true");
+      mark.innerHTML =
+        '<svg viewBox="0 0 100 100" preserveAspectRatio="none">' +
+        '<path class="cs-mark-echo" transform="rotate(-1.8 50 50)" d="M50 4C72 2 96 20 96 45C96 70 81 96 53 96C25 96 4 79 4 53C4 27 21 4 48 4C61 4 74 7 83 13"></path>' +
+        '<path class="cs-mark-line" d="M50 4C73 3 96 21 96 46C96 71 80 96 52 96C24 96 4 78 4 52C4 26 22 5 49 4C62 4 75 7 84 13"></path>' +
+        "</svg>";
+      document.body.appendChild(mark);
+
+      var line = mark.querySelector(".cs-mark-line");
+      var echo = mark.querySelector(".cs-mark-echo");
+      var lenLine = line.getTotalLength ? line.getTotalLength() : 320;
+      var lenEcho = echo.getTotalLength ? echo.getTotalLength() : 320;
+      line.style.strokeDasharray = lenLine;
+      line.style.strokeDashoffset = lenLine;
+      echo.style.strokeDasharray = lenEcho;
+      echo.style.strokeDashoffset = lenEcho;
+
+      var drawn = !gsap || reduceMotion;
+      var current = null;
+      var visible = false;
+      var dwell = 0;
+
+      function place(img) {
+        var r = img.getBoundingClientRect();
+        var pad = 7;
+        mark.style.left = r.left - pad + "px";
+        mark.style.top = r.top - pad + "px";
+        mark.style.width = r.width + pad * 2 + "px";
+        mark.style.height = r.height + pad * 2 + "px";
+      }
+
+      function show(frame) {
+        var img = frame.querySelector("img");
+        if (!img) return;
+        place(img);
+        visible = true;
+        if (drawn) {
+          line.style.strokeDashoffset = 0;
+          echo.style.strokeDashoffset = 0;
+          mark.style.opacity = "1";
+          return;
+        }
+        gsap.killTweensOf(mark);
+        gsap.set(mark, { opacity: 1 });
+        gsap.killTweensOf([line, echo]);
+        // Le trait part du haut et se referme ; le second passage, plus court,
+        // arrive derrière comme un crayon repassé.
+        gsap.fromTo(line, { strokeDashoffset: lenLine }, {
+          strokeDashoffset: 0, duration: 0.46, ease: "power2.inOut"
+        });
+        gsap.fromTo(echo, { strokeDashoffset: lenEcho }, {
+          strokeDashoffset: 0, duration: 0.3, delay: 0.12, ease: "power2.out"
+        });
+      }
+
+      function hide() {
+        clearTimeout(dwell);
+        current = null;
+        if (!visible) return;
+        visible = false;
+        if (drawn) {
+          mark.style.opacity = "0";
+          return;
+        }
+        gsap.to(mark, { opacity: 0, duration: 0.16, overwrite: true });
+      }
+
+      frames.forEach(function (frame) {
+        frame.addEventListener("pointerenter", function (e) {
+          if (e.pointerType && e.pointerType !== "mouse") return;
+          clearTimeout(dwell);
+          // Le repère ne traîne pas sur le tirage qu'on vient de quitter.
+          if (current && current !== frame) hide();
+          current = frame;
+          // Un balayage rapide ne déclenche rien : le repère se pose quand le
+          // curseur s'arrête vraiment sur un tirage.
+          dwell = setTimeout(function () {
+            if (current === frame) show(frame);
+          }, 70);
+        });
+        frame.addEventListener("pointerleave", function (e) {
+          if (e.pointerType && e.pointerType !== "mouse") return;
+          if (current === frame) hide();
+        });
+      });
+
+      // Le repère est posé dans le viewport : dès que la page bouge, il ment.
+      window.addEventListener("scroll", hide, { passive: true });
+      window.addEventListener("resize", hide);
+    }
+
+    initTirageMarks();
+
     if (!hasMotion) return;
 
     var mm = gsap.matchMedia();
