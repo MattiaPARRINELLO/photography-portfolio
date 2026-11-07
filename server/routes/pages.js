@@ -1028,30 +1028,29 @@ router.get('/galeries/:slug', async (req, res) => {
             htmlContent = htmlContent.replace('</head>', `${extraHead}\n    ${schemaScript}\n  </head>`);
         }
 
-        // Hero
+        // Hero : la couverture pleine largeur, le titre est l'artiste, la ligne
+        // dessous donne la salle, la ville et la date. Le lien retour passe
+        // avant l'image, dans le flux de lecture.
         const heroCoverUrl = gallery.cover
             ? `/photos/resize?file=${encodeURIComponent(gallery.cover)}&w=1600`
             : '';
         const heroSizeAttrs = heroDims && heroDims.width
             ? ` width="${heroDims.width}" height="${heroDims.height}" fetchpriority="high"`
             : '';
-        const metaLine = [gallery.artist, gallery.venue, formatGalleryDate(gallery.date, lang)].filter(Boolean).join(' · ');
-        const dateLine = gallery.updatedAt ? `<p class="meta" style="font-size:0.8rem;opacity:0.75">${isEn ? 'Published on' : 'Publié le'} ${escapeAttr(formatGalleryDate(gallery.date, lang))}${gallery.updatedAt !== gallery.createdAt ? ` · ${isEn ? 'Updated on' : 'Mis à jour le'} ${escapeAttr(formatGalleryDate(gallery.updatedAt, lang))}` : ''}</p>` : '';
+        const artistDisplay = artistName || gallery.title;
+        const venueCity = getVenueCity(gallery.venue);
+        const placeLine = [gallery.venue, venueCity, formatGalleryDate(gallery.date, lang)].filter(Boolean).join(' · ');
+        const backLabel = isEn ? '← All galleries' : '← Toutes les galeries';
+        const heroAlt = artistName
+            ? `${artistName} en concert${gallery.venue ? ' à ' + gallery.venue : ''}, photo par Mattia Parrinello`
+            : `${gallery.title}, photo par Mattia Parrinello`;
         const heroHtml = `
       <section class="gallery-hero">
-        ${heroCoverUrl ? `<img class="cover" src="${heroCoverUrl}"${heroSizeAttrs} alt="${escapeAttr(gallery.title)}" />` : ''}
-        <div class="overlay"></div>
-        <div class="hero-content">
-          <nav class="breadcrumb" aria-label="Fil d'Ariane">
-            <a href="/">Accueil</a>
-            <span aria-hidden="true">›</span>
-            <a href="/galeries">Galeries</a>
-            <span aria-hidden="true">›</span>
-            <span aria-current="page">${escapeAttr(gallery.title)}</span>
-          </nav>
-          <h1>${escapeAttr(gallery.title)}</h1>
-          ${metaLine ? `<p class="meta">${escapeAttr(metaLine)}</p>` : ''}
-          ${dateLine}
+        <a class="gallery-back" href="/galeries">${backLabel}</a>
+        ${heroCoverUrl ? `<figure class="gallery-hero-figure"><img class="cover" src="${heroCoverUrl}"${heroSizeAttrs} alt="${escapeAttr(heroAlt)}" /></figure>` : ''}
+        <div class="gallery-hero-head">
+          <h1 class="gallery-hero-title">${escapeAttr(artistDisplay)}</h1>
+          ${placeLine ? `<p class="gallery-hero-meta">${escapeAttr(placeLine)}</p>` : ''}
         </div>
       </section>`;
         htmlContent = htmlContent.replace('<!-- GALLERY_HERO_PLACEHOLDER -->', heroHtml);
@@ -1074,10 +1073,11 @@ router.get('/galeries/:slug', async (req, res) => {
             htmlContent = htmlContent.replace('</head>', `${preloadThumbs}\n  </head>`);
         }
 
-        // Photos (masonry via CSS columns + Fancybox)
+        // Photos : planche en colonnes CSS, gouttière de 4 px, Fancybox.
         const altContext = artistName
             ? `Concert de ${artistName}${gallery.venue ? ' à ' + gallery.venue : ''}`
             : gallery.title;
+        const caption = [artistName, gallery.venue].filter(Boolean).join(' · ') || gallery.title;
         const photosWithDims = await Promise.all((gallery.photos || []).map(async (filename) => ({
             filename,
             dims: await imageMeta.getImageDimensions(filename)
@@ -1087,7 +1087,10 @@ router.get('/galeries/:slug', async (req, res) => {
             const full = `/photos/resize?file=${file}&w=1600`;
             const thumb = `/photos/resize?file=${file}&w=640`;
             const srcset = `/photos/resize?file=${file}&w=320 320w, /photos/resize?file=${file}&w=480 480w, /photos/resize?file=${file}&w=640 640w, /photos/resize?file=${file}&w=960 960w`;
-            const loading = i < 6 ? 'eager' : 'lazy';
+            // Les deux premières portent le LCP : chargement immédiat et priorité
+            // haute, le reste attend le défilement.
+            const loading = i < 2 ? 'eager' : 'lazy';
+            const priority = i < 2 ? ' fetchpriority="high"' : '';
             const alt = `${altContext}, photo ${i + 1} par Mattia Parrinello`;
             const sizeAttrs = dims && dims.width
                 ? ` width="640" height="${Math.round(640 * dims.height / dims.width)}"`
@@ -1097,11 +1100,12 @@ router.get('/galeries/:slug', async (req, res) => {
             const onerrorAttr = thumbFallback
                 ? ` onerror="this.onerror=null;this.removeAttribute('srcset');this.src='${thumbFallback}'"`
                 : '';
-            return `<a href="${full}" data-fancybox="gallery"><img src="${thumb}" srcset="${srcset}" sizes="(max-width:768px) 50vw, (max-width:1440px) 33vw, 25vw" alt="${escapeAttr(alt)}" loading="${loading}"${sizeAttrs}${onerrorAttr} /></a>`;
+            const captionText = `${caption}, photo ${i + 1}`;
+            return `<figure class="gallery-photo"><a href="${full}" data-fancybox="gallery" data-caption="${escapeAttr(captionText)}"><img src="${thumb}" srcset="${srcset}" sizes="(max-width:900px) 50vw, (max-width:1500px) 33vw, 25vw" alt="${escapeAttr(alt)}" loading="${loading}"${priority}${sizeAttrs}${onerrorAttr} /></a><figcaption class="gallery-photo-caption">${escapeAttr(caption)}</figcaption></figure>`;
         }).join('');
         const masonryHtml = photosHtml
-            ? `<div class="gallery-photos-shell"><div class="gallery-divider-grid" aria-hidden="true"></div><section class="masonry">${photosHtml}</section></div>`
-            : '<p class="text-center text-gray-500 py-8">Aucune photo dans cette galerie.</p>';
+            ? `<div class="gallery-photos-shell"><div class="gallery-sheet">${photosHtml}</div></div>`
+            : `<p class="gallery-empty">${isEn ? 'No photos in this gallery.' : 'Aucune photo dans cette galerie.'}</p>`;
         htmlContent = htmlContent.replace('<!-- GALLERY_PHOTOS_PLACEHOLDER -->', masonryHtml);
 
         const pressKitHtml = generatePressKitHtml(gallery, canonical, lang);
@@ -1110,21 +1114,19 @@ router.get('/galeries/:slug', async (req, res) => {
         const citeText = isEn
             ? `Photo gallery: ${gallery.title} — ${artistName} at ${gallery.venue || 'venue'}, ${formatGalleryDate(gallery.date, lang)}. Photographs by Mattia Parrinello (MPRNL), concert photographer based in Paris. ${gallery.photos ? gallery.photos.length + ' photos.' : ''} Source: ${canonical}`
             : `Galerie photo : ${gallery.title} — ${artistName} ${gallery.venue ? 'à ' + gallery.venue : ''}, ${formatGalleryDate(gallery.date, lang)}. Photos par Mattia Parrinello (MPRNL), photographe de concert basé à Paris. ${gallery.photos ? gallery.photos.length + ' photos.' : ''} Source : ${canonical}`;
-        const citeHtml = `<aside style="margin-top:2rem;padding:1.2rem;border-radius:12px;background:rgba(255,255,255,0.85);border:1px solid rgba(15,23,42,0.12);font-size:0.85rem;line-height:1.6;color:rgba(51,65,85,1);max-width:72ch;" aria-label="${isEn ? 'Citation' : 'Citation'}"><p style="margin:0 0 0.5rem;font-weight:700;font-family:Signika,sans-serif;font-size:0.9rem;cursor:pointer;" onclick="navigator.clipboard.writeText(this.dataset.text).then(()=>{this.textContent='Copié ✓';setTimeout(()=>{this.textContent='${isEn ? 'Citer cette galerie' : 'Citer cette galerie'}'},1200)})" data-text="${escapeAttr(citeText)}">${isEn ? 'Cite this gallery' : 'Citer cette galerie'}</p><p style="margin:0;font-family:ui-monospace,monospace;font-size:0.78rem;word-break:break-all;opacity:0.7;">${escapeAttr(citeText)}</p><p style="margin:0.4rem 0 0;font-size:0.72rem;opacity:0.55;">${isEn ? 'Press + social with mandatory credit. HD via signed URL valid 1h.' : 'Presse & réseaux avec crédit obligatoire. HD via URL signée valable 1h.'}</p></aside>`;
+        const citeLabel = isEn ? 'Cite this gallery' : 'Citer cette galerie';
+        const citeNote = isEn
+            ? 'Press + social with mandatory credit. HD via signed URL valid 1h.'
+            : 'Presse et réseaux avec crédit obligatoire. HD via URL signée valable 1h.';
+        const citeHtml = `<aside class="gallery-cite" aria-label="${citeLabel}"><button type="button" class="gallery-cite-label" data-text="${escapeAttr(citeText)}" onclick="navigator.clipboard.writeText(this.dataset.text).then(()=>{this.textContent='Copié ✓';setTimeout(()=>{this.textContent='${citeLabel}'},1200)})">${citeLabel}</button><p class="gallery-cite-text">${escapeAttr(citeText)}</p><p class="gallery-cite-note">${citeNote}</p></aside>`;
         if (htmlContent.includes('<!-- PRESS_KIT_PLACEHOLDER -->')) {
             htmlContent = htmlContent.replace('<!-- PRESS_KIT_PLACEHOLDER -->', `${pressKitHtml}\n${citeHtml}`);
         } else if (pressKitHtml) {
             htmlContent = htmlContent.replace('</main>', `${pressKitHtml}\n${citeHtml}\n    </main>`);
         }
 
-        // Lang switcher flottant pour galeries (anglais partiel), cookie persistant
-        {
-            const toggleHref = isEn ? `/galeries/${encodeURIComponent(gallery.slug)}?lang=fr` : `/galeries/${encodeURIComponent(gallery.slug)}?lang=en`;
-            const toggleLabel = isEn ? 'FR' : 'EN';
-            const toggleTitle = isEn ? 'Voir en français' : 'View in English';
-            const langSwitcher = `\n    <style>.lang-switch{position:fixed;top:14px;right:14px;z-index:50;background:rgba(255,255,255,0.92);border:1px solid rgba(15,23,42,0.12);border-radius:999px;padding:4px 10px;font-family:Signika,sans-serif;font-weight:700;font-size:0.72rem;backdrop-filter:blur(6px);text-decoration:none;color:#0f172a}@media(prefers-color-scheme:dark){.lang-switch{background:rgba(15,23,42,0.9);border-color:rgba(148,163,184,0.22);color:#fff}}</style>\n    <a class="lang-switch" href="${toggleHref}" hreflang="${isEn ? 'fr' : 'en'}" aria-label="${toggleTitle}">${toggleLabel}</a>`;
-            if (htmlContent.includes('</body>')) htmlContent = htmlContent.replace('</body>', `${langSwitcher}\n  </body>`);
-        }
+        // Le sélecteur de langue flottant est porté par l'en-tête et le pied de
+        // la page (lien ?lang=en), plus par une pastille injectée.
 
         htmlContent = translateHtml(htmlContent, lang);
 

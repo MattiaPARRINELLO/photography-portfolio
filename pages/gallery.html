@@ -9,22 +9,31 @@
     <title>{{DYNAMIC_TITLE}}</title>
     <meta name="description" content="{{DYNAMIC_DESCRIPTION}}" />
     <!-- META_PLACEHOLDER_END -->
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/dist/assets/Logo_MP.svg" />
-    <link rel="stylesheet" href="/dist/css/output.7284bbc8.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="/dist/css/output.d7987963.css" />
+    <!-- Typographie : Switzer (Fontshare) -->
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
     <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin="anonymous"
+      rel="preload"
+      href="https://cdn.fontshare.com/wf/5SZVFDB7V52TI6ULVC6J3WQZQCIZVDV5/ODYPSTCUDMKSTYIPTV4CLQ7URIK7XYBJ/YS3VPNVO4B3TOJMEXDGFZQ4TLZGGSRZC.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Signika:wght@400;700&display=swap"
+      rel="preload"
+      href="https://cdn.fontshare.com/wf/BLNB4FAQFNK56DWWNF7PMGTCOTZHOEII/ST3WKSSDMBK2MIQQO3MAVYWLF4FTOLFV/6IN5WOLRCYP4G4MOCOHOMXNON6Q7MDAR.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&display=swap"
       rel="stylesheet"
     />
-    <script
-      defer
-      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
-    ></script>
+    <!-- Fancybox -->
     <script
       defer
       src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"
@@ -32,746 +41,49 @@
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css"
+      media="print"
+      onload="this.media = 'all'"
     />
-    <style>
-      .masonry {
-        column-count: 4;
-        column-gap: 10px;
-      }
-      @media (max-width: 1440px) {
-        .masonry {
-          column-count: 3;
-        }
-      }
-      @media (max-width: 768px) {
-        .masonry {
-          column-count: 2;
-        }
-      }
-      @media (max-width: 480px) {
-        .masonry {
-          column-count: 2;
-        }
-      }
-      .masonry > a {
-        display: block;
-        margin: 0 0 10px;
-        break-inside: avoid;
-        border-radius: 6px;
-        overflow: hidden;
-        position: relative;
-      }
-      .masonry img {
-        width: 100%;
-        height: auto;
-        display: block;
-        border-radius: 6px;
-        transition: transform 0.6s cubic-bezier(0.22, 0.8, 0.22, 1);
-      }
-      .masonry a:hover img {
-        transform: scale(1.03);
-      }
-
-      .gallery-hero {
-        position: relative;
-        border-radius: 18px;
-        overflow: hidden;
-        margin-bottom: 2rem;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-      }
-      .gallery-hero .cover {
-        width: 100%;
-        max-height: 420px;
-        object-fit: cover;
-        display: block;
-      }
-      .gallery-hero .overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          to top,
-          rgba(0, 0, 0, 0.85) 0%,
-          rgba(0, 0, 0, 0.2) 60%,
-          rgba(0, 0, 0, 0) 100%
-        );
-      }
-      .gallery-hero .hero-content {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        padding: 2rem 2.5rem;
-        color: white;
-      }
-      .gallery-hero h1 {
-        font-family: "Signika", sans-serif;
-        font-weight: 700;
-        font-size: clamp(1.8rem, 4vw, 2.6rem);
-        margin: 0 0 0.4rem;
-        line-height: 1.1;
-      }
-      .gallery-hero .meta {
-        font-size: 0.95rem;
-        color: rgba(255, 255, 255, 0.88);
-      }
-      .gallery-hero .breadcrumb {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.4rem;
-        font-size: 0.8rem;
-        color: rgba(255, 255, 255, 0.75);
-        margin-bottom: 0.6rem;
-      }
-      .gallery-hero .breadcrumb a {
-        color: rgba(255, 255, 255, 0.9);
-        text-decoration: underline;
-        text-underline-offset: 3px;
-      }
-      .gallery-hero .breadcrumb a:hover {
-        color: #fff;
-      }
-      .gallery-hero .breadcrumb [aria-current="page"] {
-        color: rgba(255, 255, 255, 0.85);
-        text-decoration: none;
-      }
-      .back-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-family: "Signika", sans-serif;
-        color: inherit;
-        text-decoration: none;
-        opacity: 0.7;
-        transition: opacity 0.2s ease;
-        margin-bottom: 1rem;
-      }
-      .back-link:hover {
-        opacity: 1;
-      }
-
-      .gallery-intro-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1.35fr) minmax(250px, 1fr);
-        align-items: start;
-        gap: clamp(1rem, 3vw, 2.2rem);
-        margin-bottom: clamp(2rem, 5vw, 3.2rem);
-      }
-
-      .gallery-description-panel {
-        max-width: 68ch;
-      }
-
-      .gallery-description-text {
-        margin: 0;
-        font-size: clamp(1rem, 1.4vw, 1.08rem);
-        line-height: 1.8;
-        color: rgba(31, 41, 55, 0.9);
-      }
-
-      .artist-links-panel {
-        border-radius: 14px;
-        padding: clamp(0.9rem, 1.7vw, 1.1rem);
-        border: 1px solid rgba(15, 23, 42, 0.14);
-        background: rgba(255, 255, 255, 0.62);
-      }
-
-      .artist-links-head {
-        display: flex;
-        flex-direction: column;
-        gap: 0.28rem;
-        margin-bottom: 0.95rem;
-      }
-
-      .artist-links-kicker {
-        margin: 0;
-        font-size: 0.7rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        font-weight: 700;
-        color: rgba(30, 41, 59, 0.6);
-      }
-
-      .artist-links-title {
-        margin: 0;
-        font-family: "Signika", sans-serif;
-        font-weight: 700;
-        font-size: clamp(1.06rem, 2vw, 1.28rem);
-      }
-
-      .artist-link-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem 0.9rem;
-      }
-
-      .artist-link-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.58rem;
-        padding: 0.5rem 0.8rem;
-        border-radius: 999px;
-        border: 1px solid rgba(15, 23, 42, 0.19);
-        background: rgba(255, 255, 255, 0.86);
-        color: inherit;
-        text-decoration: none;
-        transition:
-          transform 0.15s ease,
-          border-color 0.15s ease,
-          background 0.15s ease;
-      }
-
-      .artist-link-chip:hover {
-        transform: translateY(-1px);
-        border-color: rgba(15, 23, 42, 0.32);
-        background: rgba(255, 255, 255, 1);
-      }
-
-      .artist-link-chip:focus-visible {
-        outline: 2px solid rgba(15, 23, 42, 0.85);
-        outline-offset: 2px;
-      }
-
-      .artist-link-icon {
-        width: 1.5rem;
-        height: 1.5rem;
-        flex: 0 0 1.5rem;
-        border-radius: 999px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        color: #ffffff;
-      }
-
-      .artist-platform-svg {
-        width: 0.8rem;
-        height: 0.8rem;
-      }
-
-      .artist-link-label {
-        font-family: "Signika", sans-serif;
-        font-weight: 700;
-        font-size: 0.9rem;
-        line-height: 1;
-      }
-
-      .artist-link-chip[data-platform="instagram"] .artist-link-icon {
-        background: #e1306c;
-      }
-
-      .artist-link-chip[data-platform="deezer"] .artist-link-icon {
-        background: #ff005d;
-      }
-
-      .artist-link-chip[data-platform="spotify"] .artist-link-icon {
-        background: #1db954;
-      }
-
-      .gallery-photos-shell {
-        margin-top: 0;
-      }
-
-      .gallery-divider-grid {
-        height: clamp(20px, 3vw, 32px);
-        margin-bottom: clamp(1rem, 2vw, 1.5rem);
-        background: none;
-        mask-image: none;
-        pointer-events: none;
-      }
-
-      @media (max-width: 900px) {
-        .gallery-intro-grid {
-          grid-template-columns: 1fr;
-          gap: 1rem;
-          margin-bottom: clamp(1.8rem, 4vw, 2.3rem);
-        }
-
-        .gallery-description-panel {
-          max-width: none;
-        }
-      }
-
-      @media (max-width: 520px) {
-        .artist-link-chip {
-          padding: 0.48rem 0.74rem;
-        }
-      }
-
-      .press-kit {
-        margin-top: 1.8rem;
-        border-radius: 16px;
-        border: 1px solid rgba(15, 23, 42, 0.1);
-        background: linear-gradient(180deg, #ffffff 0%, #f7f8fa 100%);
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 18px 40px -28px rgba(15, 23, 42, 0.35);
-        overflow: hidden;
-        transition: box-shadow 0.25s ease, border-color 0.25s ease;
-      }
-      .press-kit:hover {
-        border-color: rgba(15, 23, 42, 0.18);
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 24px 50px -30px rgba(15, 23, 42, 0.45);
-      }
-
-      .press-kit summary {
-        list-style: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 1rem 1.15rem;
-        user-select: none;
-        transition: background 0.2s ease;
-      }
-      .press-kit summary::-webkit-details-marker { display: none; }
-      .press-kit summary:hover { background: rgba(15, 23, 42, 0.025); }
-      .press-kit summary:focus-visible {
-        outline: 2px solid #0f172a;
-        outline-offset: -3px;
-      }
-
-      .press-kit-summary-left {
-        display: flex;
-        align-items: center;
-        gap: 0.85rem;
-        min-width: 0;
-      }
-      .press-kit-icon {
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
-        background: #0f172a;
-        color: #fff;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        box-shadow: 0 8px 18px -10px rgba(15, 23, 42, 0.9);
-      }
-      .press-kit-icon svg { width: 19px; height: 19px; display: block; }
-
-      .press-kit-summary-text {
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 0.12rem;
-      }
-      .press-kit-kicker {
-        font-size: 0.62rem;
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: rgba(100, 116, 139, 1);
-        line-height: 1.2;
-      }
-      .press-kit-summary-text strong {
-        font-family: "Signika", sans-serif;
-        font-size: 0.98rem;
-        line-height: 1.25;
-        display: block;
-        letter-spacing: -0.01em;
-      }
-      .press-kit-sub {
-        font-size: 0.76rem;
-        color: rgba(100, 116, 139, 1);
-        line-height: 1.35;
-        display: block;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .press-kit-chevron {
-        flex-shrink: 0;
-        width: 30px;
-        height: 30px;
-        border-radius: 999px;
-        border: 1px solid rgba(15, 23, 42, 0.12);
-        background: #fff;
-        color: #0f172a;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s ease;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-      }
-      .press-kit-chevron svg { width: 13px; height: 13px; display: block; }
-      .press-kit[open] .press-kit-chevron { transform: rotate(180deg); }
-      .press-kit[open] summary { border-bottom: 1px solid rgba(15, 23, 42, 0.07); }
-
-      .press-kit-body {
-        padding: 1.1rem 1.15rem 1.2rem;
-        animation: pressKitReveal 0.3s ease;
-      }
-      @keyframes pressKitReveal {
-        from { opacity: 0; transform: translateY(-4px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .press-kit-body { animation: none; }
-        .press-kit-chevron { transition: none; }
-      }
-
-      .press-kit-desc {
-        font-size: 0.84rem;
-        color: rgba(51, 65, 85, 1);
-        line-height: 1.6;
-        margin: 0 0 1rem;
-        max-width: 62ch;
-      }
-
-      .press-kit-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.7rem;
-        margin: 0 0 1.1rem;
-      }
-      .press-kit-card {
-        position: relative;
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid rgba(15, 23, 42, 0.1);
-        background: #fff;
-        box-shadow: 0 2px 8px -4px rgba(15, 23, 42, 0.25);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-      }
-      .press-kit-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 26px -14px rgba(15, 23, 42, 0.5);
-      }
-      .press-kit-card img {
-        width: 100%;
-        aspect-ratio: 3 / 2;
-        object-fit: cover;
-        display: block;
-        background: rgba(15, 23, 42, 0.06);
-      }
-      .press-kit-card-index {
-        position: absolute;
-        top: 0.5rem;
-        left: 0.5rem;
-        min-width: 22px;
-        height: 22px;
-        padding: 0 6px;
-        border-radius: 999px;
-        background: rgba(2, 6, 23, 0.72);
-        color: #fff;
-        font-family: "Signika", sans-serif;
-        font-weight: 700;
-        font-size: 0.68rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(6px);
-      }
-      .press-kit-card button {
-        width: 100%;
-        padding: 0.55rem 0.4rem;
-        font-family: "Signika", sans-serif;
-        font-weight: 700;
-        font-size: 0.73rem;
-        letter-spacing: 0.02em;
-        background: #0f172a;
-        color: #fff;
-        border: 0;
-        cursor: pointer;
-        transition: background 0.18s ease;
-      }
-      .press-kit-card button:hover { background: #1e293b; }
-      .press-kit-card button:disabled { opacity: 0.7; cursor: progress; }
-
-      .press-kit-credit {
-        display: flex;
-        gap: 0.6rem;
-        align-items: center;
-        padding: 0.6rem 0.7rem;
-        border-radius: 10px;
-        background: rgba(15, 23, 42, 0.04);
-        border: 1px solid rgba(15, 23, 42, 0.08);
-      }
-      .press-kit-credit-label {
-        font-size: 0.6rem;
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: rgba(100, 116, 139, 1);
-        flex-shrink: 0;
-      }
-      .press-kit-credit code {
-        flex: 1;
-        min-width: 0;
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 0.73rem;
-        color: rgba(30, 41, 59, 1);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .press-kit-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.45rem;
-        margin-top: 0.9rem;
-      }
-      .press-kit-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.48rem 0.8rem;
-        border-radius: 999px;
-        font-family: "Signika", sans-serif;
-        font-weight: 700;
-        font-size: 0.78rem;
-        border: 1px solid rgba(15, 23, 42, 0.13);
-        background: #fff;
-        color: #0f172a;
-        text-decoration: none;
-        cursor: pointer;
-        transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
-      }
-      .press-kit-btn:hover {
-        border-color: rgba(15, 23, 42, 0.3);
-        background: rgba(15, 23, 42, 0.04);
-      }
-      .press-kit-btn:active { transform: scale(0.98); }
-      .press-kit-btn svg { width: 14px; height: 14px; display: block; flex-shrink: 0; }
-      .press-kit-btn.primary {
-        background: #0f172a;
-        color: #fff;
-        border-color: #0f172a;
-      }
-      .press-kit-btn.primary:hover { background: #1e293b; border-color: #1e293b; }
-
-      .press-kit-licence {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.4rem;
-        font-size: 0.71rem;
-        color: rgba(100, 116, 139, 1);
-        margin: 0.85rem 0 0;
-        line-height: 1.5;
-      }
-      .press-kit-licence svg { width: 13px; height: 13px; flex-shrink: 0; margin-top: 0.15rem; }
-
-      @media (max-width: 640px) {
-        .press-kit-grid { gap: 0.45rem; }
-        .press-kit-card button { font-size: 0.63rem; letter-spacing: 0; padding: 0.5rem 0.15rem; }
-        .press-kit-card-index { font-size: 0.62rem; min-width: 19px; height: 19px; top: 0.4rem; left: 0.4rem; }
-        .press-kit summary { padding: 0.85rem 0.9rem; }
-        .press-kit-body { padding: 0.95rem 0.9rem 1rem; }
-        .press-kit-icon { width: 36px; height: 36px; border-radius: 10px; }
-        .press-kit-credit {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 0.45rem;
-          padding: 0.7rem;
-        }
-        .press-kit-credit code {
-          white-space: normal;
-          overflow-wrap: anywhere;
-          font-size: 0.71rem;
-          line-height: 1.5;
-        }
-        .press-kit-credit .press-kit-btn { align-self: flex-start; }
-      }
-
-      @media (prefers-color-scheme: dark) {
-        .artist-links-panel {
-          background: rgba(2, 6, 23, 0.74);
-          border-color: rgba(148, 163, 184, 0.36);
-        }
-
-        .gallery-description-text {
-          color: rgba(226, 232, 240, 0.9);
-        }
-
-        .artist-links-kicker {
-          color: rgba(203, 213, 225, 0.78);
-        }
-
-        .artist-link-chip {
-          border-color: rgba(148, 163, 184, 0.42);
-          background: rgba(15, 23, 42, 0.72);
-        }
-
-        .artist-link-chip:hover {
-          border-color: rgba(191, 219, 254, 0.74);
-          background: rgba(15, 23, 42, 0.9);
-        }
-
-        .gallery-divider-grid {
-          background: none;
-          mask-image: none;
-        }
-
-        .press-kit {
-          background: linear-gradient(180deg, rgba(15, 23, 42, 0.94) 0%, rgba(2, 6, 23, 0.97) 100%);
-          border-color: rgba(148, 163, 184, 0.2);
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 24px 50px -32px rgba(0, 0, 0, 0.9);
-        }
-        .press-kit:hover { border-color: rgba(148, 163, 184, 0.34); }
-        .press-kit summary:hover { background: rgba(148, 163, 184, 0.06); }
-        .press-kit summary:focus-visible { outline-color: #fff; }
-        .press-kit[open] summary { border-bottom-color: rgba(148, 163, 184, 0.16); }
-        .press-kit-summary-text strong { color: #f1f5f9; }
-        .press-kit-kicker { color: rgba(148, 163, 184, 0.85); }
-        .press-kit-sub { color: rgba(148, 163, 184, 0.9); }
-        .press-kit-icon { background: #f8fafc; color: #0f172a; box-shadow: 0 8px 18px -12px rgba(0, 0, 0, 0.9); }
-        .press-kit-chevron {
-          background: rgba(15, 23, 42, 0.9);
-          color: #f1f5f9;
-          border-color: rgba(148, 163, 184, 0.26);
-        }
-        .press-kit-desc { color: rgba(203, 213, 225, 0.92); }
-        .press-kit-card {
-          background: rgba(15, 23, 42, 0.75);
-          border-color: rgba(148, 163, 184, 0.2);
-          box-shadow: 0 2px 10px -6px rgba(0, 0, 0, 0.9);
-        }
-        .press-kit-card img { background: rgba(148, 163, 184, 0.12); }
-        .press-kit-card button { background: #f8fafc; color: #0f172a; }
-        .press-kit-card button:hover { background: #e2e8f0; }
-        .press-kit-credit {
-          background: rgba(148, 163, 184, 0.08);
-          border-color: rgba(148, 163, 184, 0.18);
-        }
-        .press-kit-credit-label { color: rgba(148, 163, 184, 0.8); }
-        .press-kit-credit code { color: rgba(226, 232, 240, 0.92); }
-        .press-kit-btn {
-          background: rgba(15, 23, 42, 0.7);
-          color: #f1f5f9;
-          border-color: rgba(148, 163, 184, 0.26);
-        }
-        .press-kit-btn:hover { background: rgba(30, 41, 59, 0.9); border-color: rgba(148, 163, 184, 0.44); }
-        .press-kit-btn.primary { background: #f8fafc; color: #0f172a; border-color: #f8fafc; }
-        .press-kit-btn.primary:hover { background: #e2e8f0; border-color: #e2e8f0; }
-        .press-kit-licence { color: rgba(148, 163, 184, 0.75); }
-      }
-    </style>
+    <script defer src="/dist/js/analytics-tracker.js"></script>
   </head>
 
-  <body
-    class="dark:bg-black bg-white min-h-screen text-black dark:text-white px-5 md:px-20 opacity-0 animate-fade-in transition duration-500"
-  >
-    <!-- Navbar -->
-    <header class="flex w-full overflow-hidden pt-10 pb-1">
-      <nav id="nav" x-data="{ open: false }" role="navigation" class="w-full">
-        <div
-          class="container mx-auto flex flex-wrap items-center md:flex-no-wrap"
-        >
-          <div class="mr-4 md:mr-8">
-            <a href="/" class="text-2xl font-signika font-bold"
-              >MATTIA PARRINELLO</a
-            >
-          </div>
-          <div class="ml-auto md:hidden flex items-center justify-start">
-            <button
-              onclick="menuToggle()"
-              @click="open = !open"
-              class="tap-highlight-transparent text-black dark:text-white w-5 h-5 relative focus:outline-none"
-            >
-              <span class="sr-only">Ouvrir le menu principal</span>
-              <div
-                class="block w-5 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
-              >
-                <span
-                  aria-hidden="true"
-                  class="block absolute h-0.5 w-5 bg-current transform transition duration-500 ease-in-out"
-                  :class="{'rotate-45': open,' -translate-y-1.5': !open }"
-                ></span>
-                <span
-                  aria-hidden="true"
-                  class="block absolute h-0.5 w-5 bg-current transform transition duration-500 ease-in-out"
-                  :class="{'opacity-0': open } "
-                ></span>
-                <span
-                  aria-hidden="true"
-                  class="block absolute h-0.5 w-5 bg-current transform transition duration-500 ease-in-out"
-                  :class="{'-rotate-45': open, ' translate-y-1.5': !open}"
-                ></span>
-              </div>
-            </button>
-          </div>
-          <div
-            id="menu"
-            class="w-full h-0 transition-all ease-out duration-500 md:transition-none md:w-auto md:flex-grow md:flex md:items-center"
-          >
-            <ul
-              id="ulMenu"
-              class="flex flex-col duration-300 ease-out md:space-x-5 sm:transition-none mt-5 md:flex-row md:items-center md:ml-auto md:mt-0 md:pt-0 md:border-0"
-            >
-              <li class="group transition duration-300">
-                <a
-                  href="/portfolio"
-                  class="font-signika text-2xl tap-highlight-transparent"
-                  >PORTFOLIO
-                  <span
-                    class="hidden md:block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-black dark:bg-white"
-                  ></span>
-                </a>
-              </li>
-              <li class="group transition duration-300">
-                <a
-                  href="/galeries"
-                  class="font-signika text-2xl tap-highlight-transparent"
-                  >GALERIES
-                  <span
-                    class="hidden md:block h-0.5 bg-black dark:bg-white"
-                  ></span>
-                </a>
-              </li>
-              <li class="group transition duration-300">
-                <a
-                  href="/a-propos"
-                  class="font-signika text-2xl tap-highlight-transparent"
-                  >À PROPOS
-                  <span
-                    class="hidden md:block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-black dark:bg-white"
-                  ></span>
-                </a>
-              </li>
-              <li class="group transition duration-300">
-                <a
-                  href="/contact"
-                  class="font-signika text-2xl tap-highlight-transparent"
-                  >CONTACT
-                  <span
-                    class="hidden md:block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-black dark:bg-white"
-                  ></span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
+  <body class="cs">
+    <a class="cs-skip" href="#cs-main">Aller au contenu</a>
+
+    <header class="cs-top">
+      <a class="cs-top-name" href="/">Mattia Parrinello</a>
+      <nav class="cs-top-links" aria-label="Navigation principale">
+        <a href="/galeries" aria-current="page">Galeries</a>
+        <a href="/a-propos">À propos</a>
+        <a href="/contact">Contact</a>
+        <a href="?lang=en" hreflang="en" lang="en">EN</a>
       </nav>
     </header>
 
-    <main class="container mx-auto pt-10 pb-16">
-      <a href="/galeries" class="back-link">← Toutes les galeries</a>
-
+    <main class="cs-page" id="cs-main" tabindex="-1">
       <!-- GALLERY_HERO_PLACEHOLDER -->
       <!-- GALLERY_DESCRIPTION_PLACEHOLDER -->
       <!-- GALLERY_PHOTOS_PLACEHOLDER -->
       <!-- PRESS_KIT_PLACEHOLDER -->
     </main>
 
-    <footer>
-      <div class="max-w-screen-xl py-16 mx-auto">
-        <div class="grid grid-cols-1 gap-8 text-center mx-auto">
-          <div>
-            <p class="font-signika"><b>MATTIA PARRINELLO</b></p>
-            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              <a href="/mentions-legales" class="hover:underline"
-                >Mentions légales</a
-              >
-            </p>
-            <p class="mt-3 text-xs text-gray-400 dark:text-gray-500">
-              Mattia Parrinello, Photographe de concert à Paris · Disponible en
-              Île-de-France et partout en France
-            </p>
-          </div>
-        </div>
-      </div>
+    <footer class="cs-footer">
+      <p class="cs-footer-left">Photographe de concert, Paris</p>
+      <nav class="cs-footer-links" aria-label="Pied de page">
+        <a href="/galeries">Galeries</a>
+        <a href="/a-propos">À propos</a>
+        <a href="/contact">Contact</a>
+        <a
+          href="https://www.instagram.com/mattia_jpeg"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Instagram de Mattia Parrinello"
+          >Instagram</a
+        >
+        <a href="/mentions-legales">Mentions légales</a>
+        <a href="?lang=en" hreflang="en" lang="en">EN</a>
+      </nav>
+      <p class="cs-footer-right">© 2026 Mattia Parrinello</p>
     </footer>
 
     <script>
@@ -781,8 +93,5 @@
         }
       });
     </script>
-    <script defer src="/dist/js/fade_in.js"></script>
-    <script defer src="/dist/js/menu.js"></script>
-    <script defer src="/dist/js/analytics-tracker.js"></script>
   </body>
 </html>
