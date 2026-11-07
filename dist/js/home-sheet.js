@@ -12,6 +12,28 @@
   }
 
   ready(function () {
+    // L'hébergement mutualisé renvoie parfois un 508 quand trop d'images
+    // arrivent en même temps (limite de ressources Apache, pas de notre code).
+    // On retente une fois, en décalé, plutôt que de laisser un trou dans la
+    // planche pour toute la visite.
+    document.addEventListener(
+      "error",
+      function (e) {
+        var img = e.target;
+        if (!img || img.tagName !== "IMG" || img.getAttribute("data-retried")) return;
+        var src = img.getAttribute("src") || "";
+        if (src.indexOf("/photos/") < 0) {
+          if (!src && img.getAttribute("data-src")) src = img.getAttribute("data-src");
+          else return;
+        }
+        img.setAttribute("data-retried", "1");
+        window.setTimeout(function () {
+          img.src = src + (src.indexOf("?") > -1 ? "&" : "?") + "retry=1";
+        }, 1200);
+      },
+      true
+    );
+
     var strips = Array.prototype.slice.call(document.querySelectorAll(".cs-strip"));
     var tiles = Array.prototype.slice.call(document.querySelectorAll(".cs-tile"));
     var rows = Array.prototype.slice.call(document.querySelectorAll("[data-filter-gig]"));
