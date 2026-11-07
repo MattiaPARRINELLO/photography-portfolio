@@ -11,7 +11,7 @@
     <!-- META_PLACEHOLDER_END -->
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/dist/assets/Logo_MP.svg" />
-    <link rel="stylesheet" href="/dist/css/output.65998aeb.css" />
+    <link rel="stylesheet" href="/dist/css/output.1d65775e.css" />
     <!-- Typographie : Switzer (Fontshare) -->
     <link rel="preconnect" href="https://api.fontshare.com" />
     <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
@@ -222,9 +222,6 @@
         var img = document.getElementById("randomContactImg");
         var figure = img && img.closest(".cs-contact-shot");
         if (!img || !figure) return;
-        img.addEventListener("load", function () {
-          figure.hidden = false;
-        });
         fetch("/photos-list")
           .then(function (r) {
             return r.json();
@@ -236,6 +233,9 @@
             img.src = file
               ? "/photos/resize?file=" + encodeURIComponent(file) + "&w=800"
               : photo.url;
+            // Le cadre est masqué tant qu'il n'y a pas d'image : une image
+            // dans un parent en display:none ne se charge jamais (lazy).
+            figure.hidden = false;
           })
           .catch(function () {});
       })();

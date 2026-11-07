@@ -2630,7 +2630,7 @@ html.cs-boot-on .cs-boot {
   background: var(--accent);
 }
 
-.cs-contact-title {
+.cs .cs-contact-title {
   margin-top: 20px;
   font-weight: 600;
   line-height: 0.95;
@@ -2654,14 +2654,14 @@ html.cs-boot-on .cs-boot {
   color: var(--muted);
 }
 
-.cs-contact-lede {
+.cs .cs-contact-lede {
   max-width: 42ch;
   margin-top: 28px;
   font-size: var(--step-lead);
   line-height: 1.4;
 }
 
-.cs-contact-line {
+.cs .cs-contact-line {
   max-width: 44ch;
   margin-top: 16px;
   color: var(--muted);
@@ -2689,7 +2689,7 @@ html.cs-boot-on .cs-boot {
   margin: 0;
 }
 
-.cs-contact-shot {
+.cs .cs-contact-shot {
   margin-top: clamp(32px, 4vw, 48px);
 }
 
@@ -2701,6 +2701,11 @@ html.cs-boot-on .cs-boot {
   display: block;
   width: 100%;
   height: auto;
+  /* Une seule hauteur de tirage quelle que soit la photo tirée au hasard :
+     le portrait ne fait plus deux fois la hauteur du formulaire. */
+  aspect-ratio: 3 / 2;
+  -o-object-fit: cover;
+     object-fit: cover;
   background: var(--surface);
   -webkit-user-select: none;
      -moz-user-select: none;
@@ -2847,7 +2852,7 @@ html.cs-boot-on .cs-boot {
   color: var(--alarm);
 }
 
-.cs-contact-alt {
+.cs .cs-contact-alt {
   margin-top: 22px;
   padding-top: 16px;
   border-top: 1px solid rgba(16, 20, 33, 0.14);

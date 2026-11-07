@@ -221,6 +221,8 @@ const _enDict = {
   'Paris, Île-de-France et toute la France': 'Paris, Île-de-France and all of France',
   'Sous 24 heures': 'Within 24 hours',
   'Tirage du jour': 'Print of the day',
+  'vous@exemple.fr': 'you@example.com',
+  'La date, la salle, l\'artiste, ce que vous attendez des images...': 'The date, the venue, the artist, what you expect from the images...',
   'Les trois champs sont obligatoires': 'All three fields are required',
   'Ces informations ne servent qu\'à répondre à votre message.': 'This information is only used to reply to your message.',
   'Ou écrivez directement à': 'Or write directly to',
