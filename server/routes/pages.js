@@ -794,6 +794,123 @@ router.get('/galeries/', (req, res) => res.redirect(301, '/galeries'));
 // ROUTES CLUSTER: /artiste/:slug et /salle/:slug
 // =============================================
 
+// Ces pages sont rendues en HTML inline, donc non réécrites par build:assets :
+// le CSS fingerprinté est résolu via dist/manifest.json à chaque rendu (jamais
+// de nom en dur). Repli sur le fichier non fingerprinté.
+function getSeoLandingCssHref() {
+    try {
+        const manifest = JSON.parse(fs.readFileSync(path.join(paths.root, 'dist/manifest.json'), 'utf-8'));
+        const file = manifest['dist/css/output.css'];
+        if (file) return '/' + file.replace(/^\/+/, '');
+    } catch (e) { /* repli ci-dessous */ }
+    return '/dist/css/output.css';
+}
+
+// Gabarit unique des pages d'atterrissage SEO. Tout le style vient de
+// src/input.css (.cs-seo) : aucun CSS inline, aucun GSAP, aucune image.
+function renderSeoLandingPage({ lang, title, desc, canonical, jsonLd, ogType, kicker, heading, intro, items, citeText, galleryLabel }) {
+    const isEn = lang === 'en';
+    const langHref = isEn ? '?lang=fr' : '?lang=en';
+    const langCode = isEn ? 'fr' : 'en';
+    const langLabel = isEn ? 'FR' : 'EN';
+    const langAria = isEn ? 'Voir en français' : 'View in English';
+    const galleriesHtml = (items || []).map(item => `<li><a class="cs-seo-link" href="${item.href}"><span class="cs-seo-item-title">${item.title}</span>${item.meta ? `<span class="cs-seo-item-meta">${item.meta}</span>` : ''}</a></li>`).join('');
+    const galleriesBlock = galleriesHtml
+        ? `<section class="cs-seo-body" aria-labelledby="cs-seo-galleries">
+          <h2 class="cs-seo-label" id="cs-seo-galleries">${galleryLabel}</h2>
+          <ul class="cs-seo-list">${galleriesHtml}</ul>
+        </section>`
+        : '';
+    return `<!doctype html>
+<html lang="${lang}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="google-adsense-account" content="ca-pub-8723504394639114" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${escapeAttr(title)}</title>
+    <meta name="description" content="${escapeAttr(desc)}" />
+    <link rel="canonical" href="${canonical}" />
+    <link rel="alternate" hreflang="fr" href="${canonical}" />
+    <link rel="alternate" hreflang="en" href="${canonical}?lang=en" />
+    <link rel="alternate" hreflang="x-default" href="${canonical}" />
+    <meta property="og:title" content="${escapeAttr(title)}" />
+    <meta property="og:description" content="${escapeAttr(desc)}" />
+    <meta property="og:image" content="https://www.photo.mprnl.fr/dist/assets/og-image.jpg" />
+    <meta property="og:type" content="${ogType}" />
+    <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
+    <link rel="icon" type="image/svg+xml" href="/dist/assets/Logo_MP.svg" />
+    <link rel="stylesheet" href="${getSeoLandingCssHref()}" />
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+    <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&display=swap" rel="stylesheet" />
+    <script defer src="/dist/js/analytics-tracker.js"></script>
+  </head>
+
+  <body class="cs">
+    <a class="cs-skip" href="#cs-main">Aller au contenu</a>
+
+    <header class="cs-top">
+      <a class="cs-top-name" href="/">Mattia Parrinello</a>
+      <nav class="cs-top-links" aria-label="Navigation principale">
+        <a href="/galeries">Galeries</a>
+        <a href="/a-propos">À propos</a>
+        <a href="/contact">Contact</a>
+        <a href="${langHref}" hreflang="${langCode}" lang="${langCode}" aria-label="${langAria}">${langLabel}</a>
+      </nav>
+    </header>
+
+    <main class="cs-page" id="cs-main">
+      <article class="cs-seo">
+        <header class="cs-seo-head">
+          <p class="cs-seo-kicker">${escapeAttr(kicker)}</p>
+          <h1 class="cs-seo-title">${escapeAttr(heading)}</h1>
+          <p class="cs-seo-lede">${escapeAttr(intro)}</p>
+        </header>
+        ${galleriesBlock}
+        <p class="cs-seo-back"><a href="/galeries">${isEn ? 'All galleries' : 'Toutes les galeries'}</a></p>
+        <aside class="cs-seo-cite" aria-label="${isEn ? 'Cite this page' : 'Citer cette page'}">
+          <p class="cs-seo-cite-label">${isEn ? 'Cite this page' : 'Citer cette page'}</p>
+          <p class="cs-seo-cite-text">${escapeAttr(citeText)}</p>
+          <button type="button" class="cs-seo-copy" data-cite="${escapeAttr(citeText)}">${isEn ? 'Copy citation' : 'Copier la citation'}</button>
+        </aside>
+      </article>
+    </main>
+
+    <footer class="cs-footer">
+      <p class="cs-footer-left">Photographe de concert, Paris</p>
+      <nav class="cs-footer-links" aria-label="Pied de page">
+        <a href="/galeries">Galeries</a>
+        <a href="/a-propos">À propos</a>
+        <a href="/contact">Contact</a>
+        <a href="https://www.instagram.com/mattia_jpeg" target="_blank" rel="noopener noreferrer" aria-label="Instagram de Mattia Parrinello">Instagram</a>
+        <a href="/mentions-legales">Mentions légales</a>
+        <a href="${langHref}" hreflang="${langCode}" lang="${langCode}" aria-label="${langAria}">${langLabel}</a>
+      </nav>
+      <p class="cs-footer-right">© 2026 Mattia Parrinello</p>
+    </footer>
+
+    <script>
+      (function () {
+        document.querySelectorAll('.cs-seo-copy').forEach(function (button) {
+          button.addEventListener('click', function () {
+            var text = button.getAttribute('data-cite') || '';
+            var label = button.textContent;
+            var done = function () {
+              button.textContent = '${isEn ? 'Copied ✓' : 'Copié ✓'}';
+              window.setTimeout(function () { button.textContent = label; }, 1600);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(done, function () {});
+            }
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>`;
+}
+
 router.get('/artiste/:slug', async (req, res) => {
     const seo = loadSeoData();
     const slug = decodeURIComponent(req.params.slug);
@@ -806,7 +923,6 @@ router.get('/artiste/:slug', async (req, res) => {
     const isEn = lang === 'en';
     const title = isEn ? `${artist.name} - Concert photos by Mattia Parrinello` : `${artist.name} - Photos de concert par Mattia Parrinello`;
     const desc = artist.description || (isEn ? `Concert photos of ${artist.name} by Mattia Parrinello, concert photographer in Paris.` : `Photos de concert de ${artist.name} par Mattia Parrinello, photographe de concert à Paris.`);
-    const galLinks = galleries.map(g => `<li><a href="/galeries/${encodeURIComponent(g.slug)}">${escapeAttr(g.title)}${g.venue ? ' - ' + escapeAttr(g.venue) : ''}</a></li>`).join('');
     const canonical = `https://www.photo.mprnl.fr/artiste/${encodeURIComponent(slug)}`;
     const sameAs = Object.values(artistLinks).filter(Boolean);
     const jsonLd = {
@@ -823,9 +939,24 @@ router.get('/artiste/:slug', async (req, res) => {
     const citeText = isEn
         ? `Concert photos of ${artist.name} (${artist.genre || 'Rap'}) by Mattia Parrinello (MPRNL), concert photographer based in Paris. ${galleries.length} ${galleries.length === 1 ? 'gallery' : 'galleries'} online. Source: ${canonical}`
         : `Photos de concert de ${artist.name} (${artist.genre || 'Rap'}) par Mattia Parrinello (MPRNL), photographe de concert basé à Paris. ${galleries.length} ${galleries.length === 1 ? 'galerie' : 'galeries'} en ligne. Source : ${canonical}`;
-    const citeBlock = `<aside class="cite-box"><p class="cite-label" onclick="navigator.clipboard.writeText(this.dataset.text).then(function(){this.textContent='${isEn ? 'Copied ✓' : 'Copié ✓'}'})" data-text="${escapeAttr(citeText)}" style="cursor:pointer;font-weight:700;margin:0 0 0.4rem">${isEn ? 'Cite this page' : 'Citer cette page'}</p><p style="margin:0;font-family:ui-monospace,monospace;font-size:0.78rem;word-break:break-all;opacity:0.7">${escapeAttr(citeText)}</p></aside>`;
-    const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${escapeAttr(title)}</title><meta name="description" content="${escapeAttr(desc)}"><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="fr" href="${canonical}"><link rel="alternate" hreflang="en" href="${canonical}?lang=en"><link rel="alternate" hreflang="x-default" href="${canonical}"><meta property="og:title" content="${escapeAttr(title)}"><meta property="og:description" content="${escapeAttr(desc)}"><meta property="og:image" content="https://www.photo.mprnl.fr/dist/assets/og-image.jpg"><meta property="og:type" content="profile"><script type="application/ld+json">${JSON.stringify(jsonLd)}</script><style>body{margin:0;padding:1rem 1.5rem;font-family:system-ui,sans-serif;max-width:800px;margin:0 auto;line-height:1.6}h1{font-size:1.8rem}a{color:#2563eb}a:hover{text-decoration:none}.galleries{list-style:none;padding:0}.galleries li{padding:0.4rem 0;border-bottom:1px solid #eee}.galleries li a{text-decoration:none}.galleries li a:hover{text-decoration:underline}.cite-box{margin-top:1.5rem;padding:1rem;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;color:#334155;font-size:0.85rem}.lang-switch{position:fixed;top:14px;right:14px;z-index:50;background:rgba(255,255,255,0.92);border:1px solid rgba(15,23,42,0.12);border-radius:999px;padding:4px 10px;font-weight:700;font-size:0.72rem;text-decoration:none;color:#0f172a}@media(prefers-color-scheme:dark){.cite-box{background:#0f172a;border-color:#334155;color:#cbd5e1}.lang-switch{background:rgba(15,23,42,0.9);border-color:rgba(148,163,184,0.22);color:#fff}}</style></head><body><h1>${escapeAttr(title)}</h1><p>${escapeAttr(desc)}</p>${galLinks ? `<h2>${isEn ? 'Galleries' : 'Galeries'}</h2><ul class="galleries">${galLinks}</ul>` : ''}<p style="margin-top:2rem"><a href="/galeries">${isEn ? 'All galleries' : 'Toutes les galeries'}</a></p>${citeBlock}<a class="lang-switch" href="${canonical}${isEn ? '?lang=fr' : '?lang=en'}" hreflang="${isEn ? 'fr' : 'en'}" aria-label="${isEn ? 'Voir en français' : 'View in English'}">${isEn ? 'FR' : 'EN'}</a></body></html>`;
-    res.send(html);
+    res.send(renderSeoLandingPage({
+        lang,
+        title,
+        desc,
+        canonical,
+        jsonLd,
+        ogType: 'profile',
+        kicker: artist.genre || (isEn ? 'Artist' : 'Artiste'),
+        heading: title,
+        intro: desc,
+        galleryLabel: isEn ? 'Galleries' : 'Galeries',
+        items: galleries.map(g => ({
+            href: `/galeries/${encodeURIComponent(g.slug)}`,
+            title: escapeAttr(g.title),
+            meta: g.venue ? escapeAttr(g.venue) : ''
+        })),
+        citeText
+    }));
 });
 
 router.get('/salle/:slug', async (req, res) => {
@@ -838,7 +969,6 @@ router.get('/salle/:slug', async (req, res) => {
     const isEn = lang === 'en';
     const title = isEn ? `${venue.name} (${venue.city}) - Concert photos` : `${venue.name} (${venue.city}) - Photos de concert`;
     const desc = venue.description || (isEn ? `Concert photos at ${venue.name} in ${venue.city} by Mattia Parrinello.` : `Photos de concerts à ${venue.name} à ${venue.city} par Mattia Parrinello.`);
-    const galLinks = galleries.map(g => `<li><a href="/galeries/${encodeURIComponent(g.slug)}">${escapeAttr(g.title)}${g.artist ? ' — ' + escapeAttr(g.artist) : ''}</a></li>`).join('');
     const canonical = `https://www.photo.mprnl.fr/salle/${encodeURIComponent(slug)}`;
     const jsonLd = {
         '@context': 'https://schema.org',
@@ -854,9 +984,24 @@ router.get('/salle/:slug', async (req, res) => {
     const citeText = isEn
         ? `Concert photos at ${venue.name}, ${venue.city}, by Mattia Parrinello (MPRNL), concert photographer based in Paris. ${galleries.length} ${galleries.length === 1 ? 'gallery' : 'galleries'} online. Source: ${canonical}`
         : `Photos de concerts à ${venue.name}, ${venue.city}, par Mattia Parrinello (MPRNL), photographe de concert basé à Paris. ${galleries.length} ${galleries.length === 1 ? 'galerie' : 'galeries'} en ligne. Source : ${canonical}`;
-    const citeBlock = `<aside class="cite-box"><p class="cite-label" onclick="navigator.clipboard.writeText(this.dataset.text).then(function(){this.textContent='${isEn ? 'Copied ✓' : 'Copié ✓'}'})" data-text="${escapeAttr(citeText)}" style="cursor:pointer;font-weight:700;margin:0 0 0.4rem">${isEn ? 'Cite this page' : 'Citer cette page'}</p><p style="margin:0;font-family:ui-monospace,monospace;font-size:0.78rem;word-break:break-all;opacity:0.7">${escapeAttr(citeText)}</p></aside>`;
-    const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${escapeAttr(title)}</title><meta name="description" content="${escapeAttr(desc)}"><link rel="canonical" href="${canonical}"><link rel="alternate" hreflang="fr" href="${canonical}"><link rel="alternate" hreflang="en" href="${canonical}?lang=en"><link rel="alternate" hreflang="x-default" href="${canonical}"><meta property="og:title" content="${escapeAttr(title)}"><meta property="og:description" content="${escapeAttr(desc)}"><meta property="og:image" content="https://www.photo.mprnl.fr/dist/assets/og-image.jpg"><meta property="og:type" content="website"><script type="application/ld+json">${JSON.stringify(jsonLd)}</script><style>body{margin:0;padding:1rem 1.5rem;font-family:system-ui,sans-serif;max-width:800px;margin:0 auto;line-height:1.6}h1{font-size:1.8rem}a{color:#2563eb}a:hover{text-decoration:none}.galleries{list-style:none;padding:0}.galleries li{padding:0.4rem 0;border-bottom:1px solid #eee}.galleries li a{text-decoration:none}.galleries li a:hover{text-decoration:underline}.cite-box{margin-top:1.5rem;padding:1rem;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;color:#334155;font-size:0.85rem}.lang-switch{position:fixed;top:14px;right:14px;z-index:50;background:rgba(255,255,255,0.92);border:1px solid rgba(15,23,42,0.12);border-radius:999px;padding:4px 10px;font-weight:700;font-size:0.72rem;text-decoration:none;color:#0f172a}@media(prefers-color-scheme:dark){.cite-box{background:#0f172a;border-color:#334155;color:#cbd5e1}.lang-switch{background:rgba(15,23,42,0.9);border-color:rgba(148,163,184,0.22);color:#fff}}</style></head><body><h1>${escapeAttr(title)}</h1><p>${escapeAttr(desc)}</p>${galLinks ? `<h2>${isEn ? 'Galleries' : 'Galeries'}</h2><ul class="galleries">${galLinks}</ul>` : ''}<p style="margin-top:2rem"><a href="/galeries">${isEn ? 'All galleries' : 'Toutes les galeries'}</a></p>${citeBlock}<a class="lang-switch" href="${canonical}${isEn ? '?lang=fr' : '?lang=en'}" hreflang="${isEn ? 'fr' : 'en'}" aria-label="${isEn ? 'Voir en français' : 'View in English'}">${isEn ? 'FR' : 'EN'}</a></body></html>`;
-    res.send(html);
+    res.send(renderSeoLandingPage({
+        lang,
+        title,
+        desc,
+        canonical,
+        jsonLd,
+        ogType: 'website',
+        kicker: venue.city || (isEn ? 'Venue' : 'Salle'),
+        heading: title,
+        intro: desc,
+        galleryLabel: isEn ? 'Galleries' : 'Galeries',
+        items: galleries.map(g => ({
+            href: `/galeries/${encodeURIComponent(g.slug)}`,
+            title: escapeAttr(g.title),
+            meta: g.artist ? escapeAttr(g.artist) : ''
+        })),
+        citeText
+    }));
 });
 
 router.get('/galeries/:slug', async (req, res) => {

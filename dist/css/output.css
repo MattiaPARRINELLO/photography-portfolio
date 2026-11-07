@@ -1916,6 +1916,175 @@ html.cs-boot-on .cs-boot {
   }
 }
 
+/* --- Pages d'atterrissage SEO : /artiste/:slug et /salle/:slug ----------- */
+/* Pages de texte, sans mouvement : en-tête du socle, titre, phrase d'intro,
+   liste des galeries, lien de retour et bloc citation copiable. Le rose ne
+   sert qu'aux repères et aux actions (kicker, survol, retour, copie). */
+
+.cs-seo {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: clamp(48px, 7vw, 104px) var(--pad) clamp(64px, 9vw, 128px);
+}
+
+.cs-seo-head {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: clamp(28px, 3vw, 44px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.cs-seo-kicker {
+  font-size: var(--step-small);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.cs-seo-title {
+  max-width: 20ch;
+  font-size: clamp(2rem, 1.25rem + 3.4vw, 4rem);
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.cs-seo-lede {
+  max-width: 58ch;
+  font-size: var(--step-lead);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.cs-seo-body {
+  margin-top: clamp(36px, 4.5vw, 64px);
+}
+
+.cs-seo-label {
+  margin-bottom: 4px;
+  font-size: var(--step-small);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cs-seo-list {
+  padding: 0;
+  list-style: none;
+}
+
+.cs-seo-list li {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cs-seo-list li:first-child {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cs-seo-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 28px;
+  padding: 18px 0;
+}
+
+.cs-seo-item-title {
+  font-size: var(--step-lead);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+.cs-seo-link:hover .cs-seo-item-title,
+.cs-seo-link:focus-visible .cs-seo-item-title {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+.cs-seo-item-meta {
+  font-size: var(--step-small);
+  color: var(--muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-seo-back {
+  margin-top: clamp(28px, 3vw, 40px);
+}
+
+.cs-seo-back a {
+  display: inline-block;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--accent);
+  font-size: var(--step-small);
+  font-weight: 500;
+}
+
+.cs-seo-cite {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 720px;
+  margin-top: clamp(40px, 5vw, 72px);
+  padding: 20px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--surface);
+}
+
+.cs-seo-cite-label {
+  font-size: var(--step-small);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.cs-seo-cite-text {
+  font-family: ui-monospace, "SFMono-Regular", "Menlo", monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--muted);
+  word-break: break-word;
+}
+
+.cs-seo-copy {
+  margin-top: 4px;
+  padding: 9px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--step-small);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.cs-seo-copy:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .cs-seo-link {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .cs-seo-item-meta {
+    text-align: left;
+  }
+}
+
 /* --- Hero : la planche --------------------------------------------------- */
 
 .cs-hero {
