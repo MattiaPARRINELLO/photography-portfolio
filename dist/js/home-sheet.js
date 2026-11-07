@@ -299,6 +299,7 @@
       var ROW_MAX = 240;
       var HOT_RISE = 40; // débordement de l'image survolée dans l'interstice
       var MIN_FRAMES = 5; // en dessous, la rangée paraît vide
+      var DWELL = 70; // ms d'arret avant de changer de photo dans une rangee ouverte
       var DURATION = 0.5;
       var EASE = "power3.out";
       var wide = window.matchMedia("(min-width: 901px)");
@@ -311,9 +312,13 @@
         var frames = pool;
         var ratios = pool.map(ratioOf);
         var natural = [];
+        var targets = []; // largeurs visees : celles de repos ou celles de l'ouverture
+        var lefts = []; // bords gauches vises, dans la boite
+        var boxRect = null; // dernier rectangle connu de la boite
         var rowH = ROW_HEIGHT;
         var hotIndex = -1;
         var lastWidth = -1;
+        var pending = 0;
 
         function ratioOf(frame) {
           var img = frame.querySelector("img");
@@ -325,6 +330,22 @@
             h = img.naturalHeight;
           }
           return w && h ? w / h : 1;
+        }
+
+        // Le test de survol se fait sur la géométrie visée, pas sur le DOM :
+        // aucune lecture de layout pendant l'animation.
+        function setTargets(widths) {
+          targets = widths.slice();
+          lefts = [];
+          var x = 0;
+          for (var i = 0; i < targets.length; i++) {
+            lefts.push(x);
+            x += targets[i] + GAP;
+          }
+        }
+
+        function cacheBox() {
+          boxRect = box.getBoundingClientRect();
         }
 
         // Découpage retenu : celui dont la hauteur justifiée tombe le plus près
@@ -356,14 +377,21 @@
           if (!animate || Math.abs(from - rowH) < 0.5) {
             gsap.killTweensOf(img);
             img.style.height = "";
+            frame.style.overflow = "";
             return;
           }
+          // Le cadre laisse déborder l'image le temps qu'elle reprenne sa
+          // hauteur, sinon le haut serait coupé d'un coup.
+          frame.style.overflow = "visible";
           gsap.fromTo(img, { height: from }, {
             height: rowH,
             duration: duration,
             ease: EASE,
             overwrite: true,
-            onComplete: function () { img.style.height = ""; }
+            onComplete: function () {
+              img.style.height = "";
+              frame.style.overflow = "";
+            }
           });
         }
 
@@ -387,6 +415,7 @@
               gsap.set(f, { width: natural[j], opacity: 1 });
             }
           });
+          setTargets(natural);
         }
 
         function open(index) {
@@ -401,26 +430,30 @@
           var left = Math.max(total - hot - gaps, 80);
           var sum = natural.reduce(function (a, w, j) { return j === index ? a : a + w; }, 0) || 1;
 
+          var next = [];
           frames.forEach(function (f, j) {
-            var width = j === index ? hot : Math.min(left * (natural[j] / sum), natural[j]);
+            var width = Math.max(j === index ? hot : Math.min(left * (natural[j] / sum), natural[j]), 24);
+            next.push(width);
             if (j === index) {
               var img = f.querySelector("img");
               if (img) {
                 gsap.killTweensOf(img);
                 img.style.height = "";
               }
+              f.style.overflow = "";
               f.classList.add("is-hot");
             } else if (f.classList.contains("is-hot")) {
               settleImage(f, true, DURATION);
             }
             gsap.to(f, {
-              width: Math.max(width, 24),
+              width: width,
               opacity: j === index ? 1 : 0.75,
               duration: DURATION,
               ease: EASE,
               overwrite: true
             });
           });
+          setTargets(next);
           strip.classList.add("is-hot-row");
         }
 
@@ -443,8 +476,10 @@
               gsap.killTweensOf(f);
               f.style.width = "";
               f.style.opacity = "";
+              f.style.removeProperty("--col-w");
             });
             natural = [];
+            setTargets(natural);
             return;
           }
 
@@ -458,8 +493,12 @@
             return Math.max(r * rowH * scale, 24);
           });
 
+          frames.forEach(function (f, j) {
+            f.style.setProperty("--col-w", natural[j] + "px");
+          });
           strip.classList.add("cs-accordion");
           reset(false);
+          cacheBox();
         }
 
         function relayout() {

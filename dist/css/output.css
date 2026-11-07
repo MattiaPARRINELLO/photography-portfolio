@@ -1775,9 +1775,15 @@ html.cs-boot-on .cs-boot {
 
 /* Accordéon : la largeur des cadres est pilotée par GSAP. L'image survolée
    garde son format : sa hauteur suit sa largeur et elle dépasse la bande vers
-   le haut, dans l'interstice, sans jamais couvrir la légende. */
+   le haut, dans l'interstice, sans jamais couvrir la légende.
+   Les autres images gardent leur largeur au repos : le cadre les masque quand
+   il se resserre, elles ne se réajustent donc pas à chaque image (c'était le
+   tremblement : chaque photo se recadrait à chaque déplacement du curseur). */
 .cs-accordion .cs-strip-frame img {
-  width: 100%;
+  flex: none;
+  /* without this the img reset (max-width: 100%) reclamps it to the frame */
+  max-width: none;
+  width: var(--col-w, 100%);
 }
 
 /* La hauteur de rangée est calculée par le client pour que les photos
@@ -1796,6 +1802,12 @@ html.cs-boot-on .cs-boot {
   .cs-accordion .cs-strip-frame {
     display: flex;
     align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .cs-accordion .cs-strip-frame.is-hot {
+    overflow: visible;
   }
 
   .cs-accordion .cs-strip-frame img {
@@ -1805,6 +1817,7 @@ html.cs-boot-on .cs-boot {
   }
 
   .cs-accordion .cs-strip-frame.is-hot img {
+    width: 100%;
     height: auto;
     -o-object-fit: contain;
        object-fit: contain;
