@@ -3,100 +3,61 @@
   <head>
     <meta charset="utf-8" />
     <meta name="google-adsense-account" content="ca-pub-8723504394639114" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>404, Page introuvable</title>
     <meta name="robots" content="noindex, follow" />
-    <style>
-      :root {
-        --bg: #ffffff;
-        --fg: #111111;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #0b0b0b;
-          --fg: #f7f7f7;
-        }
-      }
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-      }
-      body {
-        background: var(--bg);
-        color: var(--fg);
-        -webkit-font-smoothing: antialiased;
-        font-family:
-          system-ui,
-          -apple-system,
-          Segoe UI,
-          Roboto,
-          Helvetica,
-          Arial;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .wrap {
-        padding: 24px;
-        text-align: center;
-        max-width: 720px;
-      }
-      .code {
-        font-weight: 700;
-        font-size: clamp(3rem, 10vw, 6rem);
-        margin: 0;
-      }
-      h1 {
-        margin: 0.4rem 0 0.6rem;
-        font-size: clamp(1.1rem, 3vw, 1.6rem);
-        font-weight: 600;
-      }
-      p {
-        margin: 0;
-        color: rgba(17, 17, 17, 0.72);
-      }
-      @media (prefers-color-scheme: dark) {
-        p {
-          color: rgba(247, 247, 247, 0.72);
-        }
-      }
-      .actions {
-        margin-top: 18px;
-        display: flex;
-        gap: 10px;
-        justify-content: center;
-      }
-      a {
-        padding: 8px 14px;
-        border-radius: 999px;
-        text-decoration: none;
-        font-weight: 600;
-        border: 1px solid currentColor;
-        color: inherit;
-      }
-      .primary {
-        background: var(--fg);
-        color: var(--bg);
-        border-color: transparent;
-      }
-      .secondary {
-        background: transparent;
-      }
-    </style>
+    <meta
+      name="description"
+      content="Cette page n'existe pas ou plus. Retrouvez les galeries de concerts de Mattia Parrinello."
+    />
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/dist/assets/Logo_MP.svg" />
+    <link rel="stylesheet" href="/dist/css/output.2a3bffa1.css" />
+    <!-- Typographie : Switzer (Fontshare) -->
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+    <link
+      rel="preload"
+      href="https://cdn.fontshare.com/wf/5SZVFDB7V52TI6ULVC6J3WQZQCIZVDV5/ODYPSTCUDMKSTYIPTV4CLQ7URIK7XYBJ/YS3VPNVO4B3TOJMEXDGFZQ4TLZGGSRZC.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="https://cdn.fontshare.com/wf/BLNB4FAQFNK56DWWNF7PMGTCOTZHOEII/ST3WKSSDMBK2MIQQO3MAVYWLF4FTOLFV/6IN5WOLRCYP4G4MOCOHOMXNON6Q7MDAR.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&display=swap"
+      rel="stylesheet"
+    />
   </head>
-  <body>
-    <div class="wrap">
-      <p class="code">404</p>
-      <h1>Page introuvable</h1>
-      <p>
-        Le lien demandé ne mène nulle part. Retournez au portfolio ou
-        contacte-moi.
-      </p>
-      <div class="actions">
-        <a class="primary" href="/">Portfolio</a>
-        <a class="secondary" href="/contact">Contact</a>
+
+  <body class="cs">
+    <main class="cs-404" id="cs-main">
+      <div class="cs-404-inner">
+        <div class="cs-404-sheet" aria-hidden="true">
+          <div class="cs-404-frame">
+            <p class="cs-404-code">404</p>
+          </div>
+          <div class="cs-404-strip">
+            <span>Tirage manquant</span>
+            <span>MPRNL</span>
+          </div>
+        </div>
+
+        <h1 class="cs-404-note">
+          Cette image n'a pas été prise. Le lien mène nulle part.
+        </h1>
+
+        <div class="cs-404-actions">
+          <a class="cs-404-link is-primary" href="/">Retour à l'accueil</a>
+          <a class="cs-404-link is-quiet" href="/galeries">Voir les galeries</a>
+        </div>
       </div>
-    </div>
+    </main>
   </body>
 </html>
