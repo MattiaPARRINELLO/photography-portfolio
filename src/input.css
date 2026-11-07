@@ -2589,6 +2589,405 @@ html.cs-boot-on .cs-boot {
   font-variant-numeric: tabular-nums;
 }
 
+/* ==========================================================================
+   Contact
+   Colonne de texte à gauche, formulaire posé sur une feuille à droite.
+   ========================================================================== */
+
+.cs-contact {
+  /* Rose lisible sur papier : l'accent pur ne passe pas le contraste en
+     petit texte, cette variante sombre sert aux erreurs et aux repères. */
+  --alarm: #b0124a;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 24px;
+  padding: clamp(56px, 7vw, 112px) var(--pad) 0;
+}
+
+.cs-contact-intro {
+  grid-column: 1 / 6;
+}
+
+.cs-contact-kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--step-small);
+  letter-spacing: 0.01em;
+  color: var(--muted);
+}
+
+.cs-contact-kicker::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.cs-contact-title {
+  margin-top: 20px;
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+}
+
+.cs-contact-title-lead {
+  display: block;
+  max-width: 12ch;
+  font-size: clamp(2.25rem, 1.2rem + 2.9vw, 4rem);
+}
+
+.cs-contact-title-sub {
+  display: block;
+  max-width: 34ch;
+  margin-top: 18px;
+  font-size: var(--step-lead);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--muted);
+}
+
+.cs-contact-lede {
+  max-width: 42ch;
+  margin-top: 28px;
+  font-size: var(--step-lead);
+  line-height: 1.4;
+}
+
+.cs-contact-line {
+  max-width: 44ch;
+  margin-top: 16px;
+  color: var(--muted);
+}
+
+.cs-contact-facts {
+  margin: 32px 0 0;
+  border-top: 1px solid var(--surface-2);
+}
+
+.cs-contact-facts > div {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--surface-2);
+  font-size: var(--step-small);
+}
+
+.cs-contact-facts dt {
+  color: var(--muted);
+}
+
+.cs-contact-facts dd {
+  margin: 0;
+}
+
+.cs-contact-shot {
+  margin-top: clamp(32px, 4vw, 48px);
+}
+
+.cs-contact-shot[hidden] {
+  display: none;
+}
+
+.cs-contact-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--surface);
+  user-select: none;
+}
+
+.cs-contact-shot figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 10px;
+  background: var(--surface);
+  font-size: var(--step-small);
+}
+
+/* --- Le formulaire, sur papier ------------------------------------------ */
+
+.cs-contact-form {
+  grid-column: 7 / 13;
+  align-self: start;
+  padding: clamp(24px, 3vw, 40px);
+  background: var(--paper);
+  color: var(--paper-ink);
+}
+
+.cs-contact-form-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 26px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(16, 20, 33, 0.14);
+}
+
+.cs-contact-form-title {
+  font-size: var(--step-lead);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.cs-contact-form-note {
+  font-size: var(--step-small);
+  color: var(--paper-muted);
+}
+
+.cs-form {
+  display: grid;
+  gap: 22px;
+}
+
+.cs-honeypot {
+  position: absolute;
+  left: -9999px;
+}
+
+.cs-field {
+  display: grid;
+  gap: 8px;
+}
+
+.cs-field-label {
+  font-size: var(--step-small);
+  font-weight: 500;
+}
+
+.cs-field input,
+.cs-field textarea {
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 14px;
+  border: 1px solid rgba(16, 20, 33, 0.22);
+  border-radius: 0;
+  background: var(--paper);
+  color: var(--paper-ink);
+  font: inherit;
+  /* 16 px minimum : en dessous, iOS zoome au focus. */
+  font-size: max(16px, 1rem);
+  line-height: 1.4;
+  appearance: none;
+  transition: border-color 0.18s ease;
+}
+
+.cs-field textarea {
+  min-height: 168px;
+  resize: vertical;
+}
+
+.cs-field input::placeholder,
+.cs-field textarea::placeholder {
+  color: #8b8490;
+}
+
+.cs-field input:hover,
+.cs-field textarea:hover {
+  border-color: rgba(16, 20, 33, 0.42);
+}
+
+.cs-field input:focus,
+.cs-field textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.cs-field [aria-invalid="true"] {
+  border-color: var(--alarm);
+}
+
+.cs-field-error {
+  font-size: var(--step-small);
+  line-height: 1.4;
+  color: var(--alarm);
+}
+
+.cs-field-error[hidden] {
+  display: none;
+}
+
+.cs-send {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.cs-form-status {
+  min-height: 1.4em;
+  font-size: var(--step-small);
+  color: var(--paper-muted);
+}
+
+.cs-form-status.is-ok {
+  font-weight: 500;
+  color: var(--paper-ink);
+}
+
+.cs-form-status.is-error {
+  color: var(--alarm);
+}
+
+.cs-contact-alt {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(16, 20, 33, 0.14);
+  font-size: var(--step-small);
+  line-height: 1.5;
+  color: var(--paper-muted);
+}
+
+.cs-contact-alt a {
+  color: var(--paper-ink);
+  border-bottom: 1px solid currentColor;
+}
+
+/* --- Confirmation d'envoi ----------------------------------------------- */
+
+.cs-sent {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(13, 6, 11, 0.82);
+}
+
+.cs-sent-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 32px;
+  background: var(--paper);
+  color: var(--paper-ink);
+}
+
+.cs-check {
+  width: 104px;
+  height: 104px;
+}
+
+.cs-check circle,
+.cs-check polyline {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: cs-dash 0.5s ease forwards;
+}
+
+.cs-check polyline {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation-delay: 0.4s;
+  animation-duration: 0.3s;
+}
+
+.cs-sent-text {
+  font-size: var(--step-lead);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+@keyframes cs-dash {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* --- FAQ injectée par le serveur ---------------------------------------- */
+/* generateFaqHtml place un bloc clair commun aux pages ; sur le noir de la
+   page contact, on le ramène au vocabulaire de la planche (filets, sans
+   cadre ni coin arrondi). */
+
+.cs .faq-section {
+  margin: 0;
+  padding: clamp(56px, 7vw, 112px) var(--pad) 0;
+}
+
+.cs .faq-section h2 {
+  margin: 0 0 20px;
+  font-family: inherit;
+  font-size: var(--step-h2);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.cs .faq-item {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--surface-2);
+  border-radius: 0;
+  background: transparent;
+}
+
+.cs .faq-item:last-child {
+  border-bottom: 1px solid var(--surface-2);
+}
+
+.cs .faq-item summary {
+  padding: 16px 0;
+  font-family: inherit;
+  font-size: var(--step-body);
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.cs .faq-item[open] summary {
+  border-bottom: 0;
+}
+
+.cs .faq-item p {
+  max-width: 70ch;
+  margin: 0;
+  padding: 0 0 18px;
+  font-size: var(--step-small);
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.cs .faq-chevron {
+  color: var(--muted);
+}
+
+@media (max-width: 900px) {
+  .cs-contact {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-top: 40px;
+  }
+
+  .cs-contact-intro,
+  .cs-contact-form {
+    grid-column: auto;
+  }
+
+  .cs-contact-facts > div {
+    grid-template-columns: 8.5rem 1fr;
+  }
+
+  .cs-contact-form {
+    padding: 24px 18px;
+  }
+
+  .cs-send {
+    width: 100%;
+  }
+}
+
 /* --- Mouvement ---------------------------------------------------------- */
 
 /* Les animations d'entrée et de parallaxe sont pilotées par GSAP
