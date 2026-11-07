@@ -1,8 +1,9 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="google-adsense-account" content="ca-pub-8723504394639114" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- META_PLACEHOLDER_START -->
     <title>{{DYNAMIC_TITLE}}</title>
@@ -10,406 +11,188 @@
     <!-- META_PLACEHOLDER_END -->
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/dist/assets/Logo_MP.svg" />
-    <link rel="stylesheet" href="/dist/css/output.7284bbc8.css" />
-    <!-- Start, Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="/dist/css/output.fa7cde0c.css" />
+    <!-- Typographie : Switzer (Fontshare) -->
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
     <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin="anonymous"
+      rel="preload"
+      href="https://cdn.fontshare.com/wf/5SZVFDB7V52TI6ULVC6J3WQZQCIZVDV5/ODYPSTCUDMKSTYIPTV4CLQ7URIK7XYBJ/YS3VPNVO4B3TOJMEXDGFZQ4TLZGGSRZC.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Signika:wght@400;700&display=swap"
+      rel="preload"
+      href="https://cdn.fontshare.com/wf/BLNB4FAQFNK56DWWNF7PMGTCOTZHOEII/ST3WKSSDMBK2MIQQO3MAVYWLF4FTOLFV/6IN5WOLRCYP4G4MOCOHOMXNON6Q7MDAR.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&display=swap"
       rel="stylesheet"
-      media="print"
-      onload="this.media='all'"
     />
-    <noscript>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Signika:wght@400;700&display=swap"
-        rel="stylesheet"
-      />
-    </noscript>
-    <!-- End, Fonts -->
-    <style>
-      /* Subtle animated background used across public pages */
-      .animated-bg {
-        position: fixed;
-        inset: 0;
-        z-index: 0; /* above page background so blobs are visible */
-        pointer-events: none;
-        overflow: hidden;
-        background: linear-gradient(
-          180deg,
-          rgba(0, 0, 0, 0.02),
-          rgba(0, 0, 0, 0.04)
-        );
-      }
-      .animated-bg .blob {
-        position: absolute;
-        width: 50vmax;
-        height: 50vmax;
-        border-radius: 50%;
-        filter: blur(36px);
-        opacity: 0.22;
-        transform: translate3d(0, 0, 0) scale(1);
-        will-change: transform, opacity;
-        mix-blend-mode: screen;
-      }
-      /* positions and color variations for 7 blobs */
-      .animated-bg .blob.b1 {
-        left: -12%;
-        top: -20%;
-        background: radial-gradient(
-          circle at 30% 30%,
-          rgba(102, 126, 234, 0.98),
-          rgba(102, 126, 234, 0.22)
-        );
-      }
-      .animated-bg .blob.b2 {
-        right: -14%;
-        bottom: -12%;
-        background: radial-gradient(
-          circle at 70% 70%,
-          rgba(139, 69, 19, 0.96),
-          rgba(139, 69, 19, 0.18)
-        );
-      }
-      .animated-bg .blob.b3 {
-        left: 52%;
-        top: 62%;
-        transform: translateX(-50%);
-        background: radial-gradient(
-          circle at 50% 50%,
-          rgba(75, 0, 130, 0.95),
-          rgba(75, 0, 130, 0.16)
-        );
-      }
-      .animated-bg .blob.b4 {
-        left: 20%;
-        top: 60%;
-        background: radial-gradient(
-          circle at 40% 50%,
-          rgba(66, 153, 225, 0.9),
-          rgba(66, 153, 225, 0.12)
-        );
-        opacity: 0.14;
-      }
-      .animated-bg .blob.b5 {
-        right: 30%;
-        top: 10%;
-        background: radial-gradient(
-          circle at 50% 40%,
-          rgba(236, 72, 153, 0.9),
-          rgba(236, 72, 153, 0.12)
-        );
-        opacity: 0.12;
-      }
-      .animated-bg .blob.b6 {
-        left: 5%;
-        bottom: 10%;
-        background: radial-gradient(
-          circle at 20% 80%,
-          rgba(250, 204, 21, 0.88),
-          rgba(250, 204, 21, 0.1)
-        );
-        opacity: 0.11;
-      }
-      .animated-bg .blob.b7 {
-        right: 5%;
-        top: 40%;
-        background: radial-gradient(
-          circle at 60% 30%,
-          rgba(16, 185, 129, 0.9),
-          rgba(16, 185, 129, 0.1)
-        );
-        opacity: 0.12;
-      }
-      /* Light-mode stronger/darker blobs */
-      @media (prefers-color-scheme: light) {
-        .animated-bg .blob {
-          mix-blend-mode: multiply;
-          opacity: 0.36;
-          filter: blur(28px);
-        }
-        .animated-bg .blob.b1 {
-          background: radial-gradient(
-            circle at 30% 30%,
-            rgba(32, 78, 200, 0.95),
-            rgba(32, 78, 200, 0.32)
-          );
-        }
-        .animated-bg .blob.b2 {
-          background: radial-gradient(
-            circle at 70% 70%,
-            rgba(120, 50, 20, 0.96),
-            rgba(120, 50, 20, 0.3)
-          );
-        }
-        .animated-bg .blob.b3 {
-          background: radial-gradient(
-            circle at 50% 50%,
-            rgba(60, 10, 120, 0.95),
-            rgba(60, 10, 120, 0.28)
-          );
-        }
-        .animated-bg .blob.b4 {
-          background: radial-gradient(
-            circle at 40% 50%,
-            rgba(40, 110, 200, 0.92),
-            rgba(40, 110, 200, 0.26)
-          );
-        }
-        .animated-bg .blob.b5 {
-          background: radial-gradient(
-            circle at 50% 40%,
-            rgba(200, 40, 120, 0.92),
-            rgba(200, 40, 120, 0.26)
-          );
-        }
-        .animated-bg .blob.b6 {
-          background: radial-gradient(
-            circle at 20% 80%,
-            rgba(200, 150, 20, 0.9),
-            rgba(200, 150, 20, 0.22)
-          );
-        }
-        .animated-bg .blob.b7 {
-          background: radial-gradient(
-            circle at 60% 30%,
-            rgba(10, 140, 90, 0.9),
-            rgba(10, 140, 90, 0.22)
-          );
-        }
-      }
-      @keyframes blobMove {
-        0% {
-          transform: translate3d(0, 0, 0) scale(1);
-        }
-        25% {
-          transform: translate3d(5%, -3%, 0) scale(1.05);
-        }
-        50% {
-          transform: translate3d(0, 5%, 0) scale(1);
-        }
-        75% {
-          transform: translate3d(-4%, -2%, 0) scale(0.98);
-        }
-        100% {
-          transform: translate3d(0, 0, 0) scale(1);
-        }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .animated-bg .blob {
-          animation: none !important;
-        }
-      }
-    </style>
-    <script>
-      // Logs conditionnels exposés globalement (utilisés dans les scripts ci-dessous)
-      const isProduction = !window.location.hostname.match(
-        /localhost|127\.0\.0\.1/,
-      );
-      window.devLog = isProduction ? function () {} : console.log.bind(console);
-      window.devWarn = isProduction ? function () {} : console.warn.bind(console);
-      window.devError = isProduction ? function () {} : console.error.bind(console);
-      // Dark mode detection for Tailwind CSS
-      function updateDarkMode() {
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)"
-        ).matches;
-        if (prefersDark) {
-          document.documentElement.classList.add("dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-        }
-        devLog("Dark mode applied:", prefersDark);
-      }
-
-      // Apply dark mode immediately
-      updateDarkMode();
-
-      // Listen for changes
-      window
-        .matchMedia("(prefers-color-scheme: dark)")
-        .addEventListener("change", updateDarkMode);
-    </script>
   </head>
-  <body
-    class="dark:bg-black bg-white min-h-screen text-black dark:text-white px-5 md:px-20 opacity-0 animate-fade-in transition duration-500"
-  >
-    <!-- Subtle animated background -->
-    <div class="animated-bg" aria-hidden="true">
-      <div class="blob b1"></div>
-      <div class="blob b2"></div>
-      <div class="blob b3"></div>
-      <div class="blob b4"></div>
-      <div class="blob b5"></div>
-      <div class="blob b6"></div>
-      <div class="blob b7"></div>
-    </div>
 
-    <!-- Navbar -->
-    <header class="flex w-full overflow-hidden pt-10 pb-1">
-      <nav role="navigation" class="w-full">
-        <div
-          class="container mx-auto flex flex-wrap items-center md:flex-no-wrap"
-        >
-          <div class="mr-4 md:mr-8">
-            <a href="/" class="text-2xl font-signika font-bold"
-              >MATTIA PARRINELLO</a
-            >
-          </div>
-          <div class="flex-1 text-right">
-            <a
-              href="/"
-              class="text-sm font-signika hover:opacity-75 transition duration-300"
-              >← Retour à l'accueil</a
-            >
-          </div>
-        </div>
+  <body class="cs">
+    <a class="cs-skip" href="#cs-main">Aller au contenu</a>
+
+    <header class="cs-top">
+      <a class="cs-top-name" href="/">Mattia Parrinello</a>
+      <nav class="cs-top-links" aria-label="Navigation principale">
+        <a href="/galeries">Galeries</a>
+        <a href="/a-propos">À propos</a>
+        <a href="/contact">Contact</a>
+        <a href="?lang=en" hreflang="en" lang="en">EN</a>
       </nav>
     </header>
 
-    <!-- Main Content -->
-    <main class="relative z-10 pt-8 pb-16">
-      <div class="container mx-auto max-w-4xl">
-        <div
-          class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-12 md:p-20"
-          style="padding: 20px"
-        >
-          <h1
-            class="text-4xl md:text-5xl font-signika font-bold text-center mb-8 text-black dark:text-white"
-          >
-            Mentions légales
-          </h1>
+    <main class="cs-page cs-legal" id="cs-main" tabindex="-1">
+      <header class="cs-legal-head">
+        <p class="cs-legal-kicker">Informations légales</p>
+        <h1 class="cs-legal-title">Mentions légales</h1>
+        <p class="cs-legal-date">En vigueur au 09/01/2026</p>
+      </header>
 
-          <div
-            class="text-sm text-gray-600 dark:text-gray-400 text-center mb-12"
-          >
-            En vigueur au 09/01/2026
-          </div>
-
-          <div class="prose prose-lg dark:prose-invert max-w-none space-y-8">
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
-              Conformément à la loi n°2004-575 du 21 juin 2004 pour la Confiance
-              en l'Économie Numérique (LCEN), il est porté à la connaissance des
-              utilisateurs du site
-              <a
-                href="https://www.photo.mprnl.fr"
-                class="text-blue-600 dark:text-blue-400 hover:underline"
-                >www.photo.mprnl.fr</a
+      <div class="cs-legal-layout">
+        <nav class="cs-legal-toc" aria-labelledby="cs-legal-toc-title">
+          <h2 class="cs-legal-toc-title" id="cs-legal-toc-title">Sommaire</h2>
+          <ol class="cs-legal-toc-list">
+            <li><a href="#edition"><span>01</span>Édition du site</a></li>
+            <li><a href="#hebergement"><span>02</span>Hébergement</a></li>
+            <li><a href="#acces"><span>03</span>Accès au site</a></li>
+            <li>
+              <a href="#propriete-intellectuelle"
+                ><span>04</span>Propriété intellectuelle</a
               >
-              (ci-après le « Site ») les présentes mentions légales.
-            </p>
+            </li>
+            <li>
+              <a href="#donnees-personnelles"
+                ><span>05</span>Données personnelles (RGPD)</a
+              >
+            </li>
+            <li>
+              <a href="#cookies"><span>06</span>Cookies et outils de statistiques</a>
+            </li>
+            <li><a href="#responsabilite"><span>07</span>Responsabilité</a></li>
+            <li>
+              <a href="#droit-applicable"
+                ><span>08</span>Droit applicable et litiges</a
+              >
+            </li>
+          </ol>
+        </nav>
 
-            <h2
-              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
-            >
-              Édition du site
+        <div class="cs-legal-body">
+          <p class="cs-legal-lede">
+            Conformément à la loi n°2004-575 du 21 juin 2004 pour la Confiance
+            en l'Économie Numérique (LCEN), il est porté à la connaissance des
+            utilisateurs du site
+            <a href="https://www.photo.mprnl.fr">www.photo.mprnl.fr</a>
+            (ci-après le « Site ») les présentes mentions légales.
+          </p>
+
+          <section
+            class="cs-legal-section"
+            id="edition"
+            aria-labelledby="edition-title"
+          >
+            <h2 class="cs-legal-h2" id="edition-title">
+              <span class="cs-legal-num" aria-hidden="true">01</span>Édition du
+              site
             </h2>
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-10 mb-8">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                <div>
-                  <strong class="text-gray-900 dark:text-white"
-                    >Éditeur :</strong
-                  >
-                  Mattia Parrinello
-                </div>
-                <div>
-                  <strong class="text-gray-900 dark:text-white"
-                    >Statut :</strong
-                  >
-                  Auto-entrepreneur / Entreprise individuelle
-                </div>
-                <div>
-                  <strong class="text-gray-900 dark:text-white"
-                    >Activité :</strong
-                  >
-                  Photographe indépendant
-                </div>
-                <div>
-                  <strong class="text-gray-900 dark:text-white"
-                    >Adresse :</strong
-                  >
-                  1 rue Victor Basch, 95130 Franconville
-                </div>
-                <div>
-                  <strong class="text-gray-900 dark:text-white"
-                    >Téléphone :</strong
-                  >
-                  06 50 58 62 51
-                </div>
-                <div>
-                  <strong class="text-gray-900 dark:text-white">Email :</strong>
-                  contact.mprnl@gmail.com
-                </div>
-                <div>
-                  <strong class="text-gray-900 dark:text-white">SIRET :</strong>
-                  991 469 974
-                </div>
-                <div class="md:col-span-2">
-                  <strong class="text-gray-900 dark:text-white"
-                    >Numéro de TVA intracommunautaire :</strong
-                  >
-                  Non applicable
-                </div>
-                <div class="md:col-span-2">
-                  <strong class="text-gray-900 dark:text-white"
-                    >Directeur de la publication :</strong
-                  >
-                  Mattia Parrinello
-                </div>
+            <dl class="cs-legal-data">
+              <div>
+                <dt>Éditeur</dt>
+                <dd>Mattia Parrinello</dd>
               </div>
-            </div>
-
-            <h2
-              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
-            >
-              Hébergement
-            </h2>
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-10 mb-8">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                <div>
-                  <strong class="text-gray-900 dark:text-white"
-                    >Hébergeur :</strong
-                  >
-                  Hosterfy
-                </div>
-                <div>
-                  <strong class="text-gray-900 dark:text-white"
-                    >Adresse :</strong
-                  >
-                  6 rue d'Entraigues, 37000 Tours, France
-                </div>
-                <div class="md:col-span-2">
-                  <strong class="text-gray-900 dark:text-white"
-                    >Téléphone :</strong
-                  >
-                  +33 9 72 51 19 35
-                </div>
+              <div>
+                <dt>Statut</dt>
+                <dd>Auto-entrepreneur / Entreprise individuelle</dd>
               </div>
-            </div>
+              <div>
+                <dt>Activité</dt>
+                <dd>Photographe indépendant</dd>
+              </div>
+              <div>
+                <dt>Adresse</dt>
+                <dd>1 rue Victor Basch, 95130 Franconville</dd>
+              </div>
+              <div>
+                <dt>Téléphone</dt>
+                <dd><a href="tel:+33650586251">06 50 58 62 51</a></dd>
+              </div>
+              <div>
+                <dt>Email</dt>
+                <dd>
+                  <a href="mailto:contact.mprnl@gmail.com"
+                    >contact.mprnl@gmail.com</a
+                  >
+                </dd>
+              </div>
+              <div>
+                <dt>SIRET</dt>
+                <dd>991 469 974</dd>
+              </div>
+              <div>
+                <dt>Numéro de TVA intracommunautaire</dt>
+                <dd>Non applicable</dd>
+              </div>
+              <div class="cs-legal-wide">
+                <dt>Directeur de la publication</dt>
+                <dd>Mattia Parrinello</dd>
+              </div>
+            </dl>
+          </section>
 
-            <h2
-              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
-            >
-              Accès au site
+          <section
+            class="cs-legal-section"
+            id="hebergement"
+            aria-labelledby="hebergement-title"
+          >
+            <h2 class="cs-legal-h2" id="hebergement-title">
+              <span class="cs-legal-num" aria-hidden="true">02</span>Hébergement
             </h2>
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+            <dl class="cs-legal-data">
+              <div>
+                <dt>Hébergeur</dt>
+                <dd>Hosterfy</dd>
+              </div>
+              <div>
+                <dt>Adresse</dt>
+                <dd>6 rue d'Entraigues, 37000 Tours, France</dd>
+              </div>
+              <div class="cs-legal-wide">
+                <dt>Téléphone</dt>
+                <dd><a href="tel:+33972511935">+33 9 72 51 19 35</a></dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="cs-legal-section" id="acces" aria-labelledby="acces-title">
+            <h2 class="cs-legal-h2" id="acces-title">
+              <span class="cs-legal-num" aria-hidden="true">03</span>Accès au site
+            </h2>
+            <p>
               Le Site est normalement accessible à tout moment. L'Éditeur se
               réserve toutefois la possibilité de suspendre, limiter ou
               interrompre l'accès pour des raisons de maintenance, de sécurité
               ou d'évolution du service. L'Éditeur ne saurait être tenu
               responsable des conséquences d'une indisponibilité temporaire.
             </p>
+          </section>
 
-            <h2
-              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
-            >
-              Propriété intellectuelle
+          <section
+            class="cs-legal-section"
+            id="propriete-intellectuelle"
+            aria-labelledby="propriete-intellectuelle-title"
+          >
+            <h2 class="cs-legal-h2" id="propriete-intellectuelle-title">
+              <span class="cs-legal-num" aria-hidden="true">04</span>Propriété
+              intellectuelle
             </h2>
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+            <p>
               L'ensemble des photographies, images, textes, logos et plus
               généralement tout contenu diffusé sur le Site est protégé par le
               Code de la propriété intellectuelle et reste la propriété
@@ -423,20 +206,25 @@
               fins commerciales, publicitaires ou promotionnelles sans accord
               écrit.
             </p>
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+            <p>
               Toute violation des droits d'auteur et du droit moral de l'auteur
               pourra donner lieu à des poursuites civiles et pénales, y compris
               demandes de dommages-intérêts pour contrefaçon, conformément aux
               articles L.121-1 et L.335-2 et suivants du Code de la propriété
               intellectuelle.
             </p>
+          </section>
 
-            <h2
-              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
-            >
-              Données personnelles (RGPD)
+          <section
+            class="cs-legal-section"
+            id="donnees-personnelles"
+            aria-labelledby="donnees-personnelles-title"
+          >
+            <h2 class="cs-legal-h2" id="donnees-personnelles-title">
+              <span class="cs-legal-num" aria-hidden="true">05</span>Données
+              personnelles (RGPD)
             </h2>
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+            <p>
               Les informations collectées via le formulaire de contact (nom,
               prénom, email, message, ville) sont utilisées exclusivement pour
               répondre aux demandes des utilisateurs. Ces données sont
@@ -444,56 +232,66 @@
               une base de données centralisée. Elles ne sont pas cédées ni
               transmises à des tiers.
             </p>
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+            <p>
               La base légale du traitement est le consentement de l'utilisateur
               lors de l'envoi du message. Les données sont conservées pour une
               durée maximale de 12 mois à compter du dernier échange, sauf
               obligation légale contraire.
             </p>
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+            <p>
               Conformément au Règlement général sur la protection des données
               (RGPD), vous disposez d'un droit d'accès, de rectification,
               d'effacement, de limitation, d'opposition et de portabilité. Vous
-              pouvez exercer ces droits en contactant : contact.mprnl@gmail.com.
+              pouvez exercer ces droits en contactant
+              <a href="mailto:contact.mprnl@gmail.com">contact.mprnl@gmail.com</a>.
               Vous pouvez également introduire une réclamation auprès de la
               Commission Nationale de l'Informatique et des Libertés (CNIL).
             </p>
+          </section>
 
-            <h2
-              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
-            >
-              Cookies et outils de statistiques
+          <section
+            class="cs-legal-section"
+            id="cookies"
+            aria-labelledby="cookies-title"
+          >
+            <h2 class="cs-legal-h2" id="cookies-title">
+              <span class="cs-legal-num" aria-hidden="true">06</span>Cookies et
+              outils de statistiques
             </h2>
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+            <p>
               Le Site utilise un outil de mesure d'audience développé en interne
               permettant de collecter des statistiques anonymes de fréquentation
               (nombre de visites, pages consultées). Aucune donnée permettant
               d'identifier une personne n'est collectée.
             </p>
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+            <p>
               Les données de mesure d'audience sont accessibles uniquement par
               l'Éditeur, ne sont ni cédées ni transmises à des tiers et sont
               conservées pour une durée maximale de 10 mois.
             </p>
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+            <p>
               Conformément aux recommandations de la CNIL, ces cookies étant
               strictement nécessaires à la mesure d'audience et ne servant pas
               au ciblage publicitaire, le consentement préalable de
               l'utilisateur n'est pas requis.
             </p>
+          </section>
 
-            <h2
-              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
-            >
-              Responsabilité
+          <section
+            class="cs-legal-section"
+            id="responsabilite"
+            aria-labelledby="responsabilite-title"
+          >
+            <h2 class="cs-legal-h2" id="responsabilite-title">
+              <span class="cs-legal-num" aria-hidden="true">07</span>Responsabilité
             </h2>
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+            <p>
               L'Éditeur met en œuvre tous les moyens raisonnables pour assurer
               l'exactitude des informations publiées sur le Site. Toutefois, il
               ne pourra être tenu responsable des erreurs, omissions ou de la
               mise à jour des informations.
             </p>
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+            <p>
               L'Éditeur ne peut être tenu responsable des dommages directs ou
               indirects résultant de l'accès, de l'utilisation ou de
               l'impossibilité d'utiliser le Site. Le Site peut contenir des
@@ -502,265 +300,48 @@
               à l'utilisation qui pourrait être faite des éléments publiés par
               des tiers.
             </p>
+          </section>
 
-            <h2
-              class="text-2xl font-signika font-bold text-black dark:text-white mt-12 mb-6"
-            >
-              Droit applicable et litiges
+          <section
+            class="cs-legal-section"
+            id="droit-applicable"
+            aria-labelledby="droit-applicable-title"
+          >
+            <h2 class="cs-legal-h2" id="droit-applicable-title">
+              <span class="cs-legal-num" aria-hidden="true">08</span>Droit
+              applicable et litiges
             </h2>
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+            <p>
               Les présentes mentions légales sont soumises au droit français.
               Tout litige relatif à l'accès au Site ou à l'utilisation de ses
               contenus sera de la compétence des juridictions françaises.
             </p>
-          </div>
+          </section>
+
+          <a class="cs-legal-top" href="#cs-main">Haut de page</a>
         </div>
       </div>
     </main>
 
-    <footer>
-      <div class="max-w-screen-xl py-8 mx-auto">
-        <div class="grid grid-cols-1 gap-4 text-center mx-auto">
-          <div>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              © Mattia Parrinello, Toutes les photos publiées sur ce site sont
-              protégées. Toute utilisation non autorisée est passible de
-              sanctions.
-            </p>
-          </div>
-        </div>
-      </div>
+    <footer class="cs-footer">
+      <p class="cs-footer-left">Photographe de concert, Paris</p>
+      <nav class="cs-footer-links" aria-label="Pied de page">
+        <a href="/galeries">Galeries</a>
+        <a href="/a-propos">À propos</a>
+        <a href="/contact">Contact</a>
+        <a
+          href="https://www.instagram.com/mattia_jpeg"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Instagram de Mattia Parrinello"
+          >Instagram</a
+        >
+        <a href="/mentions-legales">Mentions légales</a>
+        <a href="?lang=en" hreflang="en" lang="en">EN</a>
+      </nav>
+      <p class="cs-footer-right">© 2026 Mattia Parrinello</p>
     </footer>
-    <script>
-      (function () {
-        const isProduction = !window.location.hostname.match(
-          /localhost|127\.0\.0\.1/
-        );
-        if (isProduction) {
-          console.log(
-            "%c\n" +
-              "═══════════════════════════════════════════════════════════════════\n" +
-              "║                                                                 ║\n" +
-              "║               ⚠️  AVERTISSEMENT DE SÉCURITÉ  ⚠️                ║\n" +
-              "║                                                                 ║\n" +
-              "═══════════════════════════════════════════════════════════════════",
-            "color: #ff3333; font-size: 16px; font-weight: bold; font-family: monospace; line-height: 1.5;"
-          );
 
-          console.log(
-            "%c\n🚫 ACCÈS NON AUTORISÉ À LA CONSOLE DE DÉVELOPPEMENT 🚫\n",
-            "color: #ff6600; font-size: 22px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: linear-gradient(90deg, #330000, #000000); padding: 15px 20px; border-radius: 5px;"
-          );
-
-          console.log(
-            "%c┌────────────────────────────────────────────────────────────┐\n" +
-              "│  Vous tentez d'accéder aux photos de ce site ?            │\n" +
-              "│                                                            │\n" +
-              "│  ❌ TÉLÉCHARGEMENT INTERDIT                                │\n" +
-              "│  ❌ COPIE INTERDITE                                        │\n" +
-              "│  ❌ UTILISATION NON AUTORISÉE INTERDITE                    │\n" +
-              "└────────────────────────────────────────────────────────────┘",
-            "color: #ffff00; font-size: 15px; font-weight: bold; font-family: monospace; line-height: 1.8; background: #1a1a1a; padding: 20px; border-left: 5px solid #ff0000;"
-          );
-
-          console.log(
-            "%c\n📸 PROTECTION DU DROIT D'AUTEUR\n",
-            "color: #00ffff; font-size: 18px; font-weight: bold; text-decoration: underline;"
-          );
-
-          console.log(
-            "%c© Mattia Parrinello, Tous droits réservés\n\n" +
-              "Toutes les photographies publiées sur ce site sont protégées par le droit d'auteur.\n" +
-              "Toute reproduction, représentation, modification, publication, transmission,\n" +
-              "dénaturation, totale ou partielle du site ou de son contenu, par quelque\n" +
-              "procédé que ce soit, sans autorisation écrite préalable est interdite et\n" +
-              "constitue un délit de contrefaçon sanctionné par les articles L.335-2 et\n" +
-              "suivants du Code de la propriété intellectuelle.\n",
-            "color: #ffffff; font-size: 14px; line-height: 1.6; background: #1a1a1a; padding: 15px; border-left: 4px solid #00ff00;"
-          );
-
-          console.log(
-            "%c⚖️  SANCTIONS PÉNALES\n",
-            "color: #ff6666; font-size: 16px; font-weight: bold; text-decoration: underline;"
-          );
-
-          console.log(
-            "%cLa contrefaçon est punie de :\n" +
-              "• 300 000 € d'amende\n" +
-              "• 3 ans d'emprisonnement\n" +
-              "(Articles L.335-2 et suivants du Code de la propriété intellectuelle)\n",
-            "color: #ff9999; font-size: 13px; line-height: 1.8; font-weight: bold; background: #2a0000; padding: 15px; border-left: 4px solid #ff0000;"
-          );
-
-          console.log(
-            "%c📋 Pour toute demande d'utilisation légitime :\n" +
-              "→ Utilisez le formulaire de contact : " +
-              window.location.origin +
-              "/contact\n" +
-              "→ Consultez les mentions légales : " +
-              window.location.origin +
-              "/mentions-legales\n",
-            "color: #90EE90; font-size: 13px; line-height: 1.8; font-style: italic; padding: 10px;"
-          );
-
-          console.log(
-            "%c\n" +
-              "═══════════════════════════════════════════════════════════════════\n",
-            "color: #ff3333; font-size: 16px; font-weight: bold; font-family: monospace;"
-          );
-        }
-        function prevent(e) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        if (isProduction) {
-          document.addEventListener("contextmenu", prevent, true);
-          document.addEventListener(
-            "keydown",
-            function (e) {
-              const k = e.key && e.key.toLowerCase();
-              if (e.key === "F12") prevent(e);
-              if (
-                (e.ctrlKey || e.metaKey) &&
-                e.shiftKey &&
-                (k === "i" || k === "j" || k === "c")
-              )
-                prevent(e);
-              if ((e.ctrlKey || e.metaKey) && (k === "s" || k === "u"))
-                prevent(e);
-            },
-            true
-          );
-        } else {
-          document.addEventListener(
-            "contextmenu",
-            function (e) {
-              if (e.target && e.target.tagName === "IMG") prevent(e);
-            },
-            true
-          );
-          document.addEventListener(
-            "keydown",
-            function (e) {
-              const k = e.key && e.key.toLowerCase();
-              if ((e.ctrlKey || e.metaKey) && (k === "s" || k === "u"))
-                prevent(e);
-            },
-            true
-          );
-        }
-        document.addEventListener(
-          "dragstart",
-          function (e) {
-            if (e.target && e.target.tagName === "IMG") prevent(e);
-          },
-          true
-        );
-        document.querySelectorAll("img").forEach(function (img) {
-          try {
-            img.setAttribute("draggable", "false");
-            img.style.userSelect = "none";
-            img.style.webkitUserDrag = "none";
-          } catch (e) {}
-        });
-        document.querySelectorAll("a > img").forEach(function (img) {
-          try {
-            var a = img.parentElement;
-            if (!a) return;
-            if (getComputedStyle(a).position === "static")
-              a.style.position = "relative";
-            if (a.querySelector(".img-protect-overlay")) return;
-            var ov = document.createElement("span");
-            ov.className = "img-protect-overlay";
-            ov.style.position = "absolute";
-            ov.style.inset = "0";
-            ov.style.display = "block";
-            ov.style.zIndex = "3";
-            ov.style.background = "transparent";
-            ov.style.cursor = "pointer";
-            ov.addEventListener("click", function () {
-              a.click();
-            });
-            ov.addEventListener("contextmenu", prevent);
-            a.appendChild(ov);
-          } catch (e) {}
-        });
-      })();
-    </script>
-
-    <style>
-      @keyframes fade-in {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-      .animate-fade-in {
-        animation: fade-in 0.5s ease-out forwards;
-      }
-    </style>
     <script defer src="/dist/js/analytics-tracker.js"></script>
-    <script>
-      // Dark mode detection for Tailwind CSS
-      function updateDarkMode() {
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)"
-        ).matches;
-        if (prefersDark) {
-          document.documentElement.classList.add("dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-        }
-      }
-
-      // Apply dark mode immediately
-      updateDarkMode();
-
-      // Listen for changes
-      window
-        .matchMedia("(prefers-color-scheme: dark)")
-        .addEventListener("change", updateDarkMode);
-
-      // Diagnostic log: report current preference and html class
-      devLog(
-        "prefers-color-scheme dark =",
-        window.matchMedia("(prefers-color-scheme: dark)").matches,
-        "html.classList:",
-        document.documentElement.className
-      );
-    </script>
-
-    <style>
-      /* Fallback overrides: when html has class "dark", enforce dark backgrounds/text
-         This is a local fix because Tailwind here was built with media-based dark mode.
-         These rules only affect this page and use !important to override compiled utilities. */
-      html.dark body {
-        background-color: #000 !important;
-        color: #e5e7eb !important;
-      }
-      html.dark .bg-white {
-        background-color: #0b0b0b !important;
-      }
-      html.dark .bg-gray-50 {
-        background-color: #111827 !important;
-      }
-      html.dark .text-black {
-        color: #e5e7eb !important;
-      }
-      html.dark .text-gray-700 {
-        color: #d1d5db !important;
-      }
-      html.dark .text-gray-600 {
-        color: #9ca3af !important;
-      }
-      html.dark .border-gray-200 {
-        border-color: #2b2b2b !important;
-      }
-      html.dark .shadow-xl {
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
-      }
-    </style>
   </body>
 </html>
