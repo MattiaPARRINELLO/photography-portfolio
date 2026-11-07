@@ -4281,14 +4281,34 @@ html.cs-boot-on .cs-boot {
   }
 }
 
+/* --- Page courte : le pied reste en bas ---------------------------------- */
+/* Les pages qui tiennent sur un écran (carte de visite) posent leur contenu au
+   centre et gardent le pied au bas de la fenêtre au lieu de le laisser flotter
+   au milieu du noir. */
+
+.cs.cs-fill {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.cs.cs-fill .cs-page {
+  flex: 1 0 auto;
+}
+
+.cs.cs-fill .cs-footer {
+  flex: 0 0 auto;
+}
+
 /* --- Liens : la carte de visite ----------------------------------------- */
 /* Une fiche papier posée sur le noir : identité en haut, liens en grands
    boutons, filets fins. Pensée téléphone d'abord, sans effet au survol. */
 
 .cs-links-page {
   display: flex;
+  align-items: center;
   justify-content: center;
-  padding: clamp(20px, 5vw, 40px) var(--pad) clamp(48px, 9vw, 96px);
+  padding: clamp(20px, 5vw, 40px) var(--pad) clamp(24px, 5vw, 48px);
 }
 
 .cs-links-wrap {
