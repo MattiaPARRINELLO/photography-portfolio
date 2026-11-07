@@ -702,23 +702,23 @@ function renderGalleryCard(g) {
     const photos = filterRenderablePhotos(g.photos);
     const coverFile = g.cover && isPhotoRenderable(g.cover) ? g.cover : null;
     const cover = coverFile
-        ? `<img class="cover" src="/photos/resize?file=${encodeURIComponent(coverFile)}&amp;w=800" srcset="/photos/resize?file=${encodeURIComponent(coverFile)}&amp;w=400 400w, /photos/resize?file=${encodeURIComponent(coverFile)}&amp;w=800 800w, /photos/resize?file=${encodeURIComponent(coverFile)}&amp;w=1200 1200w" sizes="(max-width:768px) 94vw, (max-width:1024px) 48vw, 31vw" alt="${escapeAttr(coverAlt)}" loading="lazy" />`
-        : '<div class="cover" style="background:#111"></div>';
+        ? `<img class="cs-gcard-cover" src="/photos/resize?file=${encodeURIComponent(coverFile)}&amp;w=800" srcset="/photos/resize?file=${encodeURIComponent(coverFile)}&amp;w=400 400w, /photos/resize?file=${encodeURIComponent(coverFile)}&amp;w=800 800w, /photos/resize?file=${encodeURIComponent(coverFile)}&amp;w=1200 1200w" sizes="(max-width:699px) 94vw, (max-width:1199px) 48vw, 31vw" alt="${escapeAttr(coverAlt)}" loading="lazy" />`
+        : '';
     const metaParts = [g.venue, formatGalleryDate(g.date)].filter(Boolean);
     const meta = metaParts.join(' · ');
-    const kicker = g.artist || 'Concert';
+    const name = g.artist || g.title;
     const count = `${photos.length} photo${photos.length > 1 ? 's' : ''}`;
 
     return `
-      <a class="gallery-card" href="/galeries/${encodeURIComponent(g.slug)}" aria-label="Voir la galerie ${escapeAttr(g.title)}">
-        ${cover}
-        <div class="gradient"></div>
-        <span class="count">${count}</span>
-        <div class="content">
-          <span class="kicker">${escapeAttr(kicker)}</span>
-          <h3>${escapeAttr(g.title)}</h3>
-          ${meta ? `<p class="meta">${escapeAttr(meta)}</p>` : ''}
-        </div>
+      <a class="cs-gcard" href="/galeries/${encodeURIComponent(g.slug)}" aria-label="Voir la galerie ${escapeAttr(g.title)}">
+        <span class="cs-gcard-frame">${cover}</span>
+        <span class="cs-gcard-band">
+          <span class="cs-gcard-text">
+            <span class="cs-gcard-name">${escapeAttr(name)}</span>
+            ${meta ? `<span class="cs-gcard-meta">${escapeAttr(meta)}</span>` : ''}
+          </span>
+          <span class="cs-gcard-count">${count}</span>
+        </span>
       </a>`;
 }
 
@@ -775,11 +775,11 @@ router.get('/galeries', (req, res) => {
 
             const listHtml = galleries.length === 0
                 ? `
-      <div class="empty-state">
-        <p class="text-lg">Les premières galeries arrivent bientôt.</p>
-        <p class="mt-4"><a href="/contact" class="underline">Me contacter pour un projet</a></p>
+      <div class="cs-empty">
+        <p class="cs-empty-title">Les premières galeries arrivent bientôt.</p>
+        <a href="/contact" class="cs-empty-link">Me contacter pour un projet</a>
       </div>`
-                : `<div class="galleries-grid">${galleries.map(renderGalleryCard).join('')}</div>`;
+                : `<div class="cs-gcard-grid">${galleries.map(renderGalleryCard).join('')}</div>`;
 
             return htmlContent.replace('<!-- GALLERIES_LIST_PLACEHOLDER -->', listHtml);
         }

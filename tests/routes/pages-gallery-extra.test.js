@@ -446,7 +446,9 @@ describe('Routes pages — branches non couvertes (SSR galeries)', function () {
         .end(function (err, res) {
           if (err) return done(err);
           expect(res.text).toContain('premières galeries');
-          expect(res.text).not.toContain('galleries-grid');
+          // Le wrapper de liste a été renommé en .cs-gcard-grid lors du
+          // passage de la page galeries à la planche de tirages .cs-*.
+          expect(res.text).not.toContain('cs-gcard-grid');
           done();
         });
     });
