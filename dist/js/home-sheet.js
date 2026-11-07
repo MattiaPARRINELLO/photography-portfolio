@@ -521,19 +521,56 @@
       mark.setAttribute("aria-hidden", "true");
       mark.innerHTML =
         '<svg viewBox="0 0 100 100" preserveAspectRatio="none">' +
-        '<path class="cs-mark-echo" transform="rotate(-1.8 50 50)" d="M50 4C72 2 96 20 96 45C96 70 81 96 53 96C25 96 4 79 4 53C4 27 21 4 48 4C61 4 74 7 83 13"></path>' +
-        '<path class="cs-mark-line" d="M50 4C73 3 96 21 96 46C96 71 80 96 52 96C24 96 4 78 4 52C4 26 22 5 49 4C62 4 75 7 84 13"></path>' +
+        '<path class="cs-mark-echo"></path>' +
+        '<path class="cs-mark-line"></path>' +
         "</svg>";
       document.body.appendChild(mark);
 
       var line = mark.querySelector(".cs-mark-line");
       var echo = mark.querySelector(".cs-mark-echo");
-      var lenLine = line.getTotalLength ? line.getTotalLength() : 320;
-      var lenEcho = echo.getTotalLength ? echo.getTotalLength() : 320;
-      line.style.strokeDasharray = lenLine;
-      line.style.strokeDashoffset = lenLine;
-      echo.style.strokeDasharray = lenEcho;
-      echo.style.strokeDashoffset = lenEcho;
+
+      function round(n) {
+        return Math.round(n * 10) / 10;
+      }
+
+      // Un cercle tracé à la main : rayon irrégulier (deux harmoniques lentes
+      // et un tremblement), départ jamais tout à fait en haut, trait qui
+      // dépasse son point de départ.
+      function handDrawn(radius) {
+        var start = -Math.PI / 2 + (Math.random() - 0.5) * 0.7;
+        var sweep = Math.PI * 2 * (1.02 + Math.random() * 0.1);
+        var phaseA = Math.random() * Math.PI * 2;
+        var phaseB = Math.random() * Math.PI * 2;
+        var phaseC = Math.random() * Math.PI * 2;
+        var ampA = 0.012 + Math.random() * 0.016;
+        var ampB = 0.005 + Math.random() * 0.01;
+        var rx = radius * (0.98 + Math.random() * 0.03);
+        var ry = radius * (0.98 + Math.random() * 0.03);
+        var steps = 18;
+        var pts = [];
+        var i;
+        for (i = 0; i <= steps; i++) {
+          var t = start + sweep * (i / steps);
+          var wob = 1 +
+            Math.sin(t * 2 + phaseA) * ampA +
+            Math.sin(t * 3 + phaseB) * ampB +
+            Math.sin(t * 5 + phaseC) * 0.003;
+          pts.push([50 + rx * wob * Math.cos(t), 50 + ry * wob * Math.sin(t)]);
+        }
+        // Catmull-Rom vers courbes de Bézier : le trait reste lisse malgré les
+        // points irréguliers.
+        var d = "M" + round(pts[0][0]) + " " + round(pts[0][1]);
+        for (i = 0; i < pts.length - 1; i++) {
+          var p0 = pts[i - 1] || pts[i];
+          var p1 = pts[i];
+          var p2 = pts[i + 1];
+          var p3 = pts[i + 2] || p2;
+          d += "C" + round(p1[0] + (p2[0] - p0[0]) / 6) + " " + round(p1[1] + (p2[1] - p0[1]) / 6) +
+            " " + round(p2[0] - (p3[0] - p1[0]) / 6) + " " + round(p2[1] - (p3[1] - p1[1]) / 6) +
+            " " + round(p2[0]) + " " + round(p2[1]);
+        }
+        return d;
+      }
 
       var drawn = !gsap || reduceMotion;
       var current = null;
@@ -542,21 +579,36 @@
 
       function place(img) {
         var r = img.getBoundingClientRect();
-        var pad = 7;
+        var pad = 6 + Math.random() * 3;
         mark.style.left = r.left - pad + "px";
         mark.style.top = r.top - pad + "px";
         mark.style.width = r.width + pad * 2 + "px";
         mark.style.height = r.height + pad * 2 + "px";
+        mark.style.transform = "rotate(" + (-2.4 + Math.random() * 1.8).toFixed(2) + "deg)";
       }
 
       function show(frame) {
         var img = frame.querySelector("img");
         if (!img) return;
         place(img);
+
+        // Nouveau tracé à chaque survol : la main ne repasse jamais au même
+        // endroit.
+        line.setAttribute("d", handDrawn(44 + Math.random() * 3));
+        echo.setAttribute("d", handDrawn(42 + Math.random() * 3));
+        echo.setAttribute("transform", "rotate(" + (-3 + Math.random() * 6).toFixed(1) + " 50 50)");
+        line.style.strokeWidth = (2.5 + Math.random() * 1).toFixed(2);
+        echo.style.strokeWidth = (2.1 + Math.random() * 0.9).toFixed(2);
+
+        var lenLine = line.getTotalLength ? line.getTotalLength() : 320;
+        var lenEcho = echo.getTotalLength ? echo.getTotalLength() : 320;
+        line.style.strokeDasharray = lenLine;
+        echo.style.strokeDasharray = lenEcho;
+        line.style.strokeDashoffset = drawn ? 0 : lenLine;
+        echo.style.strokeDashoffset = drawn ? 0 : lenEcho;
+
         visible = true;
         if (drawn) {
-          line.style.strokeDashoffset = 0;
-          echo.style.strokeDashoffset = 0;
           mark.style.opacity = "1";
           return;
         }
