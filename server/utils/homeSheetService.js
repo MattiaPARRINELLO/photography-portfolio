@@ -75,16 +75,22 @@ function buildHeroColumns(galleries, dimsFor, perColumn = 5, columns = 6) {
     let cursor = 0;
     for (let c = 0; c < columns; c++) {
         let frames = '';
-        for (let i = 0; i < perColumn; i++) {
+        for (let i = 0; i < perColumn + 1; i++) {
+          // Le dernier tirage de chaque colonne n'est pas chargé tout de
+          // suite : il rejoint la planche une fois l'intro terminée.
             const item = flat[cursor % flat.length];
             cursor++;
             if (!item) continue;
             const dims = dimsFor(item.file);
             const first = c === 0 && i === 0;
             const second = c === 0 && i === 1;
+            const late = i === perColumn;
             const priority = first ? ' fetchpriority="high"' : second ? '' : ' fetchpriority="low"';
+            const img = late
+                ? `<img data-src="${resizeUrl(item.file, 320)}"${widthAttrs(dims, 320)} alt="Concert de ${esc(artistLabel(item.gallery))} à ${esc(venueLabel(item.gallery))}" decoding="async">`
+                : `<img src="${resizeUrl(item.file, 320)}"${widthAttrs(dims, 320)} alt="Concert de ${esc(artistLabel(item.gallery))} à ${esc(venueLabel(item.gallery))}" decoding="async"${priority}>`;
             frames += `
-          <figure class="cs-frame"><img src="${resizeUrl(item.file, 320)}"${widthAttrs(dims, 320)} alt="Concert de ${esc(artistLabel(item.gallery))} à ${esc(venueLabel(item.gallery))}" decoding="async"${priority}><figcaption class="cs-frame-strip">${esc(venueLabel(item.gallery))}</figcaption></figure>`;
+          <figure class="cs-frame${late ? ' cs-frame-late' : ''}">${img}<figcaption class="cs-frame-strip">${esc(venueLabel(item.gallery))}</figcaption></figure>`;
         }
         html += `
         <div class="cs-col" style="--offset:${offsets[c % offsets.length]}px">${frames}

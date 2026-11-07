@@ -1881,6 +1881,16 @@ html.cs-boot-on .cs-boot {
   height: auto;
 }
 
+/* Dernier tirage de chaque colonne : chargé après l'intro, puis révélé. */
+.cs-frame-late {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.cs-frame-late.is-in {
+  opacity: 1;
+}
+
 .cs-frame-strip {
   display: flex;
   align-items: center;

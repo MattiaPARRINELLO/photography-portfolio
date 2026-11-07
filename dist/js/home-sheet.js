@@ -671,6 +671,7 @@
           );
           tl.add(initScrollAnimations, S + move + 0.1);
           tl.add(function () { gsap.set(bootWords, { willChange: "auto" }); }, S + move + 0.15);
+          tl.add(loadLateFrames, S + move + 0.6);
         }).catch(function (error) {
           console.error("Intro:", error);
           gsap.set(".cs-col-shade", { opacity: 0 });
@@ -685,6 +686,7 @@
           landFrames(0);
         }
         initScrollAnimations();
+        loadLateFrames();
       }
 
       // --- Animations de défilement ---------------------------------------
@@ -777,6 +779,21 @@
           }
         });
 
+      }
+
+      // Complète les colonnes avec le tirage mis de côté, une fois l'intro
+      // terminée : rien à charger pendant le mouvement.
+      function loadLateFrames() {
+        gsap.utils.toArray(".cs-frame-late img").forEach(function (img) {
+          var src = img.getAttribute("data-src");
+          if (!src) return;
+          img.addEventListener("load", function () {
+            var figure = img.closest(".cs-frame-late");
+            if (figure) figure.classList.add("is-in");
+          }, { once: true });
+          img.setAttribute("src", src);
+          img.removeAttribute("data-src");
+        });
       }
 
       return function () {
