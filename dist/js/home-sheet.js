@@ -67,9 +67,12 @@
     } catch (e) {}
     if (forceIntro) introSeen = false;
 
+    // Le carton n'est posé par le document que si l'intro doit jouer (même
+    // décision que le script inline de pages/home.html).
     var bootActive = !!(
-      boot && bootName && bootCard && bootPhoto && bootScrim && bootVeil &&
-      bootWords.length === 2 && panel && title && hasMotion && !introSeen
+      window.__csBoot === true && boot && bootName && bootCard && bootPhoto &&
+      bootScrim && bootVeil && bootWords.length === 2 && panel && title &&
+      hasMotion && !introSeen
     );
 
     // Bandeau de diagnostic : ?debug=1

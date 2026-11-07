@@ -45,12 +45,29 @@
       onload="this.media = 'all'"
     />
     <script>
-      // Carton-titre : visible dès la première peinture, retiré par le JS.
-      // Le délai est un filet de sécurité si GSAP ne se charge pas.
-      document.documentElement.classList.add("cs-boot-on");
-      window.setTimeout(function () {
-        document.documentElement.classList.remove("cs-boot-on");
-      }, 3000);
+      // Carton-titre : visible dès la première peinture, mais seulement quand
+      // l'intro va jouer. Sans cette condition, un rechargement dans la même
+      // session montrait la première image de l'intro puis la retirait d'un
+      // coup. Le JS refait la même décision ; le délai est le filet de
+      // sécurité si GSAP ne se charge pas.
+      (function () {
+        var force = /(?:\?|&)intro=1(?:&|$)/.test(window.location.search);
+        var seen = false;
+        try {
+          var at = parseInt(window.sessionStorage.getItem("cs-intro-at") || "0", 10);
+          seen = at > 0 && Date.now() - at < 20 * 60 * 1000;
+        } catch (e) {}
+        var calm =
+          window.matchMedia &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (force || (!seen && !calm)) {
+          window.__csBoot = true;
+          document.documentElement.classList.add("cs-boot-on");
+          window.setTimeout(function () {
+            document.documentElement.classList.remove("cs-boot-on");
+          }, 3000);
+        }
+      })();
     </script>
     <script defer src="/dist/js/vendor/gsap.min.js"></script>
     <script defer src="/dist/js/vendor/ScrollTrigger.min.js"></script>
