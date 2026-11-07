@@ -287,25 +287,62 @@
     // --- Accordéon des bandes de concerts --------------------------------
     // L'image survolée s'élargit sur place, les autres se resserrent pour lui
     // faire de la place. Aucun détachement : tout reste dans la bande.
+    // La rangée est aussi justifiée : elle affiche autant de photos qu'il en
+    // faut pour remplir la largeur, et sa hauteur suit (les portraits, étroits,
+    // demandent une rangée plus haute que les paysages).
     function initRowAccordion() {
       if (!gsap || reduceMotion) return;
+
+      var GAP = 8;
+      var ROW_HEIGHT = 190; // hauteur de référence, cible de la justification
+      var ROW_MIN = 160;
+      var ROW_MAX = 240;
+      var HOT_RISE = 40; // débordement de l'image survolée dans l'interstice
+      var MIN_FRAMES = 5; // en dessous, la rangée paraît vide
+      var DURATION = 0.5;
+      var EASE = "power3.out";
+      var wide = window.matchMedia("(min-width: 901px)");
 
       gsap.utils.toArray(".cs-strip").forEach(function (strip) {
         var box = strip.querySelector(".cs-strip-frames");
         if (!box) return;
-        var frames = gsap.utils.toArray(box.children);
-        if (frames.length < 2) return;
+        var pool = gsap.utils.toArray(box.children);
+        if (pool.length < 2) return;
+        var frames = pool;
+        var ratios = pool.map(ratioOf);
         var natural = [];
+        var rowH = ROW_HEIGHT;
         var hotIndex = -1;
-        var ROW_HEIGHT = 190;
-        var HOT_MAX_HEIGHT = 230; // 40 px de débordement, la taille de l'interstice
-        var DURATION = 0.5;
-        var EASE = "power3.out";
+        var lastWidth = -1;
 
-        function measure() {
-          natural = frames.map(function (f) {
-            return Math.round(f.getBoundingClientRect().width) || 1;
-          });
+        function ratioOf(frame) {
+          var img = frame.querySelector("img");
+          if (!img) return 1;
+          var w = parseFloat(img.getAttribute("width"));
+          var h = parseFloat(img.getAttribute("height"));
+          if (!w || !h) {
+            w = img.naturalWidth;
+            h = img.naturalHeight;
+          }
+          return w && h ? w / h : 1;
+        }
+
+        // Découpage retenu : celui dont la hauteur justifiée tombe le plus près
+        // de la hauteur de référence, donc le moins de recadrage possible.
+        function fit(total) {
+          var best = pool.length;
+          var bestScore = Infinity;
+          var sum = 0;
+          for (var k = 1; k <= pool.length; k++) {
+            sum += ratios[k - 1];
+            if (k < MIN_FRAMES) continue;
+            var score = Math.abs((total - GAP * (k - 1)) / sum - ROW_HEIGHT);
+            if (score < bestScore - 0.01) {
+              bestScore = score;
+              best = k;
+            }
+          }
+          return best;
         }
 
         // L'image d'un cadre chaud n'est pas recadrée : sa hauteur suit sa
@@ -316,13 +353,13 @@
           if (!img) return;
           var from = img.getBoundingClientRect().height;
           frame.classList.remove("is-hot");
-          if (!animate || from <= ROW_HEIGHT + 0.5) {
+          if (!animate || Math.abs(from - rowH) < 0.5) {
             gsap.killTweensOf(img);
             img.style.height = "";
             return;
           }
           gsap.fromTo(img, { height: from }, {
-            height: ROW_HEIGHT,
+            height: rowH,
             duration: duration,
             ease: EASE,
             overwrite: true,
@@ -353,13 +390,13 @@
         }
 
         function open(index) {
+          if (!wide.matches) return;
           var total = box.clientWidth;
-          var gap = 8;
-          var gaps = gap * (frames.length - 1);
+          var gaps = GAP * (frames.length - 1);
           // L'image garde son format : on plafonne sa largeur par la hauteur
           // qu'elle peut prendre sans manger la légende du dessus.
-          var ratio = natural[index] / ROW_HEIGHT;
-          var hot = Math.min(total * 0.42, HOT_MAX_HEIGHT * ratio);
+          var ratio = ratios[index] || 1;
+          var hot = Math.min(total * 0.42, (rowH + HOT_RISE) * ratio);
           hot = Math.max(hot, natural[index] * 1.05);
           var left = Math.max(total - hot - gaps, 80);
           var sum = natural.reduce(function (a, w, j) { return j === index ? a : a + w; }, 0) || 1;
@@ -387,9 +424,61 @@
           strip.classList.add("is-hot-row");
         }
 
-        measure();
-        strip.classList.add("cs-accordion");
-        reset(false);
+        // Range la bande : photos retenues, hauteur de rangée et largeurs. Sous
+        // 901 px la grille CSS reprend la main (trois photos par ligne).
+        function layout(total) {
+          var fill = wide.matches && total > 0;
+          var count = fill ? fit(total) : Math.min(pool.length, 6);
+
+          pool.forEach(function (f, i) { f.hidden = i >= count; });
+          frames = pool.slice(0, count);
+          hotIndex = -1;
+
+          if (!fill) {
+            rowH = ROW_HEIGHT;
+            box.style.removeProperty("--row-h");
+            strip.classList.remove("cs-accordion", "is-hot-row");
+            frames.forEach(function (f) {
+              f.classList.remove("is-hot");
+              gsap.killTweensOf(f);
+              f.style.width = "";
+              f.style.opacity = "";
+            });
+            natural = [];
+            return;
+          }
+
+          var sum = 0;
+          for (var i = 0; i < count; i++) sum += ratios[i];
+          var gaps = GAP * (count - 1);
+          rowH = Math.max(ROW_MIN, Math.min(ROW_MAX, (total - gaps) / sum));
+          box.style.setProperty("--row-h", Math.round(rowH) + "px");
+          var scale = (total - gaps) / (sum * rowH);
+          natural = ratios.slice(0, count).map(function (r) {
+            return Math.max(r * rowH * scale, 24);
+          });
+
+          strip.classList.add("cs-accordion");
+          reset(false);
+        }
+
+        function relayout() {
+          // Une bande filtrée n'a plus de largeur : on lit celle de sa colonne.
+          var total = box.clientWidth || (strip.parentElement && strip.parentElement.clientWidth) || 0;
+          if (!total || total === lastWidth) return;
+          lastWidth = total;
+          layout(total);
+        }
+
+        relayout();
+
+        // La largeur bouge aussi sans redimensionnement de la fenêtre :
+        // apparition de la barre de défilement, filtres, zoom. On suit la boîte.
+        if (typeof ResizeObserver === "function") {
+          new ResizeObserver(relayout).observe(box);
+        } else {
+          window.addEventListener("resize", relayout);
+        }
 
         // La cible est lue sous le pointeur à chaque déplacement, et non à
         // l'entrée dans un cadre. En quittant un cadre pour son voisin, la
@@ -414,10 +503,6 @@
           if (hotIndex > -1) reset(true);
         });
 
-        window.addEventListener("resize", function () {
-          measure();
-          reset(false);
-        });
       });
     }
 

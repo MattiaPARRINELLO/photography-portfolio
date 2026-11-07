@@ -1785,9 +1785,17 @@ html.cs-boot-on .cs-boot {
   width: 100%;
 }
 
+/* La hauteur de rangée est calculée par le client pour que les photos
+   remplissent la largeur (portraits étroits, paysages larges) ; 190 px sans
+   JavaScript. Les photos en réserve restent masquées jusqu'à ce qu'elles
+   servent à remplir la rangée. */
+.cs-strip-frame[hidden] {
+  display: none;
+}
+
 @media (min-width: 901px) {
   .cs-accordion .cs-strip-frames {
-    height: 190px;
+    height: var(--row-h, 190px);
   }
 
   .cs-accordion .cs-strip-frame {
@@ -1796,7 +1804,7 @@ html.cs-boot-on .cs-boot {
   }
 
   .cs-accordion .cs-strip-frame img {
-    height: 190px;
+    height: var(--row-h, 190px);
     object-fit: cover;
   }
 

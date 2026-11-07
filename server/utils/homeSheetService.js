@@ -99,13 +99,18 @@ function buildHeroColumns(galleries, dimsFor, perColumn = 5, columns = 6) {
     return html;
 }
 
-// --- 2. Une bande par concert (5 images, 190px de haut) -------------------
-function buildStrips(galleries, dimsFor, perStrip = 6) {
+// --- 2. Une bande par concert (190 px de haut) ----------------------------
+// La bande est rendue avec une réserve de photos : le client n'en garde que
+// ce qu'il faut pour remplir la largeur de la rangée à hauteur constante
+// (portraits étroits, paysages larges). Sans JavaScript, les six premières
+// restent visibles, comme avant.
+function buildStrips(galleries, dimsFor, perStrip = 6, pool = 12) {
     const rows = galleries.filter(g => photosOf(g).length).map(gallery => {
-        const photos = photosOf(gallery).slice(0, perStrip);
+        const photos = photosOf(gallery).slice(0, pool);
         const frames = photos.map((file, i) => {
             const dims = dimsFor(file);
-            return `<a class="cs-strip-frame" href="${resizeUrl(file, 1600)}" data-fancybox="strips" data-caption="${esc(artistLabel(gallery))} · ${esc(venueLabel(gallery))}"><img src="${resizeUrl(file, 400)}"${widthAttrs(dims, 400)} alt="Concert de ${esc(artistLabel(gallery))} à ${esc(venueLabel(gallery))}, photo ${i + 1}" loading="lazy" decoding="async"></a>`;
+            const extra = i >= perStrip ? ' hidden' : '';
+            return `<a class="cs-strip-frame"${extra} href="${resizeUrl(file, 1600)}" data-fancybox="strips" data-caption="${esc(artistLabel(gallery))} · ${esc(venueLabel(gallery))}"><img src="${resizeUrl(file, 400)}"${widthAttrs(dims, 400)} alt="Concert de ${esc(artistLabel(gallery))} à ${esc(venueLabel(gallery))}, photo ${i + 1}" loading="lazy" decoding="async"></a>`;
         }).join('');
         const count = photosOf(gallery).length;
         return `
