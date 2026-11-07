@@ -297,6 +297,10 @@
         if (frames.length < 2) return;
         var natural = [];
         var hotIndex = -1;
+        var ROW_HEIGHT = 190;
+        var HOT_MAX_HEIGHT = 230; // 40 px de débordement, la taille de l'interstice
+        var DURATION = 0.5;
+        var EASE = "power3.out";
 
         function measure() {
           natural = frames.map(function (f) {
@@ -304,13 +308,44 @@
           });
         }
 
+        // L'image d'un cadre chaud n'est pas recadrée : sa hauteur suit sa
+        // largeur. Quand le cadre redevient froid, on ramène cette hauteur à
+        // celle de la rangée au lieu de la couper net.
+        function settleImage(frame, animate, duration) {
+          var img = frame.querySelector("img");
+          if (!img) return;
+          var from = img.getBoundingClientRect().height;
+          frame.classList.remove("is-hot");
+          if (!animate || from <= ROW_HEIGHT + 0.5) {
+            gsap.killTweensOf(img);
+            img.style.height = "";
+            return;
+          }
+          gsap.fromTo(img, { height: from }, {
+            height: ROW_HEIGHT,
+            duration: duration,
+            ease: EASE,
+            overwrite: true,
+            onComplete: function () { img.style.height = ""; }
+          });
+        }
+
         function reset(animate) {
+          var wasHot = hotIndex > -1;
           hotIndex = -1;
-          strip.classList.remove("is-hot-row");
+          if (wasHot && animate) {
+            // La bande laisse déborder l'image qui se referme le temps qu'elle
+            // retrouve sa hauteur, sinon le haut serait coupé d'un coup.
+            gsap.delayedCall(DURATION * 0.9, function () {
+              if (hotIndex < 0) strip.classList.remove("is-hot-row");
+            });
+          } else {
+            strip.classList.remove("is-hot-row");
+          }
           frames.forEach(function (f, j) {
-            f.classList.remove("is-hot");
+            if (f.classList.contains("is-hot")) settleImage(f, animate, 0.45);
             if (animate) {
-              gsap.to(f, { width: natural[j], opacity: 1, duration: 0.45, ease: "power3.out", overwrite: true });
+              gsap.to(f, { width: natural[j], opacity: 1, duration: 0.45, ease: EASE, overwrite: true });
             } else {
               gsap.set(f, { width: natural[j], opacity: 1 });
             }
@@ -321,24 +356,31 @@
           var total = box.clientWidth;
           var gap = 8;
           var gaps = gap * (frames.length - 1);
-          var rowHeight = 190;
-          var maxHeight = 230; // 40 px de débordement, la taille de l'interstice
           // L'image garde son format : on plafonne sa largeur par la hauteur
           // qu'elle peut prendre sans manger la légende du dessus.
-          var ratio = natural[index] / rowHeight;
-          var hot = Math.min(total * 0.42, maxHeight * ratio);
+          var ratio = natural[index] / ROW_HEIGHT;
+          var hot = Math.min(total * 0.42, HOT_MAX_HEIGHT * ratio);
           hot = Math.max(hot, natural[index] * 1.05);
           var left = Math.max(total - hot - gaps, 80);
           var sum = natural.reduce(function (a, w, j) { return j === index ? a : a + w; }, 0) || 1;
 
           frames.forEach(function (f, j) {
             var width = j === index ? hot : Math.min(left * (natural[j] / sum), natural[j]);
-            f.classList.toggle("is-hot", j === index);
+            if (j === index) {
+              var img = f.querySelector("img");
+              if (img) {
+                gsap.killTweensOf(img);
+                img.style.height = "";
+              }
+              f.classList.add("is-hot");
+            } else if (f.classList.contains("is-hot")) {
+              settleImage(f, true, DURATION);
+            }
             gsap.to(f, {
               width: Math.max(width, 24),
               opacity: j === index ? 1 : 0.75,
-              duration: 0.5,
-              ease: "power3.out",
+              duration: DURATION,
+              ease: EASE,
               overwrite: true
             });
           });
@@ -349,17 +391,23 @@
         strip.classList.add("cs-accordion");
         reset(false);
 
-        frames.forEach(function (frame, index) {
-          frame.addEventListener("pointerenter", function (e) {
-            if (e.pointerType !== "mouse") return;
-            if (hotIndex === index) return;
-            hotIndex = index;
-            open(index);
-          });
-          frame.addEventListener("pointerleave", function (e) {
-            if (e.pointerType !== "mouse") return;
-            if (hotIndex === index) reset(true);
-          });
+        // La cible est lue sous le pointeur à chaque déplacement, et non à
+        // l'entrée dans un cadre. En quittant un cadre pour son voisin, la
+        // rangée se resserrait d'abord, le cadre visé glissait sous le
+        // curseur et l'animation repartait sur un troisième : d'où le saut.
+        function frameUnder(e) {
+          var el = document.elementFromPoint(e.clientX, e.clientY);
+          var frame = el && el.closest ? el.closest(".cs-strip-frame") : null;
+          if (!frame || frame.parentNode !== box) return -1;
+          return frames.indexOf(frame);
+        }
+
+        strip.addEventListener("pointermove", function (e) {
+          if (e.pointerType !== "mouse") return;
+          var index = frameUnder(e);
+          if (index < 0 || index === hotIndex) return;
+          hotIndex = index;
+          open(index);
         });
 
         strip.addEventListener("pointerleave", function () {
