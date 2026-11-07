@@ -25,6 +25,15 @@
       if (name) titles[strip.dataset.gig] = name.textContent.trim();
     });
 
+    // Connexion faible : on allège l'intro (photo plus petite, pas d'arrivée
+    // des colonnes, pas de tirages supplémentaires).
+    var conn = navigator.connection || {};
+    var slowNet = !!(
+      conn.saveData ||
+      /(^|-)2g$/.test(conn.effectiveType || "") ||
+      (conn.effectiveType === "3g" && typeof conn.downlink === "number" && conn.downlink < 1)
+    );
+
     var gsap = window.gsap;
     var ScrollTrigger = window.ScrollTrigger;
     var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -154,7 +163,7 @@
           settled = true;
           window.clearTimeout(deadline);
           var chosen = (best && best.url) || nodes[0].getAttribute("src") || "";
-          var url = chosen.replace(/([?&])w=\d+/, "$1w=1600");
+          var url = chosen.replace(/([?&])w=\d+/, slowNet ? "$1w=640" : "$1w=1600");
           var probe = new Image();
           probe.onload = function () { resolve(url); };
           probe.onerror = function () { resolve(null); };
@@ -427,10 +436,12 @@
         // Les tirages arrivent par les côtés : moitié gauche depuis la
         // gauche, moitié droite depuis la droite, en se resserrant vers le
         // centre. Animé par colonne (six éléments) et non par image.
-        gsap.set(cols, {
-          x: function (i) { return i < cols.length / 2 ? -60 : 60; },
-          opacity: 0.55
-        });
+        if (!slowNet) {
+          gsap.set(cols, {
+            x: function (i) { return i < cols.length / 2 ? -60 : 60; },
+            opacity: 0.55
+          });
+        }
 
         var fontsReady = document.fonts && document.fonts.ready
           ? Promise.race([
@@ -628,7 +639,7 @@
 
 
           // Les colonnes se remettent en place en se resserrant.
-          tl.to(
+          if (!slowNet) tl.to(
             cols,
             {
               x: 0,
@@ -671,7 +682,7 @@
           );
           tl.add(initScrollAnimations, S + move + 0.1);
           tl.add(function () { gsap.set(bootWords, { willChange: "auto" }); }, S + move + 0.15);
-          tl.add(loadLateFrames, S + move + 0.6);
+          if (!slowNet) tl.add(loadLateFrames, S + move + 0.6);
         }).catch(function (error) {
           console.error("Intro:", error);
           gsap.set(".cs-col-shade", { opacity: 0 });
@@ -686,7 +697,7 @@
           landFrames(0);
         }
         initScrollAnimations();
-        loadLateFrames();
+        if (!slowNet) loadLateFrames();
       }
 
       // --- Animations de défilement ---------------------------------------
