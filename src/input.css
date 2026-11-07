@@ -1899,39 +1899,6 @@ html.cs-boot-on .cs-boot {
   opacity: 1;
 }
 
-/* --- Le repère au crayon gras -------------------------------------------- */
-/* Le geste du tireur sur une planche contact : un cercle tracé à main levée
-   autour de la photo survolée. L'élément est unique et vit dans le body ; le
-   script le place sur l'image (position fixe), d'où l'absence de rognage. */
-.cs-mark {
-  position: fixed;
-  z-index: 1;
-  display: block;
-  pointer-events: none;
-  opacity: 0;
-  /* Le geste n'est jamais parfaitement d'aplomb. */
-  transform: rotate(-1.3deg);
-}
-
-.cs-mark svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.cs-mark path {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.cs-mark .cs-mark-echo {
-  opacity: 0.45;
-}
-
 .cs-frame-strip {
   display: flex;
   align-items: center;
@@ -1959,16 +1926,6 @@ html.cs-boot-on .cs-boot {
 .cs-frame:nth-child(4n + 4) .cs-frame-strip {
   background: var(--surface-2);
   color: var(--muted);
-}
-
-/* Le tirage repéré : la légende passe à l'encre du crayon. */
-.cs-sheet .cs-frame .cs-frame-strip {
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.cs-sheet .cs-frame:hover .cs-frame-strip {
-  background: var(--accent);
-  color: var(--accent-ink);
 }
 
 /* Le panneau : une cellule de la planche qui n'est pas une photo */
