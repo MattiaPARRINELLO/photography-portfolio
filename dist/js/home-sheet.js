@@ -438,6 +438,17 @@
               new Promise(function (resolve) { window.setTimeout(resolve, 1200); })
             ])
           : Promise.resolve();
+
+        // Décodage des premiers tirages avant de lancer le mouvement : la
+        // planche est déjà peinte quand la feuille commence à se replier,
+        // ce qui évite un gros à-coup au milieu de l'animation.
+        var heroImgs = gsap.utils.toArray(".cs-sheet .cs-frame img").slice(0, 10);
+        var imagesReady = Promise.race([
+          Promise.all(heroImgs.map(function (img) {
+            return img.decode ? img.decode().catch(function () {}) : Promise.resolve();
+          })),
+          new Promise(function (resolve) { window.setTimeout(resolve, 600); })
+        ]).catch(function () {});
         var minHold = new Promise(function (resolve) { window.setTimeout(resolve, 350); });
         var photoUrl = null;
         var hasPhoto = false;
@@ -454,7 +465,7 @@
         // Sur petit écran, le nom n'essaie pas d'épouser le H1 (deux lignes
         // contre une) : on n'attend donc pas la police, l'intro démarre tout
         // de suite et reste courte.
-        Promise.all(narrow ? [minHold] : [fontsReady, minHold]).then(function () {
+        Promise.all(narrow ? [minHold, imagesReady] : [fontsReady, minHold, imagesReady]).then(function () {
           var p = panel.getBoundingClientRect();
           var card = bootCard.getBoundingClientRect();
 
@@ -659,6 +670,7 @@
             S + move + 0.04
           );
           tl.add(initScrollAnimations, S + move + 0.1);
+          tl.add(function () { gsap.set(bootWords, { willChange: "auto" }); }, S + move + 0.15);
         }).catch(function (error) {
           console.error("Intro:", error);
           gsap.set(".cs-col-shade", { opacity: 0 });
