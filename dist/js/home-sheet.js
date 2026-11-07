@@ -548,60 +548,59 @@
               S
             ).to(bootName, { autoAlpha: 0, duration: move * 0.35, ease: "power2.in" }, S + move * 0.55);
           } else if (targets && targets[0] && targets[1]) {
-            // 1. Réduction du bloc entier : les deux mots rétrécissent
-            //    autour du centre du bloc, donc l'interligne se resserre en
-            //    même temps que les lettres (il ne « grandit » plus).
+            // Un seul mouvement, conduit par un paramètre unique :
+            //  - les deux mots rétrécissent autour du centre du bloc, donc
+            //    l'interligne suit la taille des lettres ;
+            //  - en fin de course, le bloc se déplie doucement sur la ligne
+            //    du titre (fondu de lissage, sans rupture de rythme).
             var centres = bootWords.map(function (w) {
               var r = w.getBoundingClientRect();
               return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
             });
-            var gx = (centres[0].x + centres[1].x) / 2;
             var gy = (centres[0].y + centres[1].y) / 2;
-            var boxScale = (targets[0].scale + targets[1].scale) / 2;
-            var proxy = { s: 1 };
+            var state = { u: 0 };
+
+            function smoothstep(x) {
+              x = Math.max(0, Math.min(1, x));
+              return x * x * (3 - 2 * x);
+            }
+
+            function poseAt(u) {
+              // L'horizontale se place avant le dépliage, pour que les deux
+              // mots aient déjà leur écart définitif quand ils se rejoignent.
+              var ux = smoothstep(u / 0.9);
+              // Le dépliage ne commence que lorsque les mots ont presque leur
+              // taille définitive : ils ne se chevauchent pas.
+              var m = smoothstep((u - 0.88) / 0.12);
+              bootWords.forEach(function (w, i) {
+                var s = 1 + (targets[i].scale - 1) * u;
+                var groupY = (gy + (centres[i].y - gy) * s) - centres[i].y;
+                var groupYEnd = (gy + (centres[i].y - gy) * targets[i].scale) - centres[i].y;
+                gsap.set(w, {
+                  scale: s,
+                  x: targets[i].x * ux,
+                  y: groupY + (targets[i].y - groupYEnd) * m
+                });
+              });
+            }
 
             tl.to(
-              proxy,
+              state,
               {
-                s: boxScale,
-                duration: move * 0.72,
-                ease: "power2.out",
-                onUpdate: function () {
-                  bootWords.forEach(function (w, i) {
-                    gsap.set(w, {
-                      scale: proxy.s,
-                      x: (proxy.s - 1) * (centres[i].x - gx),
-                      y: (proxy.s - 1) * (centres[i].y - gy)
-                    });
-                  });
-                }
+                u: 1,
+                duration: move,
+                ease: "power2.inOut",
+                onUpdate: function () { poseAt(state.u); }
               },
               S
             );
-
-            // 2. Le bloc se déplie : chaque mot rejoint sa place sur la ligne
-            //    du titre, une fois qu'il est assez petit pour ne pas heurter
-            //    l'autre.
-            bootWords.forEach(function (word, i) {
-              tl.to(
-                word,
-                {
-                  x: targets[i].x,
-                  y: targets[i].y,
-                  scale: targets[i].scale,
-                  duration: move * 0.28,
-                  ease: "power2.inOut"
-                },
-                S + move * 0.72
-              );
-            });
             // Le blanc de la photo devient l'encre du papier.
             if (hasPhoto) {
               // Le nom reste blanc tant que la photo est là, puis passe à
               // l'encre quand le voile blanc prend le dessus.
               // Le nom reste blanc tant que la photo est là, puis bascule
               // franchement en encre quand le voile a pris le dessus.
-              tl.to(bootName, { color: "#101421", duration: 0.22, ease: "power2.in" }, S + 0.8);
+              tl.to(bootName, { color: "#101421", duration: 0.35, ease: "power2.in" }, S + 0.55);
             }
           } else {
             // Repli sans mesure fiable : le nom s'efface.
@@ -616,7 +615,7 @@
             // seule façon de rester à 60 fps pendant un mouvement long.
             // Le voile blanc doit être complet avant l'atterrissage, sinon le
             // panneau apparaîtrait sur une feuille encore grise.
-            tl.to(bootVeil, { autoAlpha: 1, duration: 0.85, ease: "power1.inOut" }, S + 0.2);
+            tl.to(bootVeil, { autoAlpha: 1, duration: 0.6, ease: "power1.inOut" }, S + 0.5);
           }
 
 
