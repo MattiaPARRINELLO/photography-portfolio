@@ -2811,3 +2811,166 @@ html.cs-boot-on .cs-boot {
 .cs .lang-switch {
   display: none;
 }
+
+/* ==========================================================================
+   Galeries — la planche des concerts
+   Une grille de tirages : couverture 3:2, légende en bandeau. Le survol
+   découvre à peine l'image et fait passer la légende à l'encre blanche.
+   ========================================================================== */
+
+.cs-galleries-head {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: end;
+  gap: clamp(24px, 4vw, 64px);
+  padding: clamp(56px, 8vw, 110px) var(--pad) clamp(28px, 4vw, 48px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.cs-galleries-title {
+  font-size: var(--step-head);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  max-width: 14ch;
+}
+
+.cs-galleries-lede {
+  max-width: 52ch;
+  font-size: var(--step-lead);
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.cs-galleries-body {
+  padding: clamp(20px, 3vw, 36px) var(--pad) clamp(64px, 9vw, 130px);
+}
+
+.cs-gcard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cs-gcard {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--surface);
+}
+
+.cs-gcard:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.cs-gcard-frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 3 / 2;
+  background: var(--surface-2);
+}
+
+.cs-gcard-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+  transition:
+    transform 0.6s cubic-bezier(0.22, 0.8, 0.22, 1),
+    opacity 0.4s ease;
+}
+
+.cs-gcard:hover .cs-gcard-frame img,
+.cs-gcard:focus-visible .cs-gcard-frame img {
+  transform: scale(1.035);
+}
+
+.cs-gcard-band {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--muted);
+  transition: color 0.18s ease;
+}
+
+.cs-gcard:hover .cs-gcard-band,
+.cs-gcard:focus-visible .cs-gcard-band {
+  color: var(--ink);
+}
+
+.cs-gcard-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cs-gcard-name {
+  overflow: hidden;
+  font-size: var(--step-lead);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cs-gcard-meta {
+  overflow: hidden;
+  font-size: var(--step-small);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-gcard-count {
+  flex: none;
+  font-size: var(--step-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: clamp(40px, 8vw, 90px) 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--muted);
+}
+
+.cs-empty-title {
+  font-size: var(--step-lead);
+  color: var(--ink);
+}
+
+.cs-empty-link {
+  font-size: var(--step-small);
+  font-weight: 500;
+  color: var(--ink);
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 2px;
+}
+
+@media (max-width: 1199px) {
+  .cs-gcard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 699px) {
+  .cs-galleries-head {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 16px;
+  }
+
+  .cs-gcard-grid {
+    grid-template-columns: 1fr;
+  }
+}
