@@ -566,20 +566,17 @@
             }
 
             function poseAt(u) {
-              // L'horizontale se place avant le dépliage, pour que les deux
-              // mots aient déjà leur écart définitif quand ils se rejoignent.
-              var ux = smoothstep(u / 0.9);
-              // Le dépliage ne commence que lorsque les mots ont presque leur
-              // taille définitive : ils ne se chevauchent pas.
-              var m = smoothstep((u - 0.88) / 0.12);
+              // Les trois transformations sont pilotées par le même u, de 0 à
+              // 1 : elles démarrent et finissent ensemble. La montée suit une
+              // courbe plus douce au début pour que les mots ne se heurtent
+              // pas en se rejoignant.
+              var uy = Math.pow(u, 4);
               bootWords.forEach(function (w, i) {
                 var s = 1 + (targets[i].scale - 1) * u;
-                var groupY = (gy + (centres[i].y - gy) * s) - centres[i].y;
-                var groupYEnd = (gy + (centres[i].y - gy) * targets[i].scale) - centres[i].y;
                 gsap.set(w, {
                   scale: s,
-                  x: targets[i].x * ux,
-                  y: groupY + (targets[i].y - groupYEnd) * m
+                  x: targets[i].x * u,
+                  y: targets[i].y * uy
                 });
               });
             }
