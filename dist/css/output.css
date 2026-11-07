@@ -1863,6 +1863,59 @@ html.cs-boot-on .cs-boot {
   border: 0;
 }
 
+/* --- Pages intérieures : en-tête et pied communs ------------------------- */
+/* Toutes les pages hors accueil partagent ces deux blocs : le nom en haut à
+   gauche, la navigation à droite, le pied identique à celui de l'accueil. */
+
+.cs-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px var(--pad) 0;
+}
+
+.cs-top-name {
+  font-size: var(--step-lead);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.cs-top-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: var(--step-small);
+  font-weight: 500;
+}
+
+.cs-top-links a {
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.18s ease;
+}
+
+.cs-top-links a:hover,
+.cs-top-links a[aria-current="page"] {
+  border-bottom-color: var(--ink);
+}
+
+.cs-top-links a[aria-current="page"] {
+  border-bottom-color: var(--accent);
+}
+
+.cs-page {
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .cs-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
 /* --- Hero : la planche --------------------------------------------------- */
 
 .cs-hero {
