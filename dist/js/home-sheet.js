@@ -533,32 +533,39 @@
         return Math.round(n * 10) / 10;
       }
 
-      // Un cercle tracé à la main : rayon irrégulier (deux harmoniques lentes
-      // et un tremblement), départ jamais tout à fait en haut, trait qui
-      // dépasse son point de départ.
-      function handDrawn(radius) {
-        var start = -Math.PI / 2 + (Math.random() - 0.5) * 0.7;
-        var sweep = Math.PI * 2 * (1.02 + Math.random() * 0.1);
-        var phaseA = Math.random() * Math.PI * 2;
-        var phaseB = Math.random() * Math.PI * 2;
-        var phaseC = Math.random() * Math.PI * 2;
-        var ampA = 0.012 + Math.random() * 0.016;
-        var ampB = 0.005 + Math.random() * 0.01;
-        var rx = radius * (0.98 + Math.random() * 0.03);
-        var ry = radius * (0.98 + Math.random() * 0.03);
-        var steps = 18;
-        var pts = [];
+      // Un cercle tracé à la main : quelques appuis seulement, chacun à un
+      // rayon différent, avec un tassement sur un axe au hasard. Le trait part
+      // d'un point quelconque et dépasse le tour complet, comme quand on
+      // referme vite un cercle.
+      function handDrawn(radius, arc) {
+        var anchors = arc ? 3 + Math.floor(Math.random() * 2) : 5 + Math.floor(Math.random() * 3);
+        var start = arc
+          ? Math.random() * Math.PI * 2
+          : -Math.PI / 2 + (Math.random() - 0.5) * 0.9;
+        var sweep = Math.PI * 2 * (arc ? 0.35 + Math.random() * 0.3 : 1.02 + Math.random() * 0.06);
+        var squash = 0.86 + Math.random() * 0.24;
+        var axis = Math.random() * Math.PI;
+        var ca = Math.cos(axis);
+        var sa = Math.sin(axis);
+        var radii = [];
         var i;
-        for (i = 0; i <= steps; i++) {
-          var t = start + sweep * (i / steps);
-          var wob = 1 +
-            Math.sin(t * 2 + phaseA) * ampA +
-            Math.sin(t * 3 + phaseB) * ampB +
-            Math.sin(t * 5 + phaseC) * 0.003;
-          pts.push([50 + rx * wob * Math.cos(t), 50 + ry * wob * Math.sin(t)]);
+        for (i = 0; i <= anchors; i++) radii.push(radius * (0.87 + Math.random() * 0.26));
+        // La fermeture revient près du point de départ : le trait se croise
+        // sans partir en queue.
+        if (!arc) radii[anchors] = radii[0] * (0.96 + Math.random() * 0.08);
+        var pts = [];
+        for (i = 0; i <= anchors; i++) {
+          var a = start + sweep * (i / anchors);
+          var r = radii[i];
+          var x = Math.cos(a) * r;
+          var y = Math.sin(a) * r;
+          var along = x * ca + y * sa;
+          var across = -x * sa + y * ca;
+          along *= squash;
+          pts.push([50 + along * ca - across * sa, 50 + along * sa + across * ca]);
         }
         // Catmull-Rom vers courbes de Bézier : le trait reste lisse malgré les
-        // points irréguliers.
+        // appuis irréguliers.
         var d = "M" + round(pts[0][0]) + " " + round(pts[0][1]);
         for (i = 0; i < pts.length - 1; i++) {
           var p0 = pts[i - 1] || pts[i];
@@ -595,7 +602,8 @@
         // Nouveau tracé à chaque survol : la main ne repasse jamais au même
         // endroit.
         line.setAttribute("d", handDrawn(44 + Math.random() * 3));
-        echo.setAttribute("d", handDrawn(42 + Math.random() * 3));
+        // Second passage partiel : le crayon repasse sur une portion seulement.
+        echo.setAttribute("d", handDrawn(39 + Math.random() * 9, true));
         echo.setAttribute("transform", "rotate(" + (-3 + Math.random() * 6).toFixed(1) + " 50 50)");
         line.style.strokeWidth = (2.5 + Math.random() * 1).toFixed(2);
         echo.style.strokeWidth = (2.1 + Math.random() * 0.9).toFixed(2);
