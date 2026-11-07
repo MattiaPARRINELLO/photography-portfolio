@@ -4343,3 +4343,293 @@ html.cs-boot-on .cs-boot {
   outline-offset: 2px;
 }
 
+
+/* ==========================================================================
+   Mentions légales
+   Une colonne de lecture de 68ch au plus, un sommaire ancré à gauche sur
+   bureau, des filets fins. L'accent rose marque uniquement les numéros.
+   ========================================================================== */
+
+.cs-legal {
+  --line: rgba(255, 255, 255, 0.14);
+  --line-strong: rgba(255, 255, 255, 0.3);
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: clamp(48px, 8vh, 96px) var(--pad) clamp(72px, 12vh, 120px);
+}
+
+.cs-legal-head {
+  display: grid;
+  gap: 14px;
+  max-width: 68ch;
+  padding-bottom: clamp(28px, 4vw, 44px);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.cs-legal-kicker {
+  font-size: var(--step-small);
+  color: var(--muted);
+}
+
+.cs-legal-title {
+  font-size: clamp(2.5rem, 1.4rem + 4vw, 5rem);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+}
+
+.cs-legal-date {
+  font-size: var(--step-small);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-legal-layout {
+  display: grid;
+  gap: clamp(32px, 5vw, 72px);
+  margin-top: clamp(32px, 5vw, 56px);
+}
+
+.cs-legal-toc-title {
+  margin-bottom: 14px;
+  font-size: var(--step-small);
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.cs-legal-toc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.cs-legal-toc-list li {
+  border-bottom: 1px solid var(--line);
+}
+
+.cs-legal-toc-list a {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: var(--step-small);
+  color: var(--muted);
+  transition: color 0.18s ease;
+}
+
+.cs-legal-toc-list a span {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-legal-toc-list a:hover {
+  color: var(--ink);
+}
+
+.cs-legal-body {
+  max-width: 68ch;
+}
+
+.cs-legal-body p {
+  line-height: 1.7;
+}
+
+.cs-legal-lede {
+  font-size: var(--step-lead);
+  line-height: 1.6;
+}
+
+.cs-legal-body p + p {
+  margin-top: 16px;
+}
+
+.cs-legal-body a {
+  border-bottom: 1px solid var(--line-strong);
+  transition: border-color 0.18s ease;
+}
+
+.cs-legal-body a:hover {
+  border-bottom-color: var(--accent);
+}
+
+.cs-legal-section {
+  padding-top: clamp(32px, 5vw, 52px);
+  margin-top: clamp(32px, 5vw, 52px);
+  border-top: 1px solid var(--line);
+}
+
+.cs-legal-h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 20px;
+  font-size: var(--step-h2);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  scroll-margin-top: 24px;
+}
+
+.cs-legal-num {
+  flex: none;
+  font-size: var(--step-small);
+  font-weight: 500;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-legal-data {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.cs-legal-data > div {
+  display: grid;
+  gap: 3px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.cs-legal-data .cs-legal-wide {
+  grid-column: 1 / -1;
+}
+
+.cs-legal-data dt {
+  font-size: var(--step-small);
+  color: var(--muted);
+}
+
+.cs-legal-data dd {
+  margin: 0;
+}
+
+.cs-legal-top {
+  display: inline-block;
+  margin-top: clamp(40px, 6vw, 64px);
+  padding-bottom: 2px;
+  font-size: var(--step-small);
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+}
+
+.cs-legal-top:hover {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+@media (min-width: 960px) {
+  .cs-legal-layout {
+    grid-template-columns: minmax(180px, 220px) minmax(0, 68ch);
+    align-items: start;
+  }
+
+  .cs-legal-toc {
+    position: sticky;
+    top: 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cs-legal-data {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   404
+   Une cellule de planche contact vide : le code en très grand, une légende
+   sur bandeau blanc, deux actions. Aucune dépendance JS.
+   ========================================================================== */
+
+.cs-404 {
+  --line: rgba(255, 255, 255, 0.18);
+  display: grid;
+  place-items: center;
+  min-height: 100svh;
+  padding: var(--pad);
+}
+
+.cs-404-inner {
+  display: grid;
+  gap: clamp(20px, 3.5vh, 32px);
+  width: min(560px, 100%);
+}
+
+.cs-404-sheet {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.cs-404-frame {
+  display: grid;
+  place-items: center;
+  min-height: clamp(220px, 38vh, 340px);
+  padding: 24px;
+}
+
+.cs-404-code {
+  font-size: clamp(7rem, 26vw, 13rem);
+  font-weight: 600;
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-404-strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  background: var(--paper);
+  color: var(--paper-ink);
+  font-size: var(--step-small);
+}
+
+.cs-404-note {
+  max-width: 34ch;
+  font-size: var(--step-lead);
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.cs-404-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cs-404-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  font-size: var(--step-small);
+  font-weight: 600;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.cs-404-link.is-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.cs-404-link.is-primary:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.cs-404-link.is-quiet:hover {
+  border-color: var(--ink);
+}
+
+
