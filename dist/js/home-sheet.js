@@ -548,26 +548,51 @@
               S
             ).to(bootName, { autoAlpha: 0, duration: move * 0.35, ease: "power2.in" }, S + move * 0.55);
           } else if (targets && targets[0] && targets[1]) {
+            // 1. Réduction du bloc entier : les deux mots rétrécissent
+            //    autour du centre du bloc, donc l'interligne se resserre en
+            //    même temps que les lettres (il ne « grandit » plus).
+            var centres = bootWords.map(function (w) {
+              var r = w.getBoundingClientRect();
+              return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+            });
+            var gx = (centres[0].x + centres[1].x) / 2;
+            var gy = (centres[0].y + centres[1].y) / 2;
+            var boxScale = (targets[0].scale + targets[1].scale) / 2;
+            var proxy = { s: 1 };
+
+            tl.to(
+              proxy,
+              {
+                s: boxScale,
+                duration: move * 0.72,
+                ease: "power2.out",
+                onUpdate: function () {
+                  bootWords.forEach(function (w, i) {
+                    gsap.set(w, {
+                      scale: proxy.s,
+                      x: (proxy.s - 1) * (centres[i].x - gx),
+                      y: (proxy.s - 1) * (centres[i].y - gy)
+                    });
+                  });
+                }
+              },
+              S
+            );
+
+            // 2. Le bloc se déplie : chaque mot rejoint sa place sur la ligne
+            //    du titre, une fois qu'il est assez petit pour ne pas heurter
+            //    l'autre.
             bootWords.forEach(function (word, i) {
-              // Un seul mouvement continu : réduction, glissement et montée
-              // démarrent et finissent ensemble. La réduction est menée plus
-              // vite (power3.out), donc les mots sont déjà petits quand ils se
-              // rapprochent : ils ne se croisent pas.
               tl.to(
                 word,
-                // Réduction et glissement ensemble, sur les deux lignes.
-                { scale: targets[i].scale, duration: move * 0.7, ease: "power2.out" },
-                S
-              ).to(
-                word,
-                { x: targets[i].x, duration: move * 0.85, ease: "power2.out" },
-                S
-              ).to(
-                word,
-                // La montée n'arrive qu'à la fin : les mots sont alors à leur
-                // taille finale et côte à côte, donc ils ne se chevauchent pas.
-                { y: targets[i].y, duration: move * 0.3, ease: "power2.inOut" },
-                S + move * 0.7
+                {
+                  x: targets[i].x,
+                  y: targets[i].y,
+                  scale: targets[i].scale,
+                  duration: move * 0.28,
+                  ease: "power2.inOut"
+                },
+                S + move * 0.72
               );
             });
             // Le blanc de la photo devient l'encre du papier.
