@@ -56,7 +56,7 @@ function venueLabel(gallery) {
 }
 
 // --- 1. Hero : six colonnes de la planche, offsets verticaux différents ----
-function buildHeroColumns(galleries, dimsFor, perColumn = 6, columns = 6) {
+function buildHeroColumns(galleries, dimsFor, perColumn = 5, columns = 6) {
     const gigs = galleries.filter(g => photosOf(g).length);
     if (!gigs.length) return '';
 
