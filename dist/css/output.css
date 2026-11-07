@@ -2550,6 +2550,210 @@ html.cs-boot-on .cs-boot {
        break-inside: avoid;
 }
 
+/* --- À propos : la page ------------------------------------------------- */
+
+.cs-about-page {
+  padding: clamp(56px, 8vw, 104px) var(--pad) 0;
+}
+
+.cs-about-kicker {
+  margin-bottom: clamp(12px, 2vw, 24px);
+  font-size: var(--step-small);
+  color: var(--muted);
+}
+
+.cs-about-name {
+  font-size: clamp(3.2rem, 12vw, 10rem);
+  font-weight: 600;
+  line-height: 0.86;
+  letter-spacing: -0.055em;
+  max-width: 12ch;
+}
+
+.cs-about-name span {
+  display: block;
+}
+
+.cs-about-body {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 8fr);
+  gap: clamp(32px, 5vw, 88px);
+  margin-top: clamp(36px, 5vw, 72px);
+  padding-top: clamp(24px, 3vw, 40px);
+  border-top: 1px solid var(--surface-2);
+}
+
+.cs-about-aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.cs-about-face {
+  display: block;
+  width: 112px;
+  height: 112px;
+  -o-object-fit: cover;
+     object-fit: cover;
+  filter: grayscale(1);
+}
+
+.cs-about-stats {
+  width: 100%;
+  max-width: 280px;
+  margin: 0;
+}
+
+.cs-about-stats > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--surface-2);
+}
+
+.cs-about-stats > div:first-child {
+  border-top: 1px solid var(--surface-2);
+}
+
+.cs-about-stats dt {
+  font-size: var(--step-small);
+  color: var(--muted);
+}
+
+.cs-about-stats dd {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.1rem + 1vw, 2rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-about-where {
+  font-size: var(--step-small);
+  color: var(--muted);
+}
+
+.cs-about-mail {
+  padding-bottom: 2px;
+  font-size: var(--step-small);
+  border-bottom: 1px solid var(--surface-2);
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.cs-about-mail:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.cs-about-copy {
+  max-width: 60ch;
+}
+
+.cs-about-copy p {
+  font-size: var(--step-lead);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.cs-about-copy p + p {
+  margin-top: 1em;
+}
+
+.cs-about-copy .cs-about-lead {
+  font-size: var(--step-h2);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.cs-about-copy strong {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.cs-about-copy a {
+  color: var(--ink);
+  border-bottom: 1px solid currentColor;
+}
+
+.cs-about-copy a:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.cs-about-lists {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(32px, 6vw, 88px);
+  padding: clamp(80px, 10vw, 140px) var(--pad) 0;
+}
+
+.cs-about-col-title {
+  padding-bottom: 10px;
+  margin-bottom: 0;
+  font-size: var(--step-small);
+  font-weight: 500;
+  color: var(--muted);
+  border-bottom: 1px solid var(--surface-2);
+}
+
+.cs-about-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: about-row;
+}
+
+.cs-about-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--surface-2);
+  counter-increment: about-row;
+}
+
+.cs-about-list li::before {
+  content: counter(about-row, decimal-leading-zero);
+  flex: none;
+  font-size: var(--step-small);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-about-link {
+  transition: color 0.18s ease;
+}
+
+.cs-about-link:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .cs-about-name {
+    font-size: clamp(3rem, 14vw, 6rem);
+  }
+
+  .cs-about-body {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .cs-about-stats {
+    max-width: none;
+  }
+
+  .cs-about-lists {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-top: 72px;
+  }
+}
+
 /* --- Invitation --------------------------------------------------------- */
 
 .cs-cta {

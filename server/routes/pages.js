@@ -399,6 +399,25 @@ router.get('/a-propos', (req, res) => {
                 htmlContent = htmlContent.replace('Mattia Parrinello, photographe de concert à Paris', 'Mattia Parrinello, concert photographer in Paris');
                 htmlContent = htmlContent.replace('À propos', 'About');
             }
+
+            // Texte de présentation : texts.json, remplacé entre les deux repères.
+            const bioHtml = renderAboutBioHtml(isEn);
+            if (bioHtml) {
+                htmlContent = htmlContent.replace(
+                    /<!-- ABOUT_BIO_START -->[\s\S]*?<!-- ABOUT_BIO_END -->/,
+                    `<!-- ABOUT_BIO_START -->\n            ${bioHtml}\n            <!-- ABOUT_BIO_END -->`
+                );
+            }
+
+            // Les faits, calculés sur les galeries publiques.
+            const facts = aboutFacts();
+            ['gigs', 'venues', 'images'].forEach((key) => {
+                htmlContent = htmlContent.replace(
+                    new RegExp(`(data-about-fact="${key}"[^>]*>)[\\s\\S]*?(</dd>)`),
+                    `$1${facts[key]}$2`
+                );
+            });
+
             const lists = renderAboutListsHtml();
             htmlContent = htmlContent.replace('<!-- ARTISTS_LIST_PLACEHOLDER -->', lists.artists);
             htmlContent = htmlContent.replace('<!-- VENUES_LIST_PLACEHOLDER -->', lists.venues);
@@ -410,37 +429,57 @@ router.get('/a-propos', (req, res) => {
     });
 });
 
-// Normalisation pour comparer artistes/lieux entre seo.json et les galeries
-function normalizeMatch(s) {
-    return (s || '').toString().toLowerCase()
+// Repli de slug quand seo.json n'en fournit pas (l'admin le remplit en principe).
+function slugifyLabel(s) {
+    return (s || '').toString().toLowerCase().trim()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '');
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
 }
 
 // SEO: Listes « artistes photographiés » / « salles & festivals » à partir de seo.json,
-// avec lien vers la galerie correspondante quand l'artiste/la salle y figure.
+// chaque entrée pointant vers sa page cluster /artiste/:slug ou /salle/:slug.
 function renderAboutListsHtml() {
     const seo = loadSeoData();
-    const galleries = getPublicGalleries();
-    const artistSlug = new Map();
-    const venueSlug = new Map();
-    galleries.forEach(g => {
-        if (g.artist && !artistSlug.has(normalizeMatch(g.artist))) artistSlug.set(normalizeMatch(g.artist), g.slug);
-        if (g.venue && !venueSlug.has(normalizeMatch(g.venue))) venueSlug.set(normalizeMatch(g.venue), g.slug);
-    });
-    const linkItem = (label, slug) => slug
-        ? `<li><a class="underline hover:opacity-80 transition duration-300" href="/galeries/${encodeURIComponent(slug)}">${escapeAttr(label)}</a></li>`
+    const linkItem = (label, path) => path
+        ? `<li><a class="cs-about-link" href="${escapeAttr(path)}">${escapeAttr(label)}</a></li>`
         : `<li>${escapeAttr(label)}</li>`;
 
-    const artists = (seo.artists || []).map(a => linkItem(a.name, artistSlug.get(normalizeMatch(a.name)))).join('')
-        || '<li>Aucun artiste pour le moment.</li>';
+    const artists = (seo.artists || []).map(a => {
+        const slug = a.slug || slugifyLabel(a.name);
+        return linkItem(a.name, slug ? `/artiste/${encodeURIComponent(slug)}` : null);
+    }).join('') || '<li>Aucun artiste pour le moment.</li>';
     const venues = (seo.venues || []).map(v => {
-        const label = v.city ? `${v.name}, ${v.city}` : v.name;
-        return linkItem(label, venueSlug.get(normalizeMatch(v.name)));
+        const city = v.city && !v.name.toLowerCase().includes(v.city.toLowerCase()) ? v.city : null;
+        const label = city ? `${v.name}, ${city}` : v.name;
+        const slug = v.slug || slugifyLabel(v.name);
+        return linkItem(label, slug ? `/salle/${encodeURIComponent(slug)}` : null);
     }).join('') || '<li>Aucune salle pour le moment.</li>';
 
     return { artists, venues };
+}
+
+// Bio de /a-propos : texts.json en FR, dictionnaire i18n en EN. Le gabarit
+// garde un repli statique si texts.json est absent.
+function renderAboutBioHtml(isEn) {
+    const texts = textUtils.loadTexts();
+    const about = texts['a propos'] || {};
+    const bio = isEn ? dict.en.bio : about.bio;
+    if (!Array.isArray(bio)) return null;
+    const paragraphs = bio.filter(Boolean);
+    if (!paragraphs.length) return null;
+    return paragraphs
+        .map((p, i) => `<p${i === 0 ? ' class="cs-about-lead"' : ''}>${p}</p>`)
+        .join('\n            ');
+}
+
+// Faits de /a-propos, comptés sur les galeries publiques (mêmes règles que l'accueil).
+function aboutFacts() {
+    const galleries = getPublicGalleries();
+    const venues = new Set(galleries.map(g => g.venue || g.city).filter(Boolean));
+    const images = galleries.reduce((n, g) => n + ((g.photos && g.photos.length) || 0), 0);
+    return { gigs: galleries.length, venues: venues.size, images };
 }
 
 // Redirection pour /a-propos/ vers /a-propos
