@@ -50,10 +50,10 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "https://cdn.jsdelivr.net", "https://unpkg.com", "'unsafe-inline'", "'unsafe-eval'"],
             scriptSrcAttr: ["'unsafe-inline'"],
-            styleSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "'unsafe-inline'"],
+            styleSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://api.fontshare.com", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "blob:"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            connectSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdn.fontshare.com"],
+            connectSrc: ["'self'", "https://cdn.jsdelivr.net", "https://api.fontshare.com", "https://cdn.fontshare.com"],
             frameSrc: ["'self'"],
             objectSrc: ["'none'"],
             baseUri: ["'self'"],
@@ -160,6 +160,18 @@ app.use((req, res, next) => {
 
     return next();
 });
+
+// Les scripts ne sont pas fingerprintés : on les sert avec revalidation pour
+// que toute correction arrive vraiment (le CSS, lui, est hashé).
+app.use('/dist/js', express.static(path.join(__dirname, 'dist', 'js'), {
+    index: false,
+    maxAge: 0,
+    etag: true,
+    lastModified: true,
+    setHeaders: function (res) {
+        res.setHeader('Cache-Control', 'no-cache');
+    }
+}));
 
 // Static ciblé: ne sert que les dossiers nécessaires, pas le projet entier
 app.use('/dist', express.static(path.join(__dirname, 'dist'), {

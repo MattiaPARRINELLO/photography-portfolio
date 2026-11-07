@@ -7,16 +7,18 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#0d060b" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
 
-    <!-- SEO, Injecté côté serveur -->
+    <!-- SEO, injecté côté serveur par linksService -->
+    <!-- META_PLACEHOLDER_START -->
     <title>{{SEO_TITLE}}</title>
     <meta name="description" content="{{SEO_DESCRIPTION}}" />
+    <!-- META_PLACEHOLDER_END -->
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="{{CANONICAL_URL}}" />
 
@@ -36,675 +38,88 @@
     <link rel="icon" type="image/svg+xml" href="/dist/assets/Logo_MP.svg" />
     <link rel="apple-touch-icon" href="/dist/assets/Avatar.png" />
 
-    <!-- Preconnect pour performances -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
-    <!-- Font Signika, cohérence avec le portfolio -->
+    <link rel="stylesheet" href="/dist/css/output.4f15c023.css" />
+    <!-- Typographie : Switzer (Fontshare) -->
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Signika:wght@400;500;600;700&display=swap"
+      rel="preload"
+      href="https://cdn.fontshare.com/wf/5SZVFDB7V52TI6ULVC6J3WQZQCIZVDV5/ODYPSTCUDMKSTYIPTV4CLQ7URIK7XYBJ/YS3VPNVO4B3TOJMEXDGFZQ4TLZGGSRZC.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="https://cdn.fontshare.com/wf/BLNB4FAQFNK56DWWNF7PMGTCOTZHOEII/ST3WKSSDMBK2MIQQO3MAVYWLF4FTOLFV/6IN5WOLRCYP4G4MOCOHOMXNON6Q7MDAR.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&display=swap"
       rel="stylesheet"
     />
 
-    <style>
-      /* ===== CSS RESET & BASE ===== */
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-
-      html {
-        font-size: 16px;
-        -webkit-text-size-adjust: 100%;
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      body {
-        font-family:
-          "Signika",
-          -apple-system,
-          BlinkMacSystemFont,
-          sans-serif;
-        background: #000;
-        color: #fff;
-        min-height: 100dvh;
-        min-height: -webkit-fill-available;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        overflow-x: hidden;
-        padding: env(safe-area-inset-top) env(safe-area-inset-right)
-          env(safe-area-inset-bottom) env(safe-area-inset-left);
-      }
-
-      /* ===== ANIMATED BACKGROUND, Concert Atmosphere ===== */
-      .bg-stage {
-        position: fixed;
-        inset: 0;
-        z-index: 0;
-        overflow: hidden;
-        pointer-events: none;
-      }
-
-      .bg-stage::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background:
-          radial-gradient(
-            ellipse 120% 100% at 50% -20%,
-            rgba(102, 126, 234, 0.15) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
-            ellipse 80% 50% at 20% 80%,
-            rgba(139, 69, 19, 0.08) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
-            ellipse 80% 50% at 80% 80%,
-            rgba(75, 0, 130, 0.08) 0%,
-            transparent 50%
-          );
-      }
-
-      /* Spotlight effect, évoque l'éclairage scène */
-      .spotlight {
-        position: absolute;
-        width: 200px;
-        height: 200px;
-        border-radius: 50%;
-        filter: blur(80px);
-        opacity: 0.4;
-        animation: spotlight-pulse 8s ease-in-out infinite;
-      }
-
-      .spotlight-1 {
-        top: -50px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: linear-gradient(
-          180deg,
-          rgba(102, 126, 234, 0.6),
-          transparent
-        );
-      }
-
-      .spotlight-2 {
-        bottom: 20%;
-        left: -50px;
-        background: linear-gradient(45deg, rgba(139, 69, 19, 0.4), transparent);
-        animation-delay: -3s;
-      }
-
-      .spotlight-3 {
-        bottom: 20%;
-        right: -50px;
-        background: linear-gradient(-45deg, rgba(75, 0, 130, 0.4), transparent);
-        animation-delay: -5s;
-      }
-
-      @keyframes spotlight-pulse {
-        0%,
-        100% {
-          opacity: 0.3;
-          transform: translateX(-50%) scale(1);
-        }
-        50% {
-          opacity: 0.5;
-          transform: translateX(-50%) scale(1.1);
-        }
-      }
-
-      /* Grain texture, film photography feel */
-      .grain {
-        position: fixed;
-        inset: 0;
-        z-index: 1;
-        pointer-events: none;
-        opacity: 0.03;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-      }
-
-      /* ===== MAIN CONTAINER ===== */
-      .links-container {
-        position: relative;
-        z-index: 10;
-        width: 100%;
-        max-width: 420px;
-        padding: 2rem 1.5rem 1.5rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        max-height: 100dvh;
-        overflow-y: auto;
-        overflow-x: hidden;
-        /* Smooth scrolling */
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-      }
-
-      /* ===== PROFILE SECTION ===== */
-      .profile {
-        text-align: center;
-        margin-bottom: 1.75rem;
-        animation: fadeInUp 0.6s ease-out;
-        flex-shrink: 0;
-      }
-
-      .avatar-wrapper {
-        position: relative;
-        display: inline-block;
-        margin-bottom: 1rem;
-      }
-
-      .avatar {
-        width: 90px;
-        height: 90px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid rgba(255, 255, 255, 0.15);
-        box-shadow:
-          0 0 0 4px rgba(0, 0, 0, 0.5),
-          0 20px 40px rgba(0, 0, 0, 0.4);
-        transition:
-          transform 0.3s ease,
-          box-shadow 0.3s ease;
-      }
-
-      .avatar:hover {
-        transform: scale(1.03);
-        box-shadow:
-          0 0 0 4px rgba(102, 126, 234, 0.3),
-          0 25px 50px rgba(0, 0, 0, 0.5);
-      }
-
-      /* Status indicator, "disponible" effect */
-      .status-dot {
-        position: absolute;
-        bottom: 8px;
-        right: 8px;
-        width: 16px;
-        height: 16px;
-        background: #22c55e;
-        border-radius: 50%;
-        border: 3px solid #000;
-        animation: pulse-status 2s ease-in-out infinite;
-      }
-
-      @keyframes pulse-status {
-        0%,
-        100% {
-          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
-        }
-        50% {
-          box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
-        }
-      }
-
-      .profile-name {
-        font-size: 1.5rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        margin-bottom: 0.25rem;
-        background: linear-gradient(
-          135deg,
-          #fff 0%,
-          rgba(255, 255, 255, 0.85) 100%
-        );
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-
-      .profile-role {
-        font-size: 1rem;
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.7);
-        margin-bottom: 0.5rem;
-      }
-
-      .profile-tagline {
-        font-size: 0.875rem;
-        color: rgba(255, 255, 255, 0.5);
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        font-weight: 400;
-        min-height: 1.3em;
-      }
-
-      /* ===== TYPING ANIMATION ===== */
-      .typing-text {
-        display: inline-block;
-        overflow: hidden;
-        white-space: nowrap;
-        border-right: 2px solid rgba(255, 255, 255, 0.5);
-        animation:
-          typing 2.5s steps(30, end) forwards,
-          blink-caret 0.75s step-end infinite;
-      }
-
-      @keyframes typing {
-        from {
-          width: 0;
-        }
-        to {
-          width: 100%;
-        }
-      }
-
-      @keyframes blink-caret {
-        from,
-        to {
-          border-color: transparent;
-        }
-        50% {
-          border-color: rgba(255, 255, 255, 0.5);
-        }
-      }
-
-      /* Caret disparaît après l'animation */
-      .typing-done {
-        border-color: transparent !important;
-        animation: typing 2.5s steps(30, end) forwards;
-      }
-
-      /* ===== EVENT BANNER ===== */
-      .event-banner {
-        width: 100%;
-        min-height: 64px;
-        padding: 1.125rem 1.75rem;
-        background: linear-gradient(
-          135deg,
-          rgba(234, 179, 8, 0.35) 0%,
-          rgba(251, 146, 60, 0.35) 100%
-        );
-        border: 2.5px solid rgba(234, 179, 8, 0.7);
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        text-decoration: none;
-        color: #fcd34d;
-        font-weight: 800;
-        font-size: 1.1rem;
-        animation:
-          fadeInUp 0.5s ease-out,
-          pulse-glow 2s ease-in-out infinite;
-        transition: all 0.25s ease;
-        box-shadow: 0 6px 25px rgba(234, 179, 8, 0.3);
-      }
-
-      .event-banner:hover {
-        background: linear-gradient(
-          135deg,
-          rgba(234, 179, 8, 0.45) 0%,
-          rgba(251, 146, 60, 0.45) 100%
-        );
-        border-color: rgba(234, 179, 8, 0.9);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 30px rgba(234, 179, 8, 0.4);
-      }
-
-      .event-banner:active {
-        transform: scale(0.98);
-      }
-
-      @keyframes pulse-glow {
-        0%,
-        100% {
-          box-shadow: 0 6px 25px rgba(234, 179, 8, 0.3);
-        }
-        50% {
-          box-shadow: 0 8px 35px rgba(234, 179, 8, 0.5);
-        }
-      }
-
-      .event-icon {
-        width: 24px;
-        height: 24px;
-        flex-shrink: 0;
-      }
-
-      .event-text {
-        flex: 1;
-        font-weight: 700;
-        letter-spacing: 0.01em;
-        line-height: 1.3;
-      }
-
-      .event-time {
-        font-size: 0.7rem;
-        color: rgba(251, 191, 36, 0.6);
-        white-space: nowrap;
-        padding-left: 0.5rem;
-        border-left: 1px solid rgba(251, 191, 36, 0.2);
-      }
-
-      .event-arrow {
-        width: 16px;
-        height: 16px;
-        opacity: 0.7;
-      }
-
-      /* ===== LINKS LIST ===== */
-      .links-list {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        flex: 1;
-        min-height: 0;
-      }
-
-      /* ===== LINK BUTTON ===== */
-      .link-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
-        width: 100%;
-        padding: 0.875rem 1.25rem;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        color: #fff;
-        text-decoration: none;
-        font-size: 1rem;
-        font-weight: 600;
-        letter-spacing: 0.01em;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-
-        /* Tap target optimization, 48px minimum */
-        min-height: 50px;
-
-        /* Animation d'entrée échelonnée */
-        animation: fadeInUp 0.5s ease-out backwards;
-      }
-
-      .link-btn:nth-child(1) {
-        animation-delay: 0.1s;
-      }
-      .link-btn:nth-child(2) {
-        animation-delay: 0.15s;
-      }
-      .link-btn:nth-child(3) {
-        animation-delay: 0.2s;
-      }
-      .link-btn:nth-child(4) {
-        animation-delay: 0.25s;
-      }
-      .link-btn:nth-child(5) {
-        animation-delay: 0.3s;
-      }
-      .link-btn:nth-child(6) {
-        animation-delay: 0.35s;
-      }
-
-      /* Hover/Focus states */
-      .link-btn:hover,
-      .link-btn:focus-visible {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      }
-
-      /* Active/Tap state, crucial pour le feedback mobile */
-      .link-btn:active {
-        transform: scale(0.98);
-        background: rgba(255, 255, 255, 0.15);
-      }
-
-      /* Focus visible pour accessibilité */
-      .link-btn:focus-visible {
-        outline: 2px solid rgba(102, 126, 234, 0.8);
-        outline-offset: 2px;
-      }
-
-      /* PRIMARY STYLE, Portfolio CTA */
-      .link-btn.primary {
-        background: linear-gradient(
-          135deg,
-          rgba(102, 126, 234, 0.9) 0%,
-          rgba(118, 75, 162, 0.9) 100%
-        );
-        border-color: transparent;
-        box-shadow:
-          0 4px 20px rgba(102, 126, 234, 0.3),
-          inset 0 1px 0 rgba(255, 255, 255, 0.2);
-      }
-
-      .link-btn.primary:hover {
-        transform: translateY(-3px);
-        box-shadow:
-          0 8px 30px rgba(102, 126, 234, 0.4),
-          inset 0 1px 0 rgba(255, 255, 255, 0.2);
-      }
-
-      /* Shimmer effect on primary */
-      .link-btn.primary::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(255, 255, 255, 0.2),
-          transparent
-        );
-        animation: shimmer 3s infinite;
-      }
-
-      @keyframes shimmer {
-        0% {
-          left: -100%;
-        }
-        100% {
-          left: 100%;
-        }
-      }
-
-      /* ===== ICONS ===== */
-      .link-icon {
-        width: 22px;
-        height: 22px;
-        flex-shrink: 0;
-        opacity: 0.9;
-      }
-
-      /* ===== FOOTER / WATERMARK ===== */
-      .footer {
-        margin-top: auto;
-        padding-top: 1.25rem;
-        text-align: center;
-        animation: fadeIn 0.8s ease-out 0.5s backwards;
-        flex-shrink: 0;
-      }
-
-      .watermark {
-        font-size: 0.75rem;
-        color: rgba(255, 255, 255, 0.3);
-        text-decoration: none;
-        transition: color 0.2s ease;
-      }
-
-      .watermark:hover {
-        color: rgba(255, 255, 255, 0.5);
-      }
-
-      /* ===== ANIMATIONS ===== */
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-
-      /* ===== REDUCED MOTION ===== */
-      @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-          animation-duration: 0.01ms !important;
-          animation-iteration-count: 1 !important;
-          transition-duration: 0.01ms !important;
-        }
-        .spotlight {
-          animation: none;
-          opacity: 0.3;
-        }
-        .status-dot {
-          animation: none;
-        }
-      }
-
-      /* ===== RESPONSIVE ===== */
-      @media (min-width: 480px) {
-        .links-container {
-          padding-top: 4rem;
-        }
-
-        .avatar {
-          width: 120px;
-          height: 120px;
-        }
-
-        .profile-name {
-          font-size: 2rem;
-        }
-      }
-
-      /* ===== DARK MODE ENFORCED ===== */
-      @media (prefers-color-scheme: light) {
-        /* On reste en dark pour cohérence univers concert */
-        body {
-          background: #000;
-          color: #fff;
-        }
-      }
-
-      /* ===== HIGH CONTRAST MODE ===== */
-      @media (prefers-contrast: high) {
-        .link-btn {
-          border-width: 2px;
-          border-color: rgba(255, 255, 255, 0.5);
-        }
-
-        .profile-tagline,
-        .profile-role {
-          color: rgba(255, 255, 255, 0.9);
-        }
-      }
-
-      /* ===== LANDSCAPE MOBILE ===== */
-      @media (max-height: 500px) and (orientation: landscape) {
-        .links-container {
-          padding-top: 1rem;
-          min-height: auto;
-        }
-
-        .avatar {
-          width: 70px;
-          height: 70px;
-        }
-
-        .profile {
-          margin-bottom: 1rem;
-        }
-
-        .profile-name {
-          font-size: 1.25rem;
-        }
-
-        .link-btn {
-          padding: 0.875rem 1.25rem;
-          min-height: 48px;
-        }
-
-        .links-list {
-          gap: 0.5rem;
-        }
-      }
-    </style>
+    <script defer src="/dist/js/analytics-tracker.js"></script>
   </head>
-  <body>
-    <!-- Background Stage Lighting -->
-    <div class="bg-stage" aria-hidden="true">
-      <div class="spotlight spotlight-1"></div>
-      <div class="spotlight spotlight-2"></div>
-      <div class="spotlight spotlight-3"></div>
-    </div>
-    <div class="grain" aria-hidden="true"></div>
 
-    <main class="links-container">
-      <!-- Profile Section -->
-      <section class="profile">
-        <!-- AVATAR_PLACEHOLDER -->
-        <h1 class="profile-name">{{PROFILE_NAME}}</h1>
-        <p class="profile-role">{{PROFILE_ROLE}}</p>
-        <p class="profile-tagline">
-          <span class="typing-text" id="tagline">{{PROFILE_TAGLINE}}</span>
-        </p>
-      </section>
+  <body class="cs cs-fill">
+    <a class="cs-skip" href="#cs-main">Aller au contenu</a>
 
-      <!-- Links -->
-      <nav class="links-list" aria-label="Liens de contact">
-        <!-- EVENT_BANNER_PLACEHOLDER -->
-        <!-- LINKS_PLACEHOLDER -->
+    <header class="cs-top">
+      <a class="cs-top-name" href="/">Mattia Parrinello</a>
+      <nav class="cs-top-links" aria-label="Navigation principale">
+        <a href="/galeries">Galeries</a>
+        <a href="/a-propos">À propos</a>
+        <a href="/contact">Contact</a>
+        <a href="?lang=en" hreflang="en" lang="en">EN</a>
       </nav>
+    </header>
 
-      <!-- Footer -->
-      <footer class="footer">
-        <!-- WATERMARK_PLACEHOLDER -->
-      </footer>
+    <main class="cs-page cs-links-page" id="cs-main" tabindex="-1">
+      <div class="cs-links-wrap">
+        <!-- EVENT_BANNER_PLACEHOLDER -->
+
+        <article class="cs-card">
+          <header class="cs-card-id">
+            <!-- AVATAR_PLACEHOLDER -->
+            <div class="cs-card-text">
+              <p class="cs-card-role">{{PROFILE_ROLE}}</p>
+              <h1 class="cs-card-name">{{PROFILE_NAME}}</h1>
+            </div>
+          </header>
+
+          <p class="cs-card-tagline">{{PROFILE_TAGLINE}}</p>
+
+          <nav class="cs-card-links" aria-label="Liens de contact">
+            <!-- LINKS_PLACEHOLDER -->
+          </nav>
+
+          <p class="cs-card-mark">
+            <!-- WATERMARK_PLACEHOLDER -->
+          </p>
+        </article>
+      </div>
     </main>
 
-    <script defer src="/dist/js/analytics-tracker.js"></script>
-    <script>
-      // Typing animation, retire le curseur après l'animation
-      const tagline = document.getElementById("tagline");
-      if (tagline) {
-        setTimeout(() => {
-          tagline.classList.add("typing-done");
-        }, 3000);
-      }
-
-      // Haptic feedback on mobile (if available)
-      document.querySelectorAll(".link-btn, .event-banner").forEach((link) => {
-        link.addEventListener(
-          "touchstart",
-          function () {
-            if ("vibrate" in navigator) {
-              navigator.vibrate(10);
-            }
-          },
-          { passive: true },
-        );
-      });
-    </script>
+    <footer class="cs-footer">
+      <p class="cs-footer-left">Photographe de concert, Paris</p>
+      <nav class="cs-footer-links" aria-label="Pied de page">
+        <a href="/galeries">Galeries</a>
+        <a href="/a-propos">À propos</a>
+        <a href="/contact">Contact</a>
+        <a
+          href="https://www.instagram.com/mattia_jpeg"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Instagram de Mattia Parrinello"
+          >Instagram</a
+        >
+        <a href="/mentions-legales">Mentions légales</a>
+        <a href="?lang=en" hreflang="en" lang="en">EN</a>
+      </nav>
+      <p class="cs-footer-right">© 2026 Mattia Parrinello</p>
+    </footer>
   </body>
 </html>
