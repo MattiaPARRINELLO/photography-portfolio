@@ -179,6 +179,8 @@ const _enDict = {
   'Me confier un concert': 'Book a show',
   'À propos': 'About',
   '>Tout<': '>All<',
+  'Artistes photographiés': 'Artists photographed',
+  'Salles & festivals': 'Venues & festivals',
   'Artistes': 'Artists',
   'Salles': 'Venues',
   'Galeries': 'Galleries',
@@ -211,8 +213,6 @@ const _enDict = {
   'Mattia Parrinello, photographe de concert à Paris': 'Mattia Parrinello, concert photographer in Paris',
   '>Salut, je suis Mattia<': '>Hi, I\'m Mattia<',
   'Je suis Mattia <span class="animate-wave">': 'Hi, I\'m Mattia <span class="animate-wave">',
-  'Artistes photographiés': 'Artists photographed',
-  'Salles & festivals': 'Venues & festivals',
   'Mon histoire': 'My story',
   'Comment j\'ai commencé': 'How it started',
   // Bio
