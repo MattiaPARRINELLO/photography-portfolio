@@ -85,6 +85,10 @@
     return p || '/';
   }
 
+  // Page de contact : on mesure séparément sa visite et l'envoi du formulaire,
+  // parce qu'un clic vers /contact n'est pas une demande.
+  var CONTACT_PAGE_ID = '/contact';
+
   // ----- Classification du trafic -------------------------------------
 
   var SEARCH_DOMAINS = {
@@ -287,7 +291,9 @@
         fullscreenOpens: 0,
         photosViewed: 0,
         contactClicks: 0,
-        mailtoClicks: 0
+        mailtoClicks: 0,
+        contactViews: id === CONTACT_PAGE_ID ? 1 : 0,
+        contactSubmits: 0
       };
       this.pages.push(found);
       this.dirty = true;
@@ -404,6 +410,15 @@
     if (kind === 'mailto') this.currentPage.mailtoClicks++;
     else this.currentPage.contactClicks++;
     this.dirty = true;
+  };
+
+  /** Envoi réussi du formulaire de contact (appelé par la page) */
+  AnalyticsTracker.prototype.countContactSubmit = function () {
+    if (this.closed) return;
+    this.currentPage.contactSubmits++;
+    this.dirty = true;
+    // Immédiat : la page redirige juste après l'envoi.
+    this.flush();
   };
 
   AnalyticsTracker.prototype._countPhoto = function (src) {
@@ -553,7 +568,9 @@
           fullscreenOpens: p.fullscreenOpens,
           photosViewed: p.photosViewed,
           contactClicks: p.contactClicks,
-          mailtoClicks: p.mailtoClicks
+          mailtoClicks: p.mailtoClicks,
+          contactViews: p.contactViews,
+          contactSubmits: p.contactSubmits
         };
       })
     };
@@ -590,10 +607,18 @@
 
   // ----- Démarrage ----------------------------------------------------
 
+  function startTracker() {
+    var tracker = new AnalyticsTracker();
+    // API minimale pour la page contact : signaler un envoi réussi.
+    window.csTrack = {
+      contactSubmit: function () { tracker.countContactSubmit(); }
+    };
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { new AnalyticsTracker(); });
+    document.addEventListener('DOMContentLoaded', startTracker);
   } else {
-    new AnalyticsTracker();
+    startTracker();
   }
 
   // Export pour les tests

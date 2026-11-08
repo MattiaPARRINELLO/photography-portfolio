@@ -372,6 +372,10 @@
             var data = await res.json();
 
             if (res.ok) {
+              // Mesure : un envoi réussi est une demande, pas un simple clic.
+              if (window.csTrack && window.csTrack.contactSubmit) {
+                window.csTrack.contactSubmit();
+              }
               // Animation géante au centre
               var bigCheck = document.getElementById("bigCheckContainer");
               bigCheck.innerHTML =
