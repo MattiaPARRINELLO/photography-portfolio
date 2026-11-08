@@ -225,6 +225,19 @@ describe('AnalyticsService', function () {
             expect(kpis.totalConversions).toBe(2);
         });
 
+        it('distingue la visite de /contact et l\'envoi du formulaire', function () {
+            store.append(signal('s1', [page('/contact', { contactViews: 1, contactSubmits: 1 })], { hash: 'h1' }));
+            store.append(signal('s2', [page('/contact', { contactViews: 1 })], { hash: 'h2' }));
+            store.append(signal('s3', [page('/', {})], { hash: 'h3' }));
+
+            var kpis = analytics.getDashboard(30).kpis;
+            expect(kpis.contactPageViews).toBe(2);
+            expect(kpis.totalContactSubmits).toBe(1);
+            // Une demande envoyée est une conversion, même sans clic préalable.
+            expect(kpis.contactConversionRate).toBe(33);
+            expect(kpis.totalConversions).toBe(1);
+        });
+
         it('compte les visiteurs distincts via le hash anonyme', function () {
             store.append(signal('s1', [page('/', {})], { hash: 'h1' }));
             store.append(signal('s2', [page('/', {})], { hash: 'h1' }));

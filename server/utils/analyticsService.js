@@ -167,7 +167,9 @@ class AnalyticsService {
                 fullscreenOpens: num(p && p.fullscreenOpens),
                 photosViewed: num(p && p.photosViewed),
                 contactClicks: num(p && p.contactClicks),
-                mailtoClicks: num(p && p.mailtoClicks)
+                mailtoClicks: num(p && p.mailtoClicks),
+                contactViews: num(p && p.contactViews),
+                contactSubmits: num(p && p.contactSubmits)
             };
         });
 
@@ -177,9 +179,12 @@ class AnalyticsService {
             photosViewed: preparedPages.reduce((s, p) => s + p.photosViewed, 0),
             contactClicks: preparedPages.reduce((s, p) => s + p.contactClicks, 0),
             mailtoClicks: preparedPages.reduce((s, p) => s + p.mailtoClicks, 0),
+            contactViews: preparedPages.reduce((s, p) => s + p.contactViews, 0),
+            contactSubmits: preparedPages.reduce((s, p) => s + p.contactSubmits, 0),
             pageViews: preparedPages.length
         };
-        totals.conversions = totals.contactClicks + totals.mailtoClicks;
+        // Une demande envoyée vaut une conversion, même sans clic préalable.
+        totals.conversions = totals.contactClicks + totals.mailtoClicks + totals.contactSubmits;
         totals.isEngaged = this._isEngaged(totals);
         totals.scrollAvg = average(preparedPages.map(p => p.scrollMax));
 
@@ -226,7 +231,8 @@ class AnalyticsService {
                 sessions: 0, visitors: 0, engagedSessions: 0,
                 smartBounceRate: 0, avgEngagedMs: 0, medianEngagedMs: 0,
                 avgScrollDepth: 0, contactConversionRate: 0,
-                totalFullscreen: 0, totalPhotoViews: 0, totalConversions: 0
+                totalFullscreen: 0, totalPhotoViews: 0, totalConversions: 0,
+                contactPageViews: 0, totalContactSubmits: 0
             };
         }
 
@@ -241,7 +247,9 @@ class AnalyticsService {
             contactConversionRate: this._pct(conversions.length, total),
             totalFullscreen: sessions.reduce((sum, s) => sum + s.totals.fullscreenOpens, 0),
             totalPhotoViews: sessions.reduce((sum, s) => sum + s.totals.photosViewed, 0),
-            totalConversions: conversions.length
+            totalConversions: conversions.length,
+            contactPageViews: sessions.reduce((sum, s) => sum + s.totals.contactViews, 0),
+            totalContactSubmits: sessions.reduce((sum, s) => sum + s.totals.contactSubmits, 0)
         };
     }
 

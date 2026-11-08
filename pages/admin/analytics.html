@@ -301,6 +301,7 @@
         <div class="kpi"><div class="kpi-label">Rebond qualifié</div><div class="kpi-value" id="kpi-bounce">—</div><div class="kpi-hint" id="kpi-bounce-hint"></div></div>
         <div class="kpi"><div class="kpi-label">Temps engagé moyen</div><div class="kpi-value" id="kpi-engaged">—</div><div class="kpi-hint" id="kpi-engaged-hint"></div></div>
         <div class="kpi"><div class="kpi-label">Conversion contact</div><div class="kpi-value" id="kpi-conversion">—</div><div class="kpi-hint" id="kpi-conversion-hint"></div></div>
+        <div class="kpi"><div class="kpi-label">Demandes reçues</div><div class="kpi-value" id="kpi-asks">—</div><div class="kpi-hint" id="kpi-asks-hint"></div></div>
       </section>
 
       <!-- Graphique d'activité -->
@@ -444,6 +445,15 @@
           conv.textContent = k.contactConversionRate + '%';
           document.getElementById('kpi-conversion-hint').textContent =
             formatNumber(k.totalConversions) + ' sessions converties · ' + formatNumber(k.totalPhotoViews) + ' photos vues';
+
+          var asks = document.getElementById('kpi-asks');
+          var views = k.contactPageViews || 0;
+          var submits = k.totalContactSubmits || 0;
+          asks.textContent = formatNumber(submits);
+          asks.className = 'kpi-value ' + (submits > 0 ? 'good' : '');
+          document.getElementById('kpi-asks-hint').textContent = views
+            ? formatNumber(views) + ' sessions sur /contact · ' + Math.round((submits / views) * 100) + '% écrivent'
+            : 'aucune visite de /contact sur la période';
 
           document.getElementById('period-note').textContent = periodDays
             ? 'Période : ' + periodDays + ' derniers jours · collecte sans cookie · rétention 90 jours'

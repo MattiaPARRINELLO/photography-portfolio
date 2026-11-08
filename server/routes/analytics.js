@@ -91,7 +91,9 @@ function sanitizePage(page) {
         fullscreenOpens: cleanInt(page && page.fullscreenOpens, 1000),
         photosViewed: cleanInt(page && page.photosViewed, 10000),
         contactClicks: cleanInt(page && page.contactClicks, 100),
-        mailtoClicks: cleanInt(page && page.mailtoClicks, 100)
+        mailtoClicks: cleanInt(page && page.mailtoClicks, 100),
+        contactViews: cleanInt(page && page.contactViews, 100),
+        contactSubmits: cleanInt(page && page.contactSubmits, 100)
     };
 }
 
