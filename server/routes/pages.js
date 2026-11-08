@@ -390,25 +390,37 @@ router.get('/contact/', (req, res) => {
 // Prestations : page service indexable, qui répond à « photographe de concert
 // à Paris ». Les trois derniers concerts servent de preuve visuelle, reliée
 // aux galeries. Aucun prix affiché : chaque projet se discute.
-async function renderServicesPhotos() {
+async function renderServicesPictures() {
     const galleries = getPublicGalleries()
         .filter(g => g && g.cover && g.slug && isPhotoRenderable(g.cover))
         .slice()
         .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
-        .slice(0, 3);
+        .slice(0, 7);
 
-    const figures = [];
-    for (const g of galleries) {
+    const picture = async (g, width, sizes) => {
         let dims = null;
         try { dims = await imageMeta.getImageDimensions(g.cover); } catch (_) { dims = null; }
         const file = encodeURIComponent(g.cover);
         const alt = `${g.artist || g.title || 'Concert'} en concert${g.venue ? ' à ' + g.venue : ''}`;
         const sizeAttrs = dims && dims.width
-            ? ` width="800" height="${Math.round(800 * dims.height / dims.width)}"`
+            ? ` width="${width}" height="${Math.round(width * dims.height / dims.width)}"`
             : '';
-        figures.push(`<figure><a href="/galeries/${encodeURIComponent(g.slug)}"><img src="/photos/resize?file=${file}&amp;w=800" srcset="/photos/resize?file=${file}&amp;w=400 400w, /photos/resize?file=${file}&amp;w=800 800w, /photos/resize?file=${file}&amp;w=1200 1200w" sizes="(max-width: 900px) 94vw, 31vw" alt="${escapeAttr(alt)}" loading="lazy" decoding="async"${sizeAttrs} /></a></figure>`);
+        return `<img src="/photos/resize?file=${file}&amp;w=${width}" srcset="/photos/resize?file=${file}&amp;w=400 400w, /photos/resize?file=${file}&amp;w=800 800w, /photos/resize?file=${file}&amp;w=1200 1200w" sizes="${sizes}" alt="${escapeAttr(alt)}" loading="lazy" decoding="async"${sizeAttrs} />`;
+    };
+
+    const first = galleries[0];
+    const hero = first
+        ? `<a href="/galeries/${encodeURIComponent(first.slug)}">${await picture(first, 800, '(max-width: 900px) 94vw, 38vw')}</a>
+          <figcaption>${escapeAttr(first.artist || first.title || 'Concert')}${first.venue ? ' · ' + escapeAttr(first.venue) : ''}</figcaption>`
+        : '';
+
+    // La bande est une planche : six tirages serrés, pas trois grands vides.
+    const figures = [];
+    for (const g of galleries.slice(1, 7)) {
+        figures.push(`<figure><a href="/galeries/${encodeURIComponent(g.slug)}">${await picture(g, 800, '(max-width: 900px) 47vw, 16vw')}</a></figure>`);
     }
-    return figures.join('\n          ');
+
+    return { hero, band: figures.join('\n          ') };
 }
 
 router.get('/prestations', (req, res) => {
@@ -418,8 +430,10 @@ router.get('/prestations', (req, res) => {
         pageType: 'Prestations',
         ttlMs: 5 * 60 * 1000,
         transform: async (htmlContent) => {
-            const photos = await renderServicesPhotos();
-            return htmlContent.replace('<!-- SERVICES_PHOTOS_PLACEHOLDER -->', photos);
+            const pictures = await renderServicesPictures();
+            return htmlContent
+                .replace('<!-- SERVICES_HERO_PHOTO -->', pictures.hero)
+                .replace('<!-- SERVICES_PHOTOS_PLACEHOLDER -->', pictures.band);
         }
     });
 });
