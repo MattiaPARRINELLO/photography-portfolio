@@ -944,7 +944,7 @@
         // --- Titres et paragraphes, une entrée par bloc ---------------------
         gsap.utils
           .toArray(
-            ".cs-h2, .cs-statement, .cs-index-note, .cs-facts, .cs-bio p, .cs-proof-kind, .cs-proof-list, .cs-proof-col, .cs-cta-sentence, .cs-cta .cs-btn, .cs-footer > *"
+            ".cs-h2, .cs-statement, .cs-index-note, .cs-facts, .cs-bio p, .cs-proof-kind, .cs-proof-list, .cs-proof-col, .cs-cta-sentence, .cs-cta .cs-btn"
           )
           .forEach(function (el) {
             gsap.from(el, {
@@ -955,6 +955,19 @@
               scrollTrigger: { trigger: el, start: "top 92%", once: true }
             });
           });
+
+        // Le pied est au bout de la page : on le fait entrer dès qu'il pointe,
+        // sinon sa dernière ligne restait invisible quand on était déjà en bas
+        // (le seuil « top 92% » n'est jamais atteint au maximum de défilement).
+        gsap.utils.toArray(".cs-foot-top, .cs-foot-bottom").forEach(function (el) {
+          gsap.from(el, {
+            autoAlpha: 0,
+            y: 20,
+            duration: 0.7,
+            ease: "power2.out",
+            scrollTrigger: { trigger: el, start: "top bottom", once: true }
+          });
+        });
 
         // --- Chaque bande de concert arrive de la droite --------------------
         gsap.utils.toArray(".cs-strip").forEach(function (strip) {
