@@ -2434,8 +2434,29 @@ html.cs-boot-on .cs-boot {
     gap: 0;
   }
 
+  /* Sur téléphone, la planche devient une bande à faire défiler : deux
+     colonnes de tirages sombres lisaient comme des cases vides. */
   .cs-prest-band {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .cs-prest-band::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cs-prest-band figure {
+    flex: 0 0 64vw;
+    scroll-snap-align: start;
+  }
+
+  .cs-prest-band::after {
+    content: "";
+    flex: 0 0 var(--pad);
   }
 
   .cs-prest-detail {
