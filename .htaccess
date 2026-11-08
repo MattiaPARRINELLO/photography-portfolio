@@ -13,10 +13,12 @@ Options -Indexes
   RewriteRule (^|/)(package|package-lock|composer)\.(json|lock)$ - [F,L]
   RewriteRule (^|/)(server|app)\.js$ - [F,L]
   # Sauvegardes, dumps, cles, archives, docs internes
+  # Exception : llms-full.md est un fichier public (contexte pour les agents IA).
+  RewriteCond %{REQUEST_URI} !^/llms-full\.md$
   RewriteRule \.(sql|db|sqlite3?|bak|old|orig|save|swp|swo|log|ini|pem|key|crt|p12|pfx|zip|tar|gz|tgz|bz2|xz|7z|rar|phar|sh|md)$ - [F,L]
 </IfModule>
 <IfModule mod_authz_core.c>
-  <FilesMatch "(^\.env|^\.git|^\.svn|^(id_rsa|id_ed25519|deploy_key)(\.pub)?$|^(package|package-lock|composer)\.(json|lock)$|^(server|app)\.js$|\.(sql|db|bak|old|log|ini|pem|key|crt|p12|pfx|zip|tar|gz|phar|sh|md)$)">
+  <FilesMatch "^(?!llms-full\.md$)(^\.env|^\.git|^\.svn|^(id_rsa|id_ed25519|deploy_key)(\.pub)?$|^(package|package-lock|composer)\.(json|lock)$|^(server|app)\.js$|\.(sql|db|bak|old|log|ini|pem|key|crt|p12|pfx|zip|tar|gz|phar|sh|md)$)">
     Require all denied
   </FilesMatch>
 </IfModule>
