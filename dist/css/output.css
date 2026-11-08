@@ -2085,6 +2085,260 @@ html.cs-boot-on .cs-boot {
   }
 }
 
+/* --- Prestations : la page service --------------------------------------- */
+/* Une page qui répond à la requête d'achat (« photographe de concert à
+   Paris ») : ce que je photographie, comment ça se passe, ce qui est livré.
+   Aucun prix n'est affiché, chaque projet se discute. */
+
+.cs-services {
+  padding: clamp(40px, 6vw, 88px) var(--pad) 0;
+}
+
+.cs-services-kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--step-small);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.cs-services-kicker::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+}
+
+.cs-services-title {
+  margin-top: 18px;
+  max-width: 14ch;
+  font-size: clamp(2.6rem, 7.5vw, 6.4rem);
+  font-weight: 600;
+  line-height: 0.94;
+  letter-spacing: -0.04em;
+}
+
+.cs-services-lede {
+  margin-top: 18px;
+  max-width: 44ch;
+  font-size: var(--step-lead);
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.cs-services-intro {
+  margin-top: 16px;
+  max-width: 60ch;
+  font-size: var(--step-body);
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.cs-services-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 28px;
+  margin-top: 28px;
+}
+
+.cs-services-link {
+  font-size: var(--step-small);
+  font-weight: 500;
+  color: var(--ink);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition: border-color 0.18s ease;
+}
+
+.cs-services-link:hover {
+  border-bottom-color: var(--ink);
+}
+
+.cs-services-block {
+  max-width: 860px;
+  padding: clamp(40px, 5vw, 72px) var(--pad) 0;
+}
+
+.cs-services-h2 {
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.cs-services-block > p {
+  margin-top: 14px;
+  max-width: 62ch;
+  font-size: var(--step-body);
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.cs-services-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 40px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cs-services-list li {
+  padding: 12px 0;
+  font-size: var(--step-body);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cs-services-list li.is-quiet {
+  font-size: var(--step-small);
+  color: var(--muted);
+}
+
+.cs-services-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 40px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.cs-services-steps li {
+  display: flex;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cs-services-step {
+  flex: 0 0 auto;
+  font-size: var(--step-small);
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.cs-services-steps h3 {
+  font-size: var(--step-body);
+  font-weight: 600;
+}
+
+.cs-services-steps p {
+  margin-top: 6px;
+  font-size: var(--step-small);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.cs-services-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  margin: clamp(40px, 5vw, 72px) var(--pad) 0;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.cs-services-fact-value {
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-services-fact-label {
+  margin-top: 6px;
+  font-size: var(--step-small);
+  color: var(--muted);
+}
+
+.cs-services-work {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  margin-top: clamp(40px, 5vw, 72px);
+  padding: 0 var(--pad);
+}
+
+.cs-services-photos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  width: 100%;
+}
+
+.cs-services-photos figure {
+  margin: 0;
+  background: var(--surface);
+}
+
+.cs-services-photos img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 3 / 2;
+  -o-object-fit: cover;
+     object-fit: cover;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.cs-services-photos a:hover img {
+  opacity: 0.86;
+}
+
+.cs-services-cta {
+  margin: clamp(48px, 7vw, 96px) var(--pad) 0;
+  padding: clamp(28px, 4vw, 48px);
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+}
+
+.cs-services-cta-title {
+  font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.cs-services-cta-text {
+  margin: 12px 0 22px;
+  max-width: 48ch;
+  font-size: var(--step-body);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+@media (max-width: 900px) {
+  .cs-services-list,
+  .cs-services-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .cs-services-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 18px;
+  }
+
+  .cs-services-photos {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .cs-services-photos figure:nth-child(n + 2) {
+    display: none;
+  }
+
+  .cs-services-block {
+    max-width: none;
+  }
+}
+
 /* --- Hero : la planche --------------------------------------------------- */
 
 .cs-hero {

@@ -50,6 +50,14 @@
       "description": "Galeries photo par artiste et par concert.",
       "h1": "Galeries de concerts",
       "keywords": "galerie photo concert, photographe concert Paris"
+    },
+    "prestations": {
+      "title": "Photographe de concert à Paris et en France - Mattia Parrinello",
+      "description": "Photographe de concert à Paris et partout en France. Concerts, festivals, showcases et tournées. Plus de 40 photos retouchées livrées sous 24 h, usage libre avec crédit.",
+      "h1": "Photographe de concert",
+      "og_title": "Photographe de concert à Paris | Mattia Parrinello",
+      "og_description": "Concerts, festivals, showcases et tournées à Paris et dans toute la France. 40+ photos retouchées sous 24 h.",
+      "keywords": "photographe de concert Paris, photographe live, photos de concert, festival, tournée, backstage, photographe musique"
     }
   },
   "artists": [

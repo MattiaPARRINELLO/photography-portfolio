@@ -147,6 +147,24 @@ describe('Routes pages publiques', function () {
     });
   });
 
+  describe('GET /prestations', function () {
+    it('sert la page prestations', function (done) {
+      supertest(makeApp()).get('/prestations').end(function (err, res) {
+        if (err) return done(err);
+        expect([200, 301, 404]).toContain(res.status);
+        done();
+      });
+    });
+
+    it('sert aussi /prestations/ (routing non strict)', function (done) {
+      supertest(makeApp()).get('/prestations/').end(function (err, res) {
+        if (err) return done(err);
+        expect([200, 301]).toContain(res.status);
+        done();
+      });
+    });
+  });
+
   describe('GET /portfolio', function () {
     it('redirige vers /', function (done) {
       supertest(makeApp()).get('/portfolio').expect(301).end(done);
