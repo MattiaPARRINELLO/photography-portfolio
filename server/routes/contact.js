@@ -229,14 +229,33 @@ router.post('/send-mail', async (req, res) => {
             socketTimeout: 20000
         });
 
-        await transporter.sendMail({
-            from: `"Portfolio" <${smtpUser}>`, // Expéditeur authentifié
-            to: CONTACT_RECIPIENT, // Votre adresse perso pour recevoir les messages
-            replyTo: email, // Pour répondre directement au visiteur
-            subject: `[Portfolio] ${subject}`,
-            text: `Nouveau message de: ${email}\n\n${message}`
-        });
-        res.status(200).json({ success: true });
+        // L'envoi SMTP est normalement sous la seconde, mais Gmail peut
+        // traîner (throttling, latence réseau) : on ne laisse jamais le
+        // visiteur attendre plus de 2,5 s. Au-delà, on confirme et l'envoi
+        // continue en tâche de fond.
+        const sending = transporter
+            .sendMail({
+                from: `"Portfolio" <${smtpUser}>`, // Expéditeur authentifié
+                to: CONTACT_RECIPIENT, // Votre adresse perso pour recevoir les messages
+                replyTo: email, // Pour répondre directement au visiteur
+                subject: `[Portfolio] ${subject}`,
+                text: `Nouveau message de: ${email}\n\n${message}`
+            })
+            .then(() => 'ok')
+            .catch((error) => {
+                console.error('❌ Erreur lors de l\'envoi du mail:', error);
+                return 'error';
+            });
+
+        const outcome = await Promise.race([
+            sending,
+            new Promise((resolve) => setTimeout(() => resolve('pending'), 2500))
+        ]);
+
+        if (outcome === 'error') {
+            return res.status(500).json({ error: "Erreur lors de l'envoi du mail" });
+        }
+        res.status(200).json({ success: true, pending: outcome === 'pending' });
     } catch (err) {
         console.error('❌ Erreur lors de l\'envoi du mail:', err);
         res.status(500).json({ error: 'Erreur lors de l\'envoi du mail: ' + err.message });
