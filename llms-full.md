@@ -32,7 +32,7 @@ Intrigué par la photo depuis petit, appareil offert à 18 ans, voyage en Égypt
 ## Salles & festivals
 - Dock B — Paris
 - EMB Sannois — Sannois
-- L'Antipode — Rennes
+- L'Antipode — Paris
 - La Bellevilloise — Paris
 - La Boule Noire — Paris
 - La Cigale — Paris
@@ -62,7 +62,7 @@ Voir /galeries et chaque /galeries/:slug (ImageGallery avec datePublished, venue
 - Bio (short): Concert photographer based in Paris, capturing raw energy on stage. Specialized in rap and live events: concerts, festivals, showcases, backstage, promo and making-of. Works with artists, music media (Rapstar), labels and venues across France.
 - Services: from 300€, quote within 24h, delivery 48-72h, protected online gallery + HD download link, press/social rights with mandatory credit included, commercial use on quote.
 - Artists photographed: Jok'air, Arma Jackson, Wallace Cleaver, Cyrus.wrld, Trebiz, Aswell, The French Kris, Damso, Romsii
-- Venues: La Cigale, La Boule Noire, La Bellevilloise, La Maroquinerie, Paris La Défense Arena, Reims Arena, Zénith d'Amiens, Élispace (Beauvais), EMB Sannois, Dock B (Paris), L'Antipode (Rennes), Pagaille Festival (Bordeaux)
+- Venues: La Cigale, La Boule Noire, La Bellevilloise, La Maroquinerie, Paris La Défense Arena, Reims Arena, Zénith d'Amiens, Élispace (Beauvais), EMB Sannois, Dock B (Paris), L'Antipode (Paris), Pagaille Festival (Bordeaux)
 
 ## Droits & licence
 Toutes les photos restent protégées. Usage presse et réseaux avec crédit obligatoire inclus. Usage commercial sur devis. HD via URL signée valable 1h (/api/request-hd-access).

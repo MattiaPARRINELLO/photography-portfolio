@@ -72,7 +72,7 @@ function loadSeoData() {
     }
 }
 
-// GEO: Ville réelle d'une salle à partir de seo.json (évite le hardcode "Paris" pour Amiens, Rennes, etc.)
+// GEO: Ville réelle d'une salle à partir de seo.json (évite le hardcode "Paris" pour Amiens, Bordeaux, etc.)
 function getVenueCity(venueName) {
     if (!venueName) return null;
     const venue = (loadSeoData().venues || []).find(v => v.name === venueName);
