@@ -110,6 +110,7 @@ function generateHomeHeroHtml(req, stats) {
             <span class="cs-panel-meta">${meta}</span>
             <nav class="cs-panel-links" aria-label="${isEn ? 'Main' : 'Navigation principale'}">
               <a href="/galeries${suffix}">${linkWork}</a>
+              <a href="/prestations${suffix}">${isEn ? 'Services' : 'Prestations'}</a>
               <a href="/a-propos${suffix}">${linkAbout}</a>
               <a href="/contact${suffix}">${linkContact}</a>
               <a href="/${isEn ? '' : '?lang=en'}" hreflang="${isEn ? 'fr' : 'en'}" lang="${isEn ? 'fr' : 'en'}">${isEn ? 'FR' : 'EN'}</a>
@@ -385,6 +386,44 @@ router.get('/contact', (req, res) => {
 router.get('/contact/', (req, res) => {
     res.redirect(301, '/contact');
 });
+
+// Prestations : page service indexable, qui répond à « photographe de concert
+// à Paris ». Les trois derniers concerts servent de preuve visuelle, reliée
+// aux galeries. Aucun prix affiché : chaque projet se discute.
+async function renderServicesPhotos() {
+    const galleries = getPublicGalleries()
+        .filter(g => g && g.cover && g.slug && isPhotoRenderable(g.cover))
+        .slice()
+        .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
+        .slice(0, 3);
+
+    const figures = [];
+    for (const g of galleries) {
+        let dims = null;
+        try { dims = await imageMeta.getImageDimensions(g.cover); } catch (_) { dims = null; }
+        const file = encodeURIComponent(g.cover);
+        const alt = `${g.artist || g.title || 'Concert'} en concert${g.venue ? ' à ' + g.venue : ''}`;
+        const sizeAttrs = dims && dims.width
+            ? ` width="800" height="${Math.round(800 * dims.height / dims.width)}"`
+            : '';
+        figures.push(`<figure><a href="/galeries/${encodeURIComponent(g.slug)}"><img src="/photos/resize?file=${file}&amp;w=800" srcset="/photos/resize?file=${file}&amp;w=400 400w, /photos/resize?file=${file}&amp;w=800 800w, /photos/resize?file=${file}&amp;w=1200 1200w" sizes="(max-width: 900px) 94vw, 31vw" alt="${escapeAttr(alt)}" loading="lazy" decoding="async"${sizeAttrs} /></a></figure>`);
+    }
+    return figures.join('\n          ');
+}
+
+router.get('/prestations', (req, res) => {
+    servePage(req, res, {
+        cacheKey: 'page:services',
+        file: 'prestations.html',
+        pageType: 'Prestations',
+        ttlMs: 5 * 60 * 1000,
+        transform: async (htmlContent) => {
+            const photos = await renderServicesPhotos();
+            return htmlContent.replace('<!-- SERVICES_PHOTOS_PLACEHOLDER -->', photos);
+        }
+    });
+});
+router.get('/prestations/', (req, res) => res.redirect(301, '/prestations'));
 
 // Route pour la page À propos (H1 visible EN)
 router.get('/a-propos', (req, res) => {
@@ -1381,6 +1420,12 @@ router.get('/sitemap.xml', async (req, res) => {
                 lastmod: fileLastmod('pages/about_me.html'),
                 changefreq: 'monthly',
                 priority: '0.7'
+            },
+            {
+                loc: '/prestations',
+                lastmod: fileLastmod('pages/prestations.html'),
+                changefreq: 'monthly',
+                priority: '0.9'
             },
             {
                 loc: '/contact',

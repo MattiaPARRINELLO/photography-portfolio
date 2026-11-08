@@ -62,7 +62,8 @@ class TextUtils {
             'À propos': 'about',
             'Mentions légales': 'mentions',
             'Links': 'links',
-            'Galeries': 'galleries'
+            'Galeries': 'galleries',
+            'Prestations': 'prestations'
         };
         return mapping[pageType] || 'home';
     }
