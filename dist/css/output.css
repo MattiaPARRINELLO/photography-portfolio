@@ -2086,15 +2086,19 @@ html.cs-boot-on .cs-boot {
 }
 
 /* --- Prestations : la page service --------------------------------------- */
-/* Une page qui répond à la requête d'achat (« photographe de concert à
-   Paris ») : ce que je photographie, comment ça se passe, ce qui est livré.
-   Aucun prix n'est affiché, chaque projet se discute. */
+/* La page s'ouvre sur un tirage (accroche à gauche, photo à droite), puis
+   alterne les rythmes : chiffres, listes, étapes numérotées, bande pleine
+   largeur, fiche en définition, carton blanc pour finir. Aucun prix affiché. */
 
-.cs-services {
-  padding: clamp(40px, 6vw, 88px) var(--pad) 0;
+.cs-prest-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+  padding: clamp(36px, 5vw, 72px) var(--pad) 0;
 }
 
-.cs-services-kicker {
+.cs-prest-kicker {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -2105,39 +2109,39 @@ html.cs-boot-on .cs-boot {
   color: var(--accent);
 }
 
-.cs-services-kicker::before {
+.cs-prest-kicker::before {
   content: "";
   width: 28px;
   height: 1px;
   background: currentColor;
 }
 
-.cs-services-title {
+.cs-prest-title {
   margin-top: 18px;
-  max-width: 14ch;
-  font-size: clamp(2.6rem, 7.5vw, 6.4rem);
+  max-width: 12ch;
+  font-size: clamp(2.4rem, 6.2vw, 5.4rem);
   font-weight: 600;
   line-height: 0.94;
   letter-spacing: -0.04em;
 }
 
-.cs-services-lede {
-  margin-top: 18px;
-  max-width: 44ch;
+.cs-prest-lede {
+  margin-top: 20px;
+  max-width: 36ch;
   font-size: var(--step-lead);
   line-height: 1.35;
   color: var(--ink);
 }
 
-.cs-services-intro {
-  margin-top: 16px;
-  max-width: 60ch;
+.cs-prest-intro {
+  margin-top: 14px;
+  max-width: 46ch;
   font-size: var(--step-body);
   line-height: 1.55;
   color: var(--muted);
 }
 
-.cs-services-actions {
+.cs-prest-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -2145,7 +2149,8 @@ html.cs-boot-on .cs-boot {
   margin-top: 28px;
 }
 
-.cs-services-link {
+.cs-prest-link {
+  display: inline-block;
   font-size: var(--step-small);
   font-weight: 500;
   color: var(--ink);
@@ -2154,188 +2159,288 @@ html.cs-boot-on .cs-boot {
   transition: border-color 0.18s ease;
 }
 
-.cs-services-link:hover {
+.cs-prest-link:hover {
   border-bottom-color: var(--ink);
 }
 
-.cs-services-block {
-  max-width: 860px;
-  padding: clamp(40px, 5vw, 72px) var(--pad) 0;
+.cs-prest-hero-figure {
+  margin: 0;
 }
 
-.cs-services-h2 {
-  padding-top: 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-  font-size: clamp(1.3rem, 2.2vw, 1.7rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+.cs-prest-hero-figure a {
+  display: block;
+  background: var(--surface);
 }
 
-.cs-services-block > p {
-  margin-top: 14px;
-  max-width: 62ch;
-  font-size: var(--step-body);
-  line-height: 1.6;
-  color: var(--muted);
+.cs-prest-hero-figure img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  height: auto;
+  -o-object-fit: cover;
+     object-fit: cover;
+  transition: opacity 0.2s ease;
 }
 
-.cs-services-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 40px;
-  margin: 18px 0 0;
-  padding: 0;
-  list-style: none;
+.cs-prest-hero-figure a:hover img {
+  opacity: 0.88;
 }
 
-.cs-services-list li {
-  padding: 12px 0;
-  font-size: var(--step-body);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.cs-services-list li.is-quiet {
+.cs-prest-hero-figure figcaption {
+  margin-top: 10px;
   font-size: var(--step-small);
   color: var(--muted);
 }
 
-.cs-services-steps {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 40px;
-  margin: 18px 0 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: none;
-}
-
-.cs-services-steps li {
-  display: flex;
-  gap: 16px;
-  padding: 18px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.cs-services-step {
-  flex: 0 0 auto;
-  font-size: var(--step-small);
-  font-variant-numeric: tabular-nums;
-  color: var(--accent);
-}
-
-.cs-services-steps h3 {
-  font-size: var(--step-body);
-  font-weight: 600;
-}
-
-.cs-services-steps p {
-  margin-top: 6px;
-  font-size: var(--step-small);
-  line-height: 1.5;
-  color: var(--muted);
-}
-
-.cs-services-facts {
+.cs-prest-facts {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 24px;
-  margin: clamp(40px, 5vw, 72px) var(--pad) 0;
-  padding-top: 24px;
+  margin: clamp(40px, 5vw, 72px) 0 0;
+  padding: 22px var(--pad) 0;
   border-top: 1px solid rgba(255, 255, 255, 0.14);
 }
 
-.cs-services-fact-value {
-  font-size: clamp(1.5rem, 3vw, 2.4rem);
+.cs-prest-fact {
+  padding: 0 24px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cs-prest-fact:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.cs-prest-fact-value {
+  font-size: clamp(1.6rem, 2.8vw, 2.4rem);
   font-weight: 600;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
 
-.cs-services-fact-label {
+.cs-prest-fact-label {
   margin-top: 6px;
+  font-size: var(--step-small);
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.cs-prest-section {
+  padding: clamp(48px, 6vw, 88px) var(--pad) 0;
+}
+
+.cs-prest-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.cs-prest-h2 {
+  font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.cs-prest-num {
+  font-size: var(--step-small);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-prest-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 40px;
+  margin: 26px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cs-prest-list li {
+  padding: 14px 0;
+  font-size: var(--step-body);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cs-prest-note {
+  margin-top: 14px;
   font-size: var(--step-small);
   color: var(--muted);
 }
 
-.cs-services-work {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 18px;
-  margin-top: clamp(40px, 5vw, 72px);
-  padding: 0 var(--pad);
-}
-
-.cs-services-photos {
+.cs-prest-steps {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 4px;
-  width: 100%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0 28px;
+  margin: 26px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
-.cs-services-photos figure {
+.cs-prest-steps li {
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cs-prest-step {
+  font-size: var(--step-small);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-prest-steps h3 {
+  margin-top: 10px;
+  font-size: var(--step-body);
+  font-weight: 600;
+}
+
+.cs-prest-steps p {
+  margin-top: 8px;
+  font-size: var(--step-small);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* Bande pleine largeur : une planche de six tirages serrés, comme les bandes
+   de l'accueil. Des images sombres y lisent comme une pellicule, pas comme
+   des cases vides. */
+.cs-prest-band {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  width: 100vw;
+  margin: clamp(48px, 6vw, 88px) calc(50% - 50vw) 0;
+}
+
+.cs-prest-band figure {
   margin: 0;
   background: var(--surface);
 }
 
-.cs-services-photos img {
+.cs-prest-band a {
+  display: block;
+  height: 100%;
+}
+
+.cs-prest-band img {
   display: block;
   width: 100%;
   height: 100%;
   aspect-ratio: 3 / 2;
   -o-object-fit: cover;
      object-fit: cover;
-  opacity: 1;
   transition: opacity 0.2s ease;
 }
 
-.cs-services-photos a:hover img {
-  opacity: 0.86;
+.cs-prest-band a:hover img {
+  opacity: 0.88;
 }
 
-.cs-services-cta {
-  margin: clamp(48px, 7vw, 96px) var(--pad) 0;
-  padding: clamp(28px, 4vw, 48px);
-  background: var(--surface);
-  border-left: 3px solid var(--accent);
+.cs-prest-band-link {
+  display: inline-block;
+  margin: 16px var(--pad) 0;
+  font-size: var(--step-small);
+  font-weight: 500;
+  color: var(--ink);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition: border-color 0.18s ease;
 }
 
-.cs-services-cta-title {
-  font-size: clamp(1.6rem, 3.4vw, 2.6rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
+.cs-prest-band-link:hover {
+  border-bottom-color: var(--ink);
 }
 
-.cs-services-cta-text {
-  margin: 12px 0 22px;
-  max-width: 48ch;
-  font-size: var(--step-body);
-  line-height: 1.5;
+.cs-prest-details {
+  margin: 26px 0 0;
+  padding: 0;
+}
+
+.cs-prest-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+  gap: 8px 40px;
+  padding: 20px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cs-prest-detail:last-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cs-prest-detail dt {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--muted);
 }
 
+.cs-prest-detail dd {
+  margin: 0;
+  max-width: 62ch;
+  font-size: var(--step-body);
+  line-height: 1.6;
+}
+
+/* Le carton blanc : le même papier que le panneau de l'accueil. */
+.cs-prest-cta {
+  margin-top: clamp(48px, 6vw, 88px);
+  padding: clamp(32px, 5vw, 64px) var(--pad);
+  background: var(--paper);
+  color: var(--paper-ink);
+}
+
+.cs-prest-cta-title {
+  font-size: clamp(1.8rem, 4vw, 3.2rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.cs-prest-cta-text {
+  margin: 14px 0 24px;
+  max-width: 46ch;
+  font-size: var(--step-body);
+  line-height: 1.5;
+  color: var(--paper-muted);
+}
+
 @media (max-width: 900px) {
-  .cs-services-list,
-  .cs-services-steps {
+  .cs-prest-hero {
     grid-template-columns: 1fr;
+    gap: 28px;
   }
 
-  .cs-services-facts {
+  .cs-prest-hero-figure img {
+    aspect-ratio: 3 / 2;
+  }
+
+  .cs-prest-facts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px 18px;
   }
 
-  .cs-services-photos {
+  .cs-prest-fact {
+    padding: 0;
+    border-left: 0;
+  }
+
+  .cs-prest-list,
+  .cs-prest-steps {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .cs-prest-band {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cs-prest-detail {
     grid-template-columns: 1fr;
     gap: 8px;
-  }
-
-  .cs-services-photos figure:nth-child(n + 2) {
-    display: none;
-  }
-
-  .cs-services-block {
-    max-width: none;
   }
 }
 
