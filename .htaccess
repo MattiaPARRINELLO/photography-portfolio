@@ -62,6 +62,12 @@ RedirectMatch 404 ^/.*/README\.md$
 #    doivent être accessibles ; les originaux et le cache `resized/` non.
 RedirectMatch 404 ^/photos/(?!resize(?:\?|$)|thumbnails/).*\.(?:jpe?g|png|webp|gif)$
 
+# 5) llms-full.md : contexte public pour les agents IA. Apache ne connaît pas
+#    l'extension .md, on force le type MIME pour qu'il soit lisible tel quel.
+<Files "llms-full.md">
+    ForceType "text/markdown; charset=utf-8"
+</Files>
+
 # php -- BEGIN cPanel-generated handler, do not edit
 # Définissez le package « ea-php84 » comme langage de programmation « PHP » par défaut.
 <IfModule mime_module>
