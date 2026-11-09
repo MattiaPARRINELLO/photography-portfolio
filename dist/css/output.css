@@ -3303,17 +3303,94 @@ html.cs-boot-on .cs-boot {
   }
 }
 
-/* --- Invitation --------------------------------------------------------- */
+/* --- Invitation : book a show ------------------------------------------- */
+/* Le dernier mot de la page : le titre tient la gauche, la promesse et
+   l'action la droite. Il occupe la largeur au lieu de flotter dans le noir. */
 
 .cs-cta {
-  padding: 24svh var(--pad) clamp(64px, 10svh, 140px);
+  padding: clamp(72px, 11svh, 140px) var(--pad) clamp(56px, 8svh, 104px);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.cs-cta-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: end;
+  gap: clamp(36px, 6vw, 96px);
+}
+
+.cs-cta-kicker {
+  margin-bottom: 18px;
+  font-size: var(--step-small);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.cs-cta-title {
+  max-width: 12ch;
+  font-size: clamp(2.1rem, 4.4vw, 4.2rem);
+  font-weight: 600;
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
 }
 
 .cs-cta-sentence {
-  max-width: 34ch;
-  margin-bottom: 24px;
+  max-width: 38ch;
+  margin-top: 20px;
   font-size: var(--step-lead);
-  line-height: 1.4;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.cs-cta-side {
+  display: grid;
+  align-content: start;
+  gap: 28px;
+  padding-top: 6px;
+}
+
+.cs-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 24px;
+}
+
+.cs-cta-mail {
+  color: var(--ink);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.32);
+  padding-bottom: 2px;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.cs-cta-mail:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Trois repères de terrain : de quoi répondre avant même d'écrire. */
+.cs-cta-facts {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.cs-cta-facts li {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: var(--step-small);
+}
+
+.cs-cta-facts li::before {
+  content: "";
+  flex: 0 0 18px;
+  height: 1px;
+  align-self: center;
+  background: var(--accent);
 }
 
 /* --- Pied de page -------------------------------------------------------- */
@@ -4196,7 +4273,13 @@ html.cs-boot-on .cs-boot {
   }
 
   .cs-cta {
-    padding: 16svh var(--pad) 12svh;
+    padding: clamp(56px, 14svh, 96px) var(--pad) clamp(44px, 9svh, 72px);
+  }
+
+  .cs-cta-inner {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 30px;
   }
 
 }

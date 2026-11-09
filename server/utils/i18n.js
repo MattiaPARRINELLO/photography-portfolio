@@ -212,6 +212,12 @@ const _enDict = {
   // Contact, planche contact
   'Écrivez à Mattia Parrinello, photographe de concert à Paris.': 'Write to Mattia Parrinello, concert photographer in Paris.',
   'Un concert à couvrir ?': 'A show to cover?',
+  // Invitation au pied des pages
+  'Réservations': 'Bookings',
+  'Dites-moi la date, la salle et l\'usage prévu. Je réponds sous 24 h avec une proposition claire.': 'Tell me the date, the venue and how the images will be used. I reply within 24 hours with a clear proposal.',
+  'Paris et Île-de-France au quotidien': 'Paris and Île-de-France day to day',
+  'Festivals et tournées partout en France': 'Festivals and tours across France',
+  'Réponse sous 24 h, devis gratuit': 'Reply within 24h, free quote',
   'Concerts, festivals, showcases, backstage. Dites-moi la date, la salle et l\'usage des images : je réponds sous 24 heures avec une proposition claire.': 'Concerts, festivals, showcases, backstage. Tell me the date, the venue and how the images will be used: I reply within 24 hours with a clear proposal.',
   'Je travaille seul, sans assistant, pour rester mobile dans la fosse. Vous recevez une sélection triée et retouchée, prête à publier.': 'I work alone, without an assistant, to stay mobile in the pit. You get a sorted, retouched selection, ready to publish.',
   'Livraison des images': 'Image delivery',
