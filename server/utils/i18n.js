@@ -303,6 +303,17 @@ function translateHtml(html, lang) {
   r('en l\'Économie Numérique (LCEN), il est porté à la connaissance des', 'in the Digital Economy (LCEN), users of the site');
   r('utilisateurs du site', 'are hereby informed of these legal mentions');
   r('L\'Éditeur se', 'The Publisher reserves');
+  // Les liens de bascule des gabarits statiques pointent toujours vers
+  // l'anglais ; en anglais, on les retourne vers le français, sinon un
+  // visiteur ne peut plus revenir à la version FR.
+  out = out.replace(/<a\b([^>]*)>(EN|English)(<\/a\s*>)/g, (match, attrs, label, close) => {
+    if (!/href="\?lang=en"/.test(attrs)) return match;
+    const nextAttrs = attrs
+      .replace('href="?lang=en"', 'href="?lang=fr"')
+      .replace(/hreflang="en"/, 'hreflang="fr"')
+      .replace(/\blang="en"/, 'lang="fr"');
+    return `<a${nextAttrs}>${label === 'EN' ? 'FR' : 'Français'}${close}`;
+  });
   return out;
 }
 
