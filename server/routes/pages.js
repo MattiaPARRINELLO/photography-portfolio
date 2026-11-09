@@ -113,7 +113,7 @@ function generateHomeHeroHtml(req, stats) {
               <a href="/prestations${suffix}">${isEn ? 'Services' : 'Prestations'}</a>
               <a href="/a-propos${suffix}">${linkAbout}</a>
               <a href="/contact${suffix}">${linkContact}</a>
-              <a href="/${isEn ? '' : '?lang=en'}" hreflang="${isEn ? 'fr' : 'en'}" lang="${isEn ? 'fr' : 'en'}">${isEn ? 'FR' : 'EN'}</a>
+              <a href="${isEn ? '/?lang=fr' : '/?lang=en'}" hreflang="${isEn ? 'fr' : 'en'}" lang="${isEn ? 'fr' : 'en'}">${isEn ? 'FR' : 'EN'}</a>
             </nav>
           </div>
         </div>`;
