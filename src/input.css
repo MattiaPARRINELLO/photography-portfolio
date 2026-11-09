@@ -3297,7 +3297,7 @@ html.cs-boot-on .cs-boot {
 /* --- Invitation --------------------------------------------------------- */
 
 .cs-cta {
-  padding: 24svh var(--pad) 18svh;
+  padding: 24svh var(--pad) clamp(64px, 10svh, 140px);
 }
 
 .cs-cta-sentence {
@@ -3308,70 +3308,76 @@ html.cs-boot-on .cs-boot {
 }
 
 /* --- Pied de page -------------------------------------------------------- */
-/* Le pied est une signature : le nom et le rôle à gauche, trois colonnes de
-   liens à droite, puis une ligne légale avec le retour en haut. Mêmes filets
-   que les sections des pages intérieures. */
+/* Le pied ferme la page comme un colophon : une plaque à peine plus claire
+   que le noir, un repère rose, le nom en grand, trois colonnes de liens qui
+   se partagent la largeur, puis la ligne légale et le retour en haut. */
 
 .cs-footer {
-  margin-top: clamp(48px, 6vw, 88px);
-  padding: 0 var(--pad) 24px;
+  position: relative;
+  margin-top: clamp(40px, 5vw, 72px);
+  padding: clamp(30px, 3.4vw, 52px) var(--pad) clamp(18px, 2vw, 26px);
   font-size: var(--step-small);
   color: var(--muted);
+  background: var(--surface);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.cs-foot-top {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 40px;
-  padding-top: 26px;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-}
-
-/* Un trait rose de 40 px sur le filet : le même repère que les intertitres. */
-.cs-foot-top::before {
+/* Le trait rose court sur le filet du haut, comme un repère de lecture. */
+.cs-footer::before {
   content: "";
   position: absolute;
   top: -1px;
-  left: 0;
-  width: 40px;
-  height: 1px;
+  left: var(--pad);
+  width: 56px;
+  height: 2px;
   background: var(--accent);
 }
 
+.cs-foot-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(32px, 6vw, 96px);
+  padding-bottom: clamp(26px, 3vw, 40px);
+}
+
 .cs-foot-name {
-  font-size: clamp(1.7rem, 3.4vw, 3rem);
+  font-size: clamp(2rem, 4.6vw, 4.2rem);
   font-weight: 600;
-  line-height: 0.98;
-  letter-spacing: -0.035em;
+  line-height: 0.94;
+  letter-spacing: -0.04em;
   color: var(--ink);
+  text-wrap: balance;
 }
 
 .cs-foot-role {
-  margin-top: 10px;
+  margin-top: 14px;
   max-width: 26ch;
   line-height: 1.45;
 }
 
 .cs-foot-cols {
   display: grid;
-  grid-template-columns: repeat(3, max-content);
-  gap: 10px 64px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px clamp(20px, 3vw, 48px);
 }
 
+/* Un filet court au-dessus de chaque famille de liens : la grille du pied
+   reprend celle des sections, sans cadre autour. */
 .cs-foot-col {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .cs-foot-label {
   font-size: 0.65rem;
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 .cs-foot-col a,
@@ -3380,52 +3386,67 @@ html.cs-boot-on .cs-boot {
   color: var(--ink);
   border-bottom: 1px solid transparent;
   padding-bottom: 1px;
-  transition: border-color 0.18s ease;
+  transition: color 0.18s ease, border-color 0.18s ease;
 }
 
 .cs-foot-col a:hover,
 .cs-foot-top-link:hover {
-  border-bottom-color: currentColor;
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 .cs-foot-bottom {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 24px;
-  margin-top: 40px;
-  padding-top: 14px;
+  padding-top: clamp(14px, 1.6vw, 20px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 0.72rem;
 }
 
+/* Le retour en haut est un bouton rond : la seule cible du pied. */
+.cs-foot-top-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 0;
+}
+
 .cs-foot-top-link span {
-  display: inline-block;
-  margin-left: 4px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 50%;
   color: var(--accent);
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.2s ease,
+    border-color 0.2s ease, color 0.2s ease;
 }
 
 .cs-foot-top-link:hover span {
   transform: translateY(-3px);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
 }
 
 @media (max-width: 900px) {
   .cs-foot-top {
-    flex-direction: column;
-    gap: 28px;
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
 
   .cs-foot-cols {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 22px 24px;
-    width: 100%;
   }
 
   .cs-foot-bottom {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 14px;
   }
 }
 
