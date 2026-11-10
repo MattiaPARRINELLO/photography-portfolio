@@ -33,14 +33,16 @@ jobs:
           LLM_API_BASE: https://opencode.ai/inference/go/openai/v1
           LLM_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
           STRIX_API_TYPE: chat_completions
-          # La gateway OpenCode exige le User-Agent et l'en-tête client.
-          LLM_EXTRA_HEADERS: '{"User-Agent":"opencode/1.18.31","x-opencode-client":"cli"}'
           STRIX_CACHE_BLOCK_TOKENS: "64"
           # Pas de télémétrie depuis la CI.
           STRIX_TELEMETRY: "0"
         # Plafonds stricts : le scan s'arrête sur budget ou nombre de tours,
         # et n'échoue le job que sur du high/critical.
         run: |
+          # La gateway OpenCode exige le User-Agent, l'en-tête client et un
+          # identifiant de session, sinon elle répond 403 ou MissingSessionID.
+          export LLM_EXTRA_HEADERS="{\"User-Agent\":\"opencode/1.18.31\",\"x-opencode-client\":\"cli\",\"x-opencode-session\":\"$(cat /proc/sys/kernel/random/uuid)\"}"
+
           SCOPE_ARGS="--scope-mode full"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             SCOPE_ARGS="--scope-mode diff --diff-base origin/${{ github.base_ref }}"
