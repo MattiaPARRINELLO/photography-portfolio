@@ -17,14 +17,30 @@ jobs:
     name: Pentest quick
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # Les secrets ne sont pas transmis aux PR venues d'un fork : le scan ne
+    # pourrait pas s'authentifier, et il n'a pas à voir du code non approuvé.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - uses: actions/checkout@v4
         with:
           # Historique complet : nécessaire au diff-scope (merge-base avec la base).
           fetch-depth: 0
 
-      - name: Installer Strix
-        run: curl -sSL https://strix.ai/install | bash
+      - name: Installer Strix (version épinglée, intégrité vérifiée)
+        env:
+          # Version et empreinte du binaire, mises à jour volontairement.
+          STRIX_VERSION: "1.7.0"
+          STRIX_SHA256: "b8cd7e84d63cbeff6726301a9e08fddedf40fc6a4edcdb4edda8a853b3312de6"
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/strix-${STRIX_VERSION}.tar.gz"
+          curl -fsSL -o "$archive" \
+            "https://github.com/usestrix/strix/releases/download/v${STRIX_VERSION}/strix-${STRIX_VERSION}-linux-x86_64.tar.gz"
+          echo "${STRIX_SHA256}  ${archive}" | sha256sum -c -
+          mkdir -p "$HOME/.strix/bin"
+          tar -xzf "$archive" -C "$RUNNER_TEMP"
+          install -m 0755 "$RUNNER_TEMP/strix-${STRIX_VERSION}-linux-x86_64" "$HOME/.strix/bin/strix"
+          "$HOME/.strix/bin/strix" --version
 
       - name: Scanner
         env:
