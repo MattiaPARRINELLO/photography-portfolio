@@ -1,0 +1,68 @@
+name: Analyse de sécurité (Strix)
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: strix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  strix:
+    name: Pentest quick
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Historique complet : nécessaire au diff-scope (merge-base avec la base).
+          fetch-depth: 0
+
+      - name: Installer Strix
+        run: curl -sSL https://strix.ai/install | bash
+
+      - name: Scanner
+        env:
+          # Modèle : OpenCode Go + DeepSeek V4.1 Flash.
+          STRIX_LLM: openai/deepseek-v4.1-flash
+          LLM_API_BASE: https://opencode.ai/inference/go/openai/v1
+          LLM_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          STRIX_API_TYPE: chat_completions
+          # La gateway OpenCode exige le User-Agent et l'en-tête client.
+          LLM_EXTRA_HEADERS: '{"User-Agent":"opencode/1.18.31","x-opencode-client":"cli"}'
+          STRIX_CACHE_BLOCK_TOKENS: "64"
+          # Pas de télémétrie depuis la CI.
+          STRIX_TELEMETRY: "0"
+        # Plafonds stricts : le scan s'arrête sur budget ou nombre de tours,
+        # et n'échoue le job que sur du high/critical.
+        run: |
+          SCOPE_ARGS="--scope-mode full"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            SCOPE_ARGS="--scope-mode diff --diff-base origin/${{ github.base_ref }}"
+          fi
+          ~/.strix/bin/strix -n -t ./ -m quick \
+            --fail-on high \
+            --max-budget 5 \
+            --max-turns 60 \
+            $SCOPE_ARGS
+
+      - name: Publier les résultats
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: strix-findings
+          path: strix_runs/**
+          retention-days: 30
+
+      - name: Envoyer le SARIF à Code Scanning
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: strix_runs
+          category: strix
