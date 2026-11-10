@@ -36,6 +36,11 @@ jobs:
           STRIX_CACHE_BLOCK_TOKENS: "64"
           # Pas de télémétrie depuis la CI.
           STRIX_TELEMETRY: "0"
+          # Passés par l'environnement, jamais interpolés dans le script :
+          # une valeur de contexte GitHub injectée telle quelle dans un `run`
+          # permet une injection de commandes shell.
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
         # Plafonds stricts : le scan s'arrête sur budget ou nombre de tours,
         # et n'échoue le job que sur du high/critical.
         run: |
@@ -44,8 +49,8 @@ jobs:
           export LLM_EXTRA_HEADERS="{\"User-Agent\":\"opencode/1.18.31\",\"x-opencode-client\":\"cli\",\"x-opencode-session\":\"$(cat /proc/sys/kernel/random/uuid)\"}"
 
           SCOPE_ARGS="--scope-mode full"
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            SCOPE_ARGS="--scope-mode diff --diff-base origin/${{ github.base_ref }}"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            SCOPE_ARGS="--scope-mode diff --diff-base origin/$BASE_REF"
           fi
           ~/.strix/bin/strix -n -t ./ -m quick \
             --fail-on high \
