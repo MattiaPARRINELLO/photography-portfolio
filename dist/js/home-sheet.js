@@ -642,17 +642,30 @@
         (KEEP.indexOf(index) > -1 ? kept : dropped).push(char);
       });
 
-      var DUR = 0.46;
+      // Le repli se fait en deux temps : les lettres inutiles se ferment
+      // pendant que les gardées restent en minuscules, puis la bascule de
+      // casse se fait dans un fondu très court, à largeur finale. Sans ce
+      // fondu, une capitale plus large que sa case chevaucherait sa voisine
+      // pendant la fermeture.
+      var CLOSE = 0.36;   // fermeture des lettres inutiles
+      var FADE = 0.07;    // fondu qui masque la bascule de casse
+      var OPEN = 0.13;    // retour du nom replié
+      var SWAP_AT = CLOSE + 0.02 + FADE;
       var EASE = "power3.inOut";
-      var STAGGER = { each: 0.018, from: "center" };
+      var STAGGER = { each: 0.008, from: "center" };
       var openWidths = [];
       var folded = false;
+      var tl = null;
 
       function widthsOf(nodes) {
         return nodes.map(function (node) { return node.getBoundingClientRect().width; });
       }
 
       function clearInline() {
+        if (tl) {
+          tl.kill();
+          tl = null;
+        }
         chars.forEach(function (char) {
           char.style.width = "";
           char.style.opacity = "";
@@ -663,58 +676,67 @@
       function fold() {
         if (folded) return;
         folded = true;
-        // Une mesure prise au milieu d'une transition donnerait des largeurs
-        // fausses : on repart d'un état propre avant de mesurer.
         clearInline();
         openWidths = widthsOf(chars);
 
-        var lower = widthsOf(kept);
+        // Largeur finale des capitales, mesurée sans laisser la classe en place.
         kept.forEach(function (char) { char.classList.add("is-mark"); });
         var upper = widthsOf(kept);
-        kept.forEach(function (char, j) { char.style.width = lower[j] + "px"; });
+        kept.forEach(function (char) { char.classList.remove("is-mark"); });
 
-        gsap.to(kept, {
-          width: function (j) { return upper[j] + "px"; },
-          duration: DUR,
-          ease: EASE,
-          overwrite: true
-        });
-        gsap.to(dropped, {
+        tl = gsap.timeline();
+        tl.to(dropped, {
           width: 0,
           opacity: 0,
-          duration: DUR,
+          duration: CLOSE,
           ease: EASE,
-          stagger: STAGGER,
-          overwrite: true
-        });
+          stagger: STAGGER
+        }, 0);
+        // Bascule invisible : les cinq lettres sont à opacité nulle quand le
+        // glyphe devient une capitale et prend sa largeur finale.
+        // On ne descend pas à zéro : un nom qui disparaît complètement
+        // clignoterait. À 20 % d'opacité, la bascule de glyphe ne se voit pas.
+        tl.to(kept, { opacity: 0.2, duration: FADE, ease: "power1.in" }, CLOSE + 0.02);
+        tl.call(function () {
+          kept.forEach(function (char, j) {
+            char.classList.add("is-mark");
+            char.style.width = upper[j] + "px";
+          });
+        }, null, SWAP_AT);
+        tl.to(kept, { opacity: 1, duration: OPEN, ease: "power1.out" }, SWAP_AT);
       }
 
       function unfold() {
         if (!folded) return;
         folded = false;
-        gsap.to(kept, {
-          width: function (j) { return openWidths[Number(kept[j].dataset.index)] + "px"; },
-          duration: DUR,
-          ease: EASE,
-          overwrite: true,
-          onComplete: function () {
-            kept.forEach(function (char) {
-              char.classList.remove("is-mark");
-              char.style.width = "";
-            });
-          }
-        });
-        gsap.to(dropped, {
-          width: function (j) { return openWidths[Number(dropped[j].dataset.index)] + "px"; },
+        if (tl) {
+          tl.kill();
+          tl = null;
+        }
+        var natural = openWidths;
+
+        // Exactement l'inverse du repli : on repasse d'abord les gardées en
+        // minuscules dans un fondu court, puis toutes les lettres reprennent
+        // leur place. Les deux états ne se mélangent donc jamais à l'écran.
+        tl = gsap.timeline();
+        tl.to(kept, { opacity: 0.2, duration: FADE, ease: "power1.in" }, 0);
+        tl.call(function () {
+          kept.forEach(function (char) {
+            char.classList.remove("is-mark");
+            char.style.width = "";
+          });
+        }, null, FADE);
+        tl.to(kept, { opacity: 1, duration: OPEN, ease: "power1.out" }, FADE);
+        tl.to(dropped, {
+          width: function (j) { return natural[Number(dropped[j].dataset.index)] + "px"; },
           opacity: 1,
-          duration: DUR,
+          duration: CLOSE,
           ease: EASE,
           stagger: STAGGER,
-          overwrite: true,
           onComplete: function () {
             dropped.forEach(function (char) { char.style.width = ""; });
           }
-        });
+        }, FADE);
       }
 
       h1.addEventListener("pointerenter", function (e) {

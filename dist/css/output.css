@@ -2595,6 +2595,9 @@ html.cs-boot-on .cs-boot {
    capitales le temps du survol. */
 .cs-fold-char {
   display: inline-block;
+  /* Une lettre rétrécie est rognée sur sa droite au lieu de déborder sur sa
+     voisine : c'est ce qui fait lire un repli plutôt qu'un chevauchement. */
+  overflow: hidden;
 }
 
 .cs-fold-char.is-mark {
