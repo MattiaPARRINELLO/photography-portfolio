@@ -2601,15 +2601,10 @@ html.cs-boot-on .cs-boot {
   overflow: hidden;
 }
 
-/* Capitale empilée sous la minuscule : les deux glyphes se croisent pendant
-   que la case s'élargit, ce qui fait une transformation et non un saut. */
-.cs-fold-cap {
-  position: absolute;
-  left: 0;
-  top: 0;
-  opacity: 0;
-  white-space: nowrap;
-  pointer-events: none;
+/* Le repli des lettres gardées se fait en 3D (transform), pas en largeur :
+   aucune superposition de glyphes n'est visible. */
+.cs-fold-char.is-mark {
+  text-transform: uppercase;
 }
 
 .cs-lede {

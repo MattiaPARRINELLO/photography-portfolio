@@ -643,14 +643,14 @@
         (KEEP.indexOf(index) > -1 ? kept : dropped).push(char);
       });
 
-      // Chaque lettre gardée porte deux glyphes empilés : sa minuscule et sa
-      // capitale. La largeur de la case glisse de l'une à l'autre pendant que
-      // les deux se croisent, donc la lettre se transforme au lieu de changer
-      // d'un coup. La case rogne ce qui dépasse : rien ne déborde à côté.
-      var CLOSE = 0.44;
-      var OPEN = 0.44;
+      // Les lettres gardées se replient sur elles-mêmes : elles s'aplatissent
+      // verticalement, changent de glyphe au point le plus plat (donc sans
+      // qu'on voie la substitution), puis se redressent. Aucune superposition.
+      var CLOSE = 0.4;
+      var FOLD = 0.18;
+      var UNFOLD = 0.26;
       var EASE = "power3.inOut";
-      var STAGGER = { each: 0.008, from: "center" };
+      var STAGGER = { each: 0.006, from: "center" };
       var openWidths = [];
       var folded = false;
       var tl = null;
@@ -659,41 +659,17 @@
         return nodes.map(function (node) { return node.getBoundingClientRect().width; });
       }
 
-      function stack(char) {
-        if (char.querySelector(".cs-fold-low")) return;
-        var glyph = char._glyph;
-        var low = document.createElement("span");
-        low.className = "cs-fold-low";
-        low.textContent = glyph;
-        var cap = document.createElement("span");
-        cap.className = "cs-fold-cap";
-        cap.textContent = glyph.toUpperCase();
-        cap.setAttribute("aria-hidden", "true");
-        char.textContent = "";
-        char.appendChild(low);
-        char.appendChild(cap);
-      }
-
-      function unstack(char) {
-        if (char._glyph === undefined) return;
-        char.textContent = char._glyph;
-        char.style.width = "";
-      }
-
       function reset() {
         if (tl) {
           tl.kill();
           tl = null;
         }
         chars.forEach(function (char) {
-          unstack(char);
+          char.classList.remove("is-mark");
           char.style.width = "";
           char.style.opacity = "";
+          char.style.transform = "";
         });
-      }
-
-      function layers(selector) {
-        return kept.map(function (char) { return char.querySelector(selector); });
       }
 
       function fold() {
@@ -702,47 +678,35 @@
         reset();
         openWidths = widthsOf(chars);
 
-        kept.forEach(stack);
-        var lower = widthsOf(kept);
-        var lows = layers(".cs-fold-low");
-        var caps = layers(".cs-fold-cap");
-        var upper = widthsOf(caps);
-        kept.forEach(function (char, j) { char.style.width = lower[j] + "px"; });
-
-        // La capitale est posée sur la minuscule et se découvre de gauche à
-        // droite, comme un redessin de la lettre : le glyphe se transforme au
-        // lieu de s'échanger d'un coup.
-        gsap.set(caps, { opacity: 1, clipPath: "inset(0 100% 0 0)" });
+        kept.forEach(function (char) { char.classList.add("is-mark"); });
+        var upper = widthsOf(kept);
+        kept.forEach(function (char) { char.classList.remove("is-mark"); });
 
         tl = gsap.timeline();
-        tl.to(kept, {
-          width: function (j) { return upper[j] + "px"; },
-          duration: CLOSE,
-          ease: EASE
-        }, 0);
-        tl.to(caps, {
-          clipPath: "inset(0 0% 0 0)",
-          duration: CLOSE,
-          ease: EASE
-        }, 0);
-        // Une fois le redessin terminé, la minuscule ne doit plus affleurer
-        // dans les contre-formes de la capitale.
-        tl.set(lows, { opacity: 0 }, CLOSE);
-        // Les lettres écartées se ferment d'abord et s'effacent vite : le mot
-        // se resserre sur ses cinq lettres avant que la transformation des
-        // glyphes ne se termine, donc il ne reste jamais espacé.
-        tl.to(dropped, {
-          opacity: 0,
-          duration: CLOSE * 0.3,
-          ease: "power1.in",
-          stagger: STAGGER
-        }, 0);
         tl.to(dropped, {
           width: 0,
-          duration: CLOSE * 0.55,
+          opacity: 0,
+          duration: CLOSE,
           ease: EASE,
           stagger: STAGGER
         }, 0);
+        tl.to(kept, {
+          scaleY: 0.06,
+          transformOrigin: "50% 100%",
+          duration: FOLD,
+          ease: "power2.in"
+        }, CLOSE - FOLD - 0.04);
+        tl.call(function () {
+          kept.forEach(function (char, j) {
+            char.classList.add("is-mark");
+            char.style.width = upper[j] + "px";
+          });
+        }, null, CLOSE - 0.04);
+        tl.to(kept, {
+          scaleY: 1,
+          duration: UNFOLD,
+          ease: "power2.out"
+        }, CLOSE - 0.04);
       }
 
       function unfold() {
@@ -753,40 +717,35 @@
           tl = null;
         }
         var natural = openWidths;
-        var lows = layers(".cs-fold-low");
-        var caps = layers(".cs-fold-cap");
 
         tl = gsap.timeline();
         tl.to(kept, {
-          width: function (j) { return natural[Number(kept[j].dataset.index)] + "px"; },
-          duration: OPEN,
-          ease: EASE
+          scaleY: 0.06,
+          transformOrigin: "50% 100%",
+          duration: FOLD,
+          ease: "power2.in"
         }, 0);
-        tl.set(lows, { opacity: 1 }, 0);
-        tl.to(caps, {
-          clipPath: "inset(0 100% 0 0)",
-          duration: OPEN,
-          ease: EASE
-        }, 0);
-        tl.to(dropped, {
-          width: function (j) { return natural[Number(dropped[j].dataset.index)] + "px"; },
-          duration: OPEN * 0.6,
-          ease: EASE,
-          stagger: STAGGER
-        }, OPEN * 0.4);
-        tl.to(dropped, {
-          opacity: 1,
-          duration: OPEN * 0.45,
-          ease: "power1.out",
-          stagger: STAGGER
-        }, OPEN * 0.55);
         tl.call(function () {
           kept.forEach(function (char) {
-            gsap.set(char.querySelector(".cs-fold-cap"), { clearProps: "clipPath" });
-            unstack(char);
+            char.classList.remove("is-mark");
+            char.style.width = "";
           });
-          dropped.forEach(function (char) { char.style.width = ""; });
-        });
+        }, null, FOLD);
+        tl.to(kept, {
+          scaleY: 1,
+          duration: UNFOLD,
+          ease: "power2.out"
+        }, FOLD);
+        tl.to(dropped, {
+          width: function (j) { return natural[Number(dropped[j].dataset.index)] + "px"; },
+          opacity: 1,
+          duration: CLOSE,
+          ease: EASE,
+          stagger: STAGGER,
+          onComplete: function () {
+            dropped.forEach(function (char) { char.style.width = ""; });
+          }
+        }, FOLD);
       }
 
       h1.addEventListener("pointerenter", function (e) {
