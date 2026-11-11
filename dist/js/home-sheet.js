@@ -643,12 +643,12 @@
         (KEEP.indexOf(index) > -1 ? kept : dropped).push(char);
       });
 
-      // Les lettres gardées se replient sur elles-mêmes : elles s'aplatissent
-      // verticalement, changent de glyphe au point le plus plat (donc sans
-      // qu'on voie la substitution), puis se redressent. Aucune superposition.
+      // Les lettres gardées ne bougent pas : elles s'effacent un court instant,
+      // changent de glyphe à ce moment-là, puis reviennent en capitale. Aucun
+      // mouvement vertical ni pincement, aucune superposition visible.
       var CLOSE = 0.34;
-      var FOLD = 0.16;
-      var UNFOLD = 0.22;
+      var FADE = 0.09;
+      var BACK = 0.13;
       var EASE = "power3.inOut";
       var STAGGER = { each: 0.006, from: "center" };
       var openWidths = [];
@@ -682,6 +682,7 @@
         var upper = widthsOf(kept);
         kept.forEach(function (char) { char.classList.remove("is-mark"); });
 
+        var dip = 0.15;
         tl = gsap.timeline();
         tl.to(dropped, {
           width: 0,
@@ -690,23 +691,14 @@
           ease: EASE,
           stagger: STAGGER
         }, 0);
-        tl.to(kept, {
-          scaleX: 0.06,
-          transformOrigin: "50% 50%",
-          duration: FOLD,
-          ease: "power2.in"
-        }, 0);
+        tl.to(kept, { opacity: 0, duration: FADE, ease: "power1.in" }, dip);
         tl.call(function () {
           kept.forEach(function (char, j) {
             char.classList.add("is-mark");
             char.style.width = upper[j] + "px";
           });
-        }, null, FOLD);
-        tl.to(kept, {
-          scaleX: 1,
-          duration: UNFOLD,
-          ease: "power2.out"
-        }, FOLD);
+        }, null, dip + FADE);
+        tl.to(kept, { opacity: 1, duration: BACK, ease: "power1.out" }, dip + FADE);
       }
 
       function unfold() {
@@ -719,23 +711,14 @@
         var natural = openWidths;
 
         tl = gsap.timeline();
-        tl.to(kept, {
-          scaleX: 0.06,
-          transformOrigin: "50% 50%",
-          duration: FOLD,
-          ease: "power2.in"
-        }, 0);
+        tl.to(kept, { opacity: 0, duration: FADE, ease: "power1.in" }, 0);
         tl.call(function () {
           kept.forEach(function (char) {
             char.classList.remove("is-mark");
             char.style.width = "";
           });
-        }, null, FOLD);
-        tl.to(kept, {
-          scaleX: 1,
-          duration: UNFOLD,
-          ease: "power2.out"
-        }, FOLD);
+        }, null, FADE);
+        tl.to(kept, { opacity: 1, duration: BACK, ease: "power1.out" }, FADE);
         tl.to(dropped, {
           width: function (j) { return natural[Number(dropped[j].dataset.index)] + "px"; },
           opacity: 1,
@@ -745,7 +728,7 @@
           onComplete: function () {
             dropped.forEach(function (char) { char.style.width = ""; });
           }
-        }, FOLD * 0.6);
+        }, FADE * 0.7);
       }
 
       h1.addEventListener("pointerenter", function (e) {
