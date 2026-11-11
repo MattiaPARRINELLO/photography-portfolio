@@ -75,6 +75,8 @@
     var bootScrim = boot ? boot.querySelector(".cs-boot-scrim") : null;
     var bootVeil = boot ? boot.querySelector(".cs-boot-veil") : null;
     var bootMark = boot ? boot.querySelector(".cs-boot-mark") : null;
+    // Garde du repli du nom : le H1 n'est découpé qu'une fois.
+    var nameFoldReady = false;
     var bootWords = boot ? Array.prototype.slice.call(boot.querySelectorAll(".cs-boot-word")) : [];
     var panel = document.querySelector(".cs-panel");
     var title = document.querySelector(".cs-title");
@@ -124,6 +126,9 @@
       if (boot) boot.style.display = "none";
       if (title) title.style.visibility = "";
       document.documentElement.classList.remove("cs-boot-on");
+      // Le repli du nom ne s'arme qu'une fois le carton retiré : pendant
+      // l'intro le H1 est masqué, un survol y replierait le titre à l'aveugle.
+      initNameFold();
       // Nettoyage différé : retirer six nœuds pendant le basculement
       // provoquerait un à-coup sur les machines modestes.
       window.setTimeout(function () {
@@ -595,6 +600,132 @@
     }
 
     initRowAccordion();
+
+    // --- Repli du nom en marque ------------------------------------------
+    // Au survol, « Mattia Parrinello » se replie sur les cinq lettres de
+    // MPRNL : les autres se ferment et s'effacent, les gardées passent en
+    // capitales et se resserrent. Le texte du document ne change pas (SEO,
+    // copie, dictée) : seules des largeurs de lettres sont animées.
+    function initNameFold() {
+      if (nameFoldReady || !gsap || reduceMotion) return;
+      var h1 = document.querySelector(".cs-title");
+      if (!h1) return;
+      var raw = h1.textContent;
+      // Uniquement le nom : si le H1 SEO change, l'effet se retire de lui-même.
+      if (raw.replace(/\s+/g, " ").trim().toUpperCase() !== "MATTIA PARRINELLO") return;
+      if (!window.matchMedia("(min-width: 901px)").matches) return;
+      if (!window.matchMedia("(hover: hover)").matches) return;
+      nameFoldReady = true;
+
+      // Lettres conservées : M de « Mattia », puis P, R, N et L de « Parrinello ».
+      var KEEP = [0, 7, 9, 12, 14];
+      var chars = [];
+      var frag = document.createDocumentFragment();
+      var i;
+      for (i = 0; i < raw.length; i++) {
+        var span = document.createElement("span");
+        span.className = "cs-fold-char";
+        span.dataset.index = String(i);
+        // Espace insécable : une espace ordinaire se replie à zéro dans un
+        // inline-block, et la séparation des deux mots disparaîtrait.
+        span.textContent = raw.charAt(i) === " " ? "\u00a0" : raw.charAt(i);
+        frag.appendChild(span);
+        chars.push(span);
+      }
+      h1.textContent = "";
+      h1.appendChild(frag);
+      h1.setAttribute("aria-label", raw.replace(/\s+/g, " ").trim());
+
+      var kept = [];
+      var dropped = [];
+      chars.forEach(function (char, index) {
+        (KEEP.indexOf(index) > -1 ? kept : dropped).push(char);
+      });
+
+      var DUR = 0.46;
+      var EASE = "power3.inOut";
+      var STAGGER = { each: 0.018, from: "center" };
+      var openWidths = [];
+      var folded = false;
+
+      function widthsOf(nodes) {
+        return nodes.map(function (node) { return node.getBoundingClientRect().width; });
+      }
+
+      function clearInline() {
+        chars.forEach(function (char) {
+          char.style.width = "";
+          char.style.opacity = "";
+          char.classList.remove("is-mark");
+        });
+      }
+
+      function fold() {
+        if (folded) return;
+        folded = true;
+        // Une mesure prise au milieu d'une transition donnerait des largeurs
+        // fausses : on repart d'un état propre avant de mesurer.
+        clearInline();
+        openWidths = widthsOf(chars);
+
+        var lower = widthsOf(kept);
+        kept.forEach(function (char) { char.classList.add("is-mark"); });
+        var upper = widthsOf(kept);
+        kept.forEach(function (char, j) { char.style.width = lower[j] + "px"; });
+
+        gsap.to(kept, {
+          width: function (j) { return upper[j] + "px"; },
+          duration: DUR,
+          ease: EASE,
+          overwrite: true
+        });
+        gsap.to(dropped, {
+          width: 0,
+          opacity: 0,
+          duration: DUR,
+          ease: EASE,
+          stagger: STAGGER,
+          overwrite: true
+        });
+      }
+
+      function unfold() {
+        if (!folded) return;
+        folded = false;
+        gsap.to(kept, {
+          width: function (j) { return openWidths[Number(kept[j].dataset.index)] + "px"; },
+          duration: DUR,
+          ease: EASE,
+          overwrite: true,
+          onComplete: function () {
+            kept.forEach(function (char) {
+              char.classList.remove("is-mark");
+              char.style.width = "";
+            });
+          }
+        });
+        gsap.to(dropped, {
+          width: function (j) { return openWidths[Number(dropped[j].dataset.index)] + "px"; },
+          opacity: 1,
+          duration: DUR,
+          ease: EASE,
+          stagger: STAGGER,
+          overwrite: true,
+          onComplete: function () {
+            dropped.forEach(function (char) { char.style.width = ""; });
+          }
+        });
+      }
+
+      h1.addEventListener("pointerenter", function (e) {
+        if (e.pointerType && e.pointerType !== "mouse") return;
+        fold();
+      });
+      h1.addEventListener("pointerleave", function (e) {
+        if (e.pointerType && e.pointerType !== "mouse") return;
+        unfold();
+      });
+    }
 
     if (!hasMotion) return;
 

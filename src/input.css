@@ -2591,6 +2591,17 @@ html.cs-boot-on .cs-boot {
   max-width: 16ch;
 }
 
+/* Repli du nom en marque (dist/js/home-sheet.js) : chaque lettre devient un
+   bloc dont la largeur peut s'animer, et les lettres gardées passent en
+   capitales le temps du survol. */
+.cs-fold-char {
+  display: inline-block;
+}
+
+.cs-fold-char.is-mark {
+  text-transform: uppercase;
+}
+
 .cs-lede {
   max-width: 46ch;
   font-size: var(--step-lead);
