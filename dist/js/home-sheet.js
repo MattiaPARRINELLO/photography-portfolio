@@ -603,10 +603,9 @@
 
     // --- Repli du nom en marque ------------------------------------------
     // Au survol, « Mattia Parrinello » se replie sur les cinq lettres de
-    // MPRNL : les autres se ferment et s'effacent, les gardées se resserrent
-    // en passant en capitales. La bascule de casse est un croisement de deux
-    // glyphes empilés, jamais un changement de texte : le document garde le
-    // nom d'origine (SEO, copie, dictée).
+    // MPRNL : les autres se ferment et s'effacent, les gardées passent en
+    // capitales et se resserrent. Le texte du document ne change pas (SEO,
+    // copie, dictée) : seules des largeurs de lettres sont animées.
     function initNameFold() {
       if (nameFoldReady || !gsap || reduceMotion) return;
       var h1 = document.querySelector(".cs-title");
@@ -630,7 +629,6 @@
         // Espace insécable : une espace ordinaire se replie à zéro dans un
         // inline-block, et la séparation des deux mots disparaîtrait.
         span.textContent = raw.charAt(i) === " " ? "\u00a0" : raw.charAt(i);
-        span._glyph = span.textContent;
         frag.appendChild(span);
         chars.push(span);
       }
@@ -644,10 +642,8 @@
         (KEEP.indexOf(index) > -1 ? kept : dropped).push(char);
       });
 
-      var DUR = 0.5;
+      var DUR = 0.46;
       var EASE = "power3.inOut";
-      // Part de la durée consacrée au croisement des deux glyphes.
-      var CROSS = 0.42;
       var STAGGER = { each: 0.018, from: "center" };
       var openWidths = [];
       var folded = false;
@@ -656,39 +652,12 @@
         return nodes.map(function (node) { return node.getBoundingClientRect().width; });
       }
 
-      // Empile la lettre d'origine et sa capitale. La seconde est hors flux :
-      // elle ne pèse pas sur la largeur, qui reste animée par la lettre.
-      function stack(char) {
-        var glyph = char._glyph;
-        var low = document.createElement("span");
-        low.className = "cs-fold-low";
-        low.textContent = glyph;
-        var cap = document.createElement("span");
-        cap.className = "cs-fold-cap";
-        cap.textContent = glyph.toUpperCase();
-        cap.setAttribute("aria-hidden", "true");
-        char.textContent = "";
-        char.appendChild(low);
-        char.appendChild(cap);
-      }
-
-      // Remet la lettre d'origine seule dans le flux.
-      function unstack(char) {
-        if (char._glyph === undefined) return;
-        char.textContent = char._glyph;
-        char.style.width = "";
-      }
-
       function clearInline() {
         chars.forEach(function (char) {
-          unstack(char);
           char.style.width = "";
           char.style.opacity = "";
+          char.classList.remove("is-mark");
         });
-      }
-
-      function layers(selector) {
-        return kept.map(function (char) { return char.querySelector(selector); });
       }
 
       function fold() {
@@ -700,30 +669,14 @@
         openWidths = widthsOf(chars);
 
         var lower = widthsOf(kept);
-        kept.forEach(function (char, j) {
-          stack(char);
-          char.style.width = lower[j] + "px";
-        });
-        var caps = layers(".cs-fold-cap");
-        var lows = layers(".cs-fold-low");
-        var upper = widthsOf(caps);
+        kept.forEach(function (char) { char.classList.add("is-mark"); });
+        var upper = widthsOf(kept);
+        kept.forEach(function (char, j) { char.style.width = lower[j] + "px"; });
 
         gsap.to(kept, {
           width: function (j) { return upper[j] + "px"; },
           duration: DUR,
           ease: EASE,
-          overwrite: true
-        });
-        gsap.to(lows, {
-          opacity: 0,
-          duration: DUR * CROSS,
-          ease: "power1.in",
-          overwrite: true
-        });
-        gsap.to(caps, {
-          opacity: 1,
-          duration: DUR * CROSS,
-          ease: "power1.out",
           overwrite: true
         });
         gsap.to(dropped, {
@@ -739,27 +692,17 @@
       function unfold() {
         if (!folded) return;
         folded = false;
-        var lows = layers(".cs-fold-low");
-        var caps = layers(".cs-fold-cap");
-
         gsap.to(kept, {
           width: function (j) { return openWidths[Number(kept[j].dataset.index)] + "px"; },
           duration: DUR,
           ease: EASE,
           overwrite: true,
-          onComplete: function () { kept.forEach(unstack); }
-        });
-        gsap.to(lows, {
-          opacity: 1,
-          duration: DUR * CROSS,
-          ease: "power1.out",
-          overwrite: true
-        });
-        gsap.to(caps, {
-          opacity: 0,
-          duration: DUR * CROSS,
-          ease: "power1.in",
-          overwrite: true
+          onComplete: function () {
+            kept.forEach(function (char) {
+              char.classList.remove("is-mark");
+              char.style.width = "";
+            });
+          }
         });
         gsap.to(dropped, {
           width: function (j) { return openWidths[Number(dropped[j].dataset.index)] + "px"; },
