@@ -646,9 +646,9 @@
       // Les lettres gardées se replient sur elles-mêmes : elles s'aplatissent
       // verticalement, changent de glyphe au point le plus plat (donc sans
       // qu'on voie la substitution), puis se redressent. Aucune superposition.
-      var CLOSE = 0.4;
-      var FOLD = 0.18;
-      var UNFOLD = 0.26;
+      var CLOSE = 0.34;
+      var FOLD = 0.16;
+      var UNFOLD = 0.22;
       var EASE = "power3.inOut";
       var STAGGER = { each: 0.006, from: "center" };
       var openWidths = [];
@@ -695,18 +695,18 @@
           transformOrigin: "50% 100%",
           duration: FOLD,
           ease: "power2.in"
-        }, CLOSE - FOLD - 0.04);
+        }, 0);
         tl.call(function () {
           kept.forEach(function (char, j) {
             char.classList.add("is-mark");
             char.style.width = upper[j] + "px";
           });
-        }, null, CLOSE - 0.04);
+        }, null, FOLD);
         tl.to(kept, {
           scaleY: 1,
           duration: UNFOLD,
           ease: "power2.out"
-        }, CLOSE - 0.04);
+        }, FOLD);
       }
 
       function unfold() {
@@ -745,7 +745,7 @@
           onComplete: function () {
             dropped.forEach(function (char) { char.style.width = ""; });
           }
-        }, FOLD);
+        }, FOLD * 0.6);
       }
 
       h1.addEventListener("pointerenter", function (e) {
