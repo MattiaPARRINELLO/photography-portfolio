@@ -87,11 +87,18 @@ function generateHomeHeroHtml(req, stats) {
     const photos = (stats && stats.photos) || 0;
     const gigs = (stats && stats.gigs) || 0;
     const venues = (stats && stats.venues) || 0;
-    const h1 = (pageSeo.h1 || 'Mattia Parrinello').split(' - ')[0].trim();
+    // H1 = le nom (ancre du morph SVG) + le rôle sur une seconde ligne. Le nom
+    // seul ne portait aucun mot-clé ; le rôle seul ferait perdre le morph.
+    const h1Full = pageSeo.h1 || 'Mattia Parrinello - Photographe de concert à Paris';
+    const h1Parts = h1Full.split(' - ');
+    const h1Name = (h1Parts[0] || 'Mattia Parrinello').trim();
+    const h1Role = isEn
+        ? 'Concert photographer in Paris'
+        : (h1Parts.slice(1).join(' - ').trim() || 'Photographe de concert à Paris');
 
     const lede = isEn
-        ? `Concert photographer in Paris. ${photos} frames shot from the pit, from La Boule Noire to Paris La Défense Arena.`
-        : `Photographe de concert à Paris. ${photos} images prises dans la fosse, de La Boule Noire à Paris La Défense Arena.`;
+        ? `${photos} frames shot from the pit, from La Boule Noire to Paris La Défense Arena.`
+        : `La fosse, de La Boule Noire à Paris La Défense Arena : ${photos} images de concerts prises au plus près de la scène.`;
     const cta = isEn ? 'Book a show' : 'Me confier un concert';
     const linkWork = isEn ? 'Galleries' : 'Galeries';
     const linkAbout = isEn ? 'About' : 'À propos';
@@ -103,7 +110,10 @@ function generateHomeHeroHtml(req, stats) {
 
     return `
         <div class="cs-panel">
-          <h1 class="cs-title">${h1}</h1>
+          <h1 class="cs-title">
+            <span class="cs-title-name">${escapeAttr(h1Name)}</span>
+            <span class="cs-title-role">${escapeAttr(h1Role)}</span>
+          </h1>
           <p class="cs-lede">${lede}</p>
           <a class="cs-btn" href="/contact${suffix}">${cta}</a>
           <div class="cs-panel-foot">

@@ -2690,6 +2690,12 @@ html.cs-boot-on .cs-boot {
   font-weight: 600;
   line-height: 0.95;
   letter-spacing: -0.045em;
+  max-width: 100%;
+}
+
+/* Le nom garde la largeur de repli ; le rôle occupe la largeur du panneau. */
+.cs-title-name {
+  display: block;
   max-width: 16ch;
 }
 
@@ -2697,6 +2703,22 @@ html.cs-boot-on .cs-boot {
    devient invisible quand le SVG des tracés est posé dessus. */
 .cs-name-svg-on {
   color: transparent;
+}
+
+/* Le rôle du H1 (mots-clés) reste lisible quand le morph rend le nom
+   transparent : couleur propre, donc plus spécifique que .cs-name-svg-on. */
+.cs-title-role {
+  display: block;
+  margin-top: 0.35em;
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.35rem);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--paper-muted);
+}
+
+.cs-name-svg-on .cs-title-role {
+  color: var(--paper-muted);
 }
 
 .cs-name-svg {
@@ -4328,8 +4350,12 @@ html.cs-boot-on .cs-boot {
     border: 0;
   }
 
-  .cs-title {
+  .cs-title-name {
     max-width: 12ch;
+  }
+
+  .cs-title-role {
+    font-size: 1rem;
   }
 
   .cs-lede {
