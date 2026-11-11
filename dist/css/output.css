@@ -1773,6 +1773,32 @@ html.cs-boot-on .cs-boot {
   transform-origin: 50% 50%;
 }
 
+/* Marque MPRNL : signature discrète en bas du carton-titre, effacée pendant
+   le repli. Le nom reste le sujet ; la marque ne fait que le signer. */
+.cs-boot-mark {
+  position: absolute;
+  left: var(--pad);
+  bottom: var(--pad);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.38em;
+}
+
+.cs-boot-mark::before {
+  content: "";
+  width: 32px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+
 /* Accordéon : la largeur des cadres est pilotée par GSAP. L'image survolée
    garde son format : sa hauteur suit sa largeur et elle dépasse la bande vers
    le haut, dans l'interstice, sans jamais couvrir la légende.
@@ -4105,6 +4131,12 @@ html.cs-boot-on .cs-boot {
   .cs-boot-name {
     max-width: 94vw;
     font-size: 22.9vw;
+  }
+
+  .cs-boot-mark {
+    bottom: calc(var(--pad) + env(safe-area-inset-bottom, 0px));
+    font-size: 10px;
+    letter-spacing: 0.32em;
   }
 
   .cs-sheet {

@@ -74,6 +74,7 @@
     var bootPhoto = boot ? boot.querySelector(".cs-boot-photo") : null;
     var bootScrim = boot ? boot.querySelector(".cs-boot-scrim") : null;
     var bootVeil = boot ? boot.querySelector(".cs-boot-veil") : null;
+    var bootMark = boot ? boot.querySelector(".cs-boot-mark") : null;
     var bootWords = boot ? Array.prototype.slice.call(boot.querySelectorAll(".cs-boot-word")) : [];
     var panel = document.querySelector(".cs-panel");
     var title = document.querySelector(".cs-title");
@@ -749,6 +750,12 @@
           // Les mots vont être transformés : on les promeut une fois pour
           // éviter de rastériser le texte à chaque image.
           gsap.set(bootWords, { willChange: "transform" });
+
+          // La marque s'efface au début du repli : elle signe l'ouverture,
+          // elle n'accompagne pas le nom vers le H1.
+          if (bootMark) {
+            tl.to(bootMark, { autoAlpha: 0, duration: 0.35, ease: "power2.in" }, S);
+          }
 
           // Repli de la feuille sur le panneau : la photo garde son cadrage
           // (aucune déformation), c'est la feuille entière qui rétrécit.
