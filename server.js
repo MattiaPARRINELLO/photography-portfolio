@@ -64,6 +64,20 @@ app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
+// Un seul hostname indexable : www. https://photo.mprnl.fr/ et
+// https://www.photo.mprnl.fr/ répondaient tous les deux 200, ce qui duplique
+// le signal. La même redirection existe en .htaccess (en production Apache
+// sert la racine du projet en statique avant Node). Le test se fait sur le
+// hostname exact : ni le port de dev, ni l'hôte de supertest ne bougent.
+const CANONICAL_HOST = 'www.photo.mprnl.fr';
+app.use((req, res, next) => {
+    const host = (req.get('host') || '').toLowerCase();
+    if (host === 'photo.mprnl.fr') {
+        return res.redirect(301, `https://${CANONICAL_HOST}${req.originalUrl}`);
+    }
+    next();
+});
+
 // Configuration des sessions
 const isProduction = process.env.NODE_ENV === 'production';
 app.set('trust proxy', 1);

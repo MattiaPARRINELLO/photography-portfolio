@@ -121,8 +121,12 @@ class TextUtils {
         const baseUrl = siteSeo.url || `${protocol}://${host}`;
 
         // SEO: Balise canonical + hreflang (anglais partiel via ?lang=en)
+        // Le canonical est une fonction de l'URL demandée, jamais de req.lang :
+        // une requête sur / avec un cookie lang=en reste canonisée vers /, sinon
+        // deux URLs prétendent être la même page selon le visiteur.
         const pathOnly = (req.path || '/').replace(/\/$/, '') || '/';
-        const canonicalPath = isEn ? `${pathOnly}?lang=en` : pathOnly;
+        const explicitEn = !!(req.query && req.query.lang === 'en');
+        const canonicalPath = explicitEn ? `${pathOnly}?lang=en` : pathOnly;
         const canonicalUrl = `${baseUrl}${canonicalPath}`;
         additionalMetas += `    <link rel="canonical" href="${canonicalUrl}">\n`;
         const frUrl = `${baseUrl}${pathOnly}`;

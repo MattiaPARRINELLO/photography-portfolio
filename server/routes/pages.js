@@ -1163,6 +1163,9 @@ router.get('/galeries/:slug', async (req, res) => {
         const canonicalEn = `${canonical}?lang=en`;
         const hreflangFr = canonical;
         const hreflangEn = canonicalEn;
+        // Canonical d'après l'URL demandée, pas d'après req.lang (cookie) :
+        // une même URL ne doit jamais changer de canonical selon le visiteur.
+        const canonicalUrl = req.query && req.query.lang === 'en' ? canonicalEn : canonical;
 
         // Dims réelles de l'og:image (fit 'inside' préserve l'aspect) - évite 1200x630 déclaré à tort
         let ogDims = null;
@@ -1174,7 +1177,7 @@ router.get('/galeries/:slug', async (req, res) => {
             : 1200;
 
         const extraHead = `
-    <link rel="canonical" href="${isEn ? canonicalEn : canonical}" />
+    <link rel="canonical" href="${canonicalUrl}" />
     <link rel="alternate" hreflang="fr" href="${hreflangFr}" />
     <link rel="alternate" hreflang="en" href="${hreflangEn}" />
     <link rel="alternate" hreflang="x-default" href="${hreflangFr}" />
@@ -1188,7 +1191,7 @@ router.get('/galeries/:slug', async (req, res) => {
     <meta property="og:locale:alternate" content="${isEn ? 'fr_FR' : 'en_US'}" />
     <meta property="og:title" content="${escapeAttr(metaTitle)}" />
     <meta property="og:description" content="${escapeAttr(metaDesc)}" />
-    <meta property="og:url" content="${isEn ? canonicalEn : canonical}" />
+    <meta property="og:url" content="${canonicalUrl}" />
     <meta property="og:image" content="${ogImage}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="${ogImageHeight}" />

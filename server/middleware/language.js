@@ -1,3 +1,7 @@
+// La langue ne se négocie plus via l'en-tête Accept-Language : Googlebot
+// envoie « en-US » et recevait donc la version anglaise de /, avec un canonical
+// vers /?lang=en. Deux sources seulement, dans cet ordre : ?lang= (prioritaire,
+// indexable) puis le cookie lang (choix explicite du visiteur).
 function languageMiddleware(req, res, next) {
     let lang = null;
     if (req.query && (req.query.lang === 'en' || req.query.lang === 'fr')) {
@@ -10,9 +14,6 @@ function languageMiddleware(req, res, next) {
         });
     } else if (req.cookies && (req.cookies.lang === 'en' || req.cookies.lang === 'fr')) {
         lang = req.cookies.lang;
-    } else {
-        const accept = (req.headers['accept-language'] || '').toLowerCase();
-        lang = accept.startsWith('en') ? 'en' : 'fr';
     }
     req.lang = lang === 'en' ? 'en' : 'fr';
     next();
