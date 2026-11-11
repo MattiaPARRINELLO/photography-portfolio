@@ -670,12 +670,12 @@
         if (node.kept) {
           tl.to(node.path, {
             morphSVG: { shape: node.kept.d },
-            duration: 0.55,
-            ease: "power3.inOut"
+            duration: 0.6,
+            ease: "power2.inOut"
           }, 0);
           tl.to(node.g, {
             x: node.kept.x,
-            duration: 0.5,
+            duration: 0.55,
             ease: "power2.out"
           }, 0);
         } else {
@@ -684,11 +684,14 @@
             opacity: 0,
             scale: 0.96,
             transformOrigin: "50% 80%",
-            duration: 0.3,
+            duration: 0.32,
             ease: "power2.out"
           }, 0);
         }
       });
+      // Préchauffe la conversion des contours (MorphSVG la calcule au premier
+      // rendu) : sans ça, la première frame du premier survol saute.
+      tl.progress(1, true).progress(0, true);
 
       h1.classList.add("cs-name-svg-on");
 
@@ -696,12 +699,14 @@
       function play() {
         if (over) return;
         over = true;
-        tl.play();
+        tl.timeScale(1).play();
       }
       function back() {
         if (!over) return;
         over = false;
-        tl.reverse();
+        // Sortie légèrement plus vive que l'entrée : le retour au nom ne
+        // traîne pas quand le curseur quitte la zone.
+        tl.timeScale(1.25).reverse();
       }
       h1.addEventListener("pointerenter", function (e) {
         if (e.pointerType && e.pointerType !== "mouse") return;

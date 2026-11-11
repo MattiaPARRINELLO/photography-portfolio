@@ -15,6 +15,9 @@ const path = require('path');
 const opentype = require('opentype.js');
 
 const NAME = 'Mattia Parrinello';
+// letter-spacing du H1 (.cs-title) : -0.045em. Le SVG doit le respecter, sinon
+// le nom rendu est plus large que le texte qu'il remplace.
+const LETTER_SPACING_EM = -0.045;
 // Lettres conservées, en indices dans NAME : M de Mattia, puis P, r, n, l.
 const KEPT = [0, 7, 9, 12, 14];
 
@@ -31,13 +34,15 @@ function pathData(char) {
     return font.charToGlyph(char).getPath(0, 0, upm).toPathData(2);
 }
 
+const spacing = LETTER_SPACING_EM * upm;
+
 function layout(chars) {
     let x = 0;
     const items = [];
     for (let i = 0; i < chars.length; i++) {
         const glyph = font.charToGlyph(chars[i]);
         items.push({ c: chars[i], x: Math.round(x) });
-        x += glyph.advanceWidth;
+        x += glyph.advanceWidth + spacing;
         if (i + 1 < chars.length) {
             x += font.getKerningValue(glyph, font.charToGlyph(chars[i + 1]));
         }
