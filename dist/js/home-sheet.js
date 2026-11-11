@@ -838,9 +838,11 @@
           var card = bootCard.getBoundingClientRect();
 
           // Rectangles d'encre de chaque mot du H1, pour y poser les mots du
-          // carton au pixel près.
+          // carton au pixel près. Le H1 porte aussi le rôle : la mesure se fait
+          // dans le span du nom, pas sur le premier nœud du H1.
           var inkRects = (function () {
-            var node = title.firstChild;
+            var nameEl = title.querySelector(".cs-title-name") || title;
+            var node = nameEl.firstChild;
             if (!node || node.nodeType !== 3) return null;
             var text = node.nodeValue;
             var cut = text.indexOf(" ");
