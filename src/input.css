@@ -2592,14 +2592,20 @@ html.cs-boot-on .cs-boot {
 }
 
 /* Repli du nom en marque (dist/js/home-sheet.js) : chaque lettre devient un
-   bloc dont la largeur peut s'animer, et les lettres gardées passent en
-   capitales le temps du survol. */
+   bloc dont la largeur peut s'animer. La capitale est empilée sous la lettre
+   et hors flux, pour que les deux glyphes se croisent sans déplacer la ligne. */
 .cs-fold-char {
   display: inline-block;
+  position: relative;
 }
 
-.cs-fold-char.is-mark {
-  text-transform: uppercase;
+.cs-fold-cap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .cs-lede {
