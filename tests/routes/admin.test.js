@@ -209,6 +209,29 @@ describe('Routes admin', function () {
     });
   });
 
+  describe('Identite client du limiteur de login', function () {
+    it('distingue deux clients derriere un proxy local', function () {
+      var adminRouter = require('../../server/routes/admin');
+      var a = adminRouter.clientIdentity({ socket: { remoteAddress: '127.0.0.1' }, headers: { 'x-forwarded-for': '198.51.100.10' }, ip: '198.51.100.10' });
+      var b = adminRouter.clientIdentity({ socket: { remoteAddress: '127.0.0.1' }, headers: { 'x-forwarded-for': '198.51.100.11' }, ip: '198.51.100.11' });
+      expect(a).not.toBe(b);
+    });
+
+    it('garde le dernier saut de X-Forwarded-For, celui du proxy', function () {
+      var adminRouter = require('../../server/routes/admin');
+      var key = adminRouter.clientIdentity({ socket: { remoteAddress: '::1' }, headers: { 'x-forwarded-for': '203.0.113.9, 198.51.100.12' }, ip: '198.51.100.12' });
+      var direct = adminRouter.clientIdentity({ socket: { remoteAddress: '127.0.0.1' }, headers: { 'x-forwarded-for': '198.51.100.12' }, ip: '198.51.100.12' });
+      expect(key).toBe(direct);
+    });
+
+    it('ignore X-Forwarded-For quand la connexion est directe', function () {
+      var adminRouter = require('../../server/routes/admin');
+      var a = adminRouter.clientIdentity({ socket: { remoteAddress: '198.51.100.50' }, headers: { 'x-forwarded-for': '203.0.113.1' }, ip: '198.51.100.50' });
+      var b = adminRouter.clientIdentity({ socket: { remoteAddress: '198.51.100.50' }, headers: { 'x-forwarded-for': '203.0.113.2' }, ip: '198.51.100.50' });
+      expect(a).toBe(b);
+    });
+  });
+
   describe('Rate limiting login', function () {
     it('bloque apres 5 tentatives avec un rate limiter dedie', function (done) {
       var express = require('express');

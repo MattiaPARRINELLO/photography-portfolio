@@ -144,14 +144,14 @@ describe('TextUtils', function () {
       expect(result).toContain('rel="canonical"');
     });
 
-    it('injecte le script de campagne si campagne active', function () {
+    it('n injecte aucun parametre de requete dans le HTML', function () {
       var html = '<html><head>    <!-- META_PLACEHOLDER_END --></head><body></body></html>';
       var texts = { meta: {} };
-      var campaignInfo = { campaignId: 'c1', campaignName: 'Camp1' };
+      req.query = { c: "x</script><svg onload=alert(1)>", utm_source: 'evil' };
 
-      var result = textUtils.injectMetaTags(html, texts, req, 'Portfolio', campaignInfo);
-      expect(result).toContain('window.campaignInfo');
-      expect(result).toContain('Camp1');
+      var result = textUtils.injectMetaTags(html, texts, req, 'Portfolio');
+      expect(result).not.toContain('window.campaignInfo');
+      expect(result).not.toContain('onload=alert');
     });
 
     it('utilise les donnees SEO si disponibles', function () {

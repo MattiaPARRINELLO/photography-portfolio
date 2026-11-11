@@ -5,7 +5,6 @@ const path = require('path');
 const serverConfig = require('../config');
 const textUtils = require('../utils/textUtils');
 const imageMeta = require('../utils/imageMeta');
-const campaignService = require('../utils/campaignService');
 const photoService = require('../utils/photoService');
 const linksService = require('../utils/linksService');
 const galleryService = require('../utils/galleryService');
@@ -34,7 +33,7 @@ function setCache(key, value, ttlMs) {
 
 // Rend une page: cache → lecture fichier → meta → JSON-LD → transform → cache → envoi.
 // En cas d'erreur, fallback sur le fichier statique (comportement historique des routes).
-async function renderPage(req, res, { cacheKey, file, pageType, ttlMs, campaignInfo, transform, schemaPhotos }) {
+async function renderPage(req, res, { cacheKey, file, pageType, ttlMs, transform, schemaPhotos }) {
     const lang = (req && req.lang === 'en') ? 'en' : 'fr';
     const langSuffix = `:${lang}`;
     const effectiveKey = `${cacheKey}${langSuffix}`;
@@ -43,7 +42,7 @@ async function renderPage(req, res, { cacheKey, file, pageType, ttlMs, campaignI
 
     const texts = textUtils.loadTexts();
     let htmlContent = await fsp.readFile(path.join(paths.pages, file), 'utf-8');
-    htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, pageType, campaignInfo);
+    htmlContent = textUtils.injectMetaTags(htmlContent, texts, req, pageType);
     let schemaPhotosList = null;
     if (typeof schemaPhotos === 'function') {
         try { schemaPhotosList = await schemaPhotos(); } catch (_) { schemaPhotosList = null; }
@@ -198,14 +197,12 @@ function generateGalleryItemHtml(photo, index, dims) {
 
 // Route pour la page d'accueil
 router.get('/', (req, res) => {
-    const campaignInfo = campaignService.parseCampaignQuery(req.query);
 
     servePage(req, res, {
         cacheKey: 'page:home',
         file: 'home.html',
         pageType: 'Portfolio',
         ttlMs: 60 * 1000,
-        campaignInfo,
         // GEO/SEO: photos pour remplir image[] de l'ImageGallery home
         schemaPhotos: async () => (await photoService.getPhotosList()).map(p => p.filename),
         transform: async (htmlContent) => {
@@ -313,12 +310,6 @@ router.get('/', (req, res) => {
             // Version anglaise des blocs statiques (le hero et les noms propres
             // sont déjà rendus dans la bonne langue).
             htmlContent = translateHtml(htmlContent, req.lang === 'en' ? 'en' : 'fr');
-
-            // Si on a une campagne, ajouter un script pour nettoyer l'URL côté client
-            if (campaignInfo) {
-                const urlCleanScript = `<script>if (window.location.search.includes('ref=')) history.replaceState(null, null, window.location.pathname);</script>`;
-                htmlContent = htmlContent.replace('</body>', `${urlCleanScript}</body>`);
-            }
 
             return htmlContent;
         }

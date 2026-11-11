@@ -16,7 +16,7 @@ Coût du scan : environ 0,80 $ (77 M tokens d'entrée, dont 75 M servis par le c
 
 ---
 
-## 1. XSS réfléchi via les paramètres de campagne (à corriger en priorité)
+## 1. XSS réfléchi via les paramètres de campagne (corrigé)
 
 - **Sévérité** : moyenne, CVSS 6.5, CWE-79, confiance haute
 - **Endpoint** : `/?lang=en&c=`, aussi `utm_campaign`, `ref`, `utm_source`, `source`
@@ -66,7 +66,7 @@ Preuve observée, valeur de campagne reprise telle quelle dans la réponse :
 
 ---
 
-## 2. Verrouillage global du login admin (déni de service)
+## 2. Verrouillage global du login admin (corrigé)
 
 - **Sévérité** : moyenne, CWE-400
 - **Endpoint** : `POST /admin/login`
@@ -104,6 +104,26 @@ POST /admin/login  -> 429
    surveiller les 429 répétés sur le login comme signal de verrouillage en cours.
 
 ---
+
+## Statut des corrections
+
+- **XSS via paramètres de campagne** : corrigé. L'injection serveur de
+  `window.campaignInfo` est supprimée de `injectMetaTags`, le script de nettoyage
+  d'URL dépendant de la campagne n'est plus injecté dans la page d'accueil, et
+  `campaignService` n'est plus appelé depuis `pages.js`. Plus aucun paramètre de
+  requête ne finit dans le HTML mis en cache. La campagne reste lue côté client.
+- **Limiteur de login admin** : corrigé. L'identité du client est calculée dans
+  `server/routes/admin.js` (`clientIdentity`) : `X-Forwarded-For` n'est pris en
+  compte que si la connexion vient d'un proxy local, et seul le dernier saut fait
+  foi. Chaque client a son propre compteur, et `skipSuccessfulRequests` évite
+  qu'une connexion réussie consomme du budget.
+
+Vérifications faites en local : page d'accueil avec un payload `</script>` servie
+sans aucune recopie du paramètre, y compris depuis le cache ; deux clients
+distincts obtiennent chacun 5 tentatives avant 429 ; un mot de passe correct ne
+consomme pas de budget. 731 tests passent.
+
+Corrections non déployées à ce jour.
 
 ## Couverture et limites
 

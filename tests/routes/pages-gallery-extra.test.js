@@ -225,14 +225,15 @@ describe('Routes pages — branches non couvertes (SSR galeries)', function () {
       fs.promises.readFile.mockResolvedValue(TEMPLATE_HOME);
     });
 
-    it('injecte le script de nettoyage URL quand campagne detectee via ref', function (done) {
+    it('ne recopie pas la campagne dans le HTML', function (done) {
       campaignService.parseCampaignQuery.mockReturnValue({ id: 'insta-bio', source: 'instagram' });
       supertest(makeApp())
         .get('/?ref=insta-bio')
         .expect(200)
         .end(function (err, res) {
           if (err) return done(err);
-          expect(res.text).toContain('history.replaceState');
+          expect(res.text).not.toContain('history.replaceState');
+          expect(res.text).not.toContain('insta-bio');
           done();
         });
     });
