@@ -2595,13 +2595,21 @@ html.cs-boot-on .cs-boot {
    capitales le temps du survol. */
 .cs-fold-char {
   display: inline-block;
+  position: relative;
   /* Une lettre rétrécie est rognée sur sa droite au lieu de déborder sur sa
      voisine : c'est ce qui fait lire un repli plutôt qu'un chevauchement. */
   overflow: hidden;
 }
 
-.cs-fold-char.is-mark {
-  text-transform: uppercase;
+/* Capitale empilée sous la minuscule : les deux glyphes se croisent pendant
+   que la case s'élargit, ce qui fait une transformation et non un saut. */
+.cs-fold-cap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .cs-lede {

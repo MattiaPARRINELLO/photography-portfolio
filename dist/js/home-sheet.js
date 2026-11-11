@@ -629,6 +629,7 @@
         // Espace insécable : une espace ordinaire se replie à zéro dans un
         // inline-block, et la séparation des deux mots disparaîtrait.
         span.textContent = raw.charAt(i) === " " ? "\u00a0" : raw.charAt(i);
+        span._glyph = span.textContent;
         frag.appendChild(span);
         chars.push(span);
       }
@@ -642,15 +643,12 @@
         (KEEP.indexOf(index) > -1 ? kept : dropped).push(char);
       });
 
-      // Le repli se fait en deux temps : les lettres inutiles se ferment
-      // pendant que les gardées restent en minuscules, puis la bascule de
-      // casse se fait dans un fondu très court, à largeur finale. Sans ce
-      // fondu, une capitale plus large que sa case chevaucherait sa voisine
-      // pendant la fermeture.
-      var CLOSE = 0.36;   // fermeture des lettres inutiles
-      var FADE = 0.07;    // fondu qui masque la bascule de casse
-      var OPEN = 0.13;    // retour du nom replié
-      var SWAP_AT = CLOSE + 0.02 + FADE;
+      // Chaque lettre gardée porte deux glyphes empilés : sa minuscule et sa
+      // capitale. La largeur de la case glisse de l'une à l'autre pendant que
+      // les deux se croisent, donc la lettre se transforme au lieu de changer
+      // d'un coup. La case rogne ce qui dépasse : rien ne déborde à côté.
+      var CLOSE = 0.44;
+      var OPEN = 0.44;
       var EASE = "power3.inOut";
       var STAGGER = { each: 0.008, from: "center" };
       var openWidths = [];
@@ -661,49 +659,90 @@
         return nodes.map(function (node) { return node.getBoundingClientRect().width; });
       }
 
-      function clearInline() {
+      function stack(char) {
+        if (char.querySelector(".cs-fold-low")) return;
+        var glyph = char._glyph;
+        var low = document.createElement("span");
+        low.className = "cs-fold-low";
+        low.textContent = glyph;
+        var cap = document.createElement("span");
+        cap.className = "cs-fold-cap";
+        cap.textContent = glyph.toUpperCase();
+        cap.setAttribute("aria-hidden", "true");
+        char.textContent = "";
+        char.appendChild(low);
+        char.appendChild(cap);
+      }
+
+      function unstack(char) {
+        if (char._glyph === undefined) return;
+        char.textContent = char._glyph;
+        char.style.width = "";
+      }
+
+      function reset() {
         if (tl) {
           tl.kill();
           tl = null;
         }
         chars.forEach(function (char) {
+          unstack(char);
           char.style.width = "";
           char.style.opacity = "";
-          char.classList.remove("is-mark");
         });
+      }
+
+      function layers(selector) {
+        return kept.map(function (char) { return char.querySelector(selector); });
       }
 
       function fold() {
         if (folded) return;
         folded = true;
-        clearInline();
+        reset();
         openWidths = widthsOf(chars);
 
-        // Largeur finale des capitales, mesurée sans laisser la classe en place.
-        kept.forEach(function (char) { char.classList.add("is-mark"); });
-        var upper = widthsOf(kept);
-        kept.forEach(function (char) { char.classList.remove("is-mark"); });
+        kept.forEach(stack);
+        var lower = widthsOf(kept);
+        var lows = layers(".cs-fold-low");
+        var caps = layers(".cs-fold-cap");
+        var upper = widthsOf(caps);
+        kept.forEach(function (char, j) { char.style.width = lower[j] + "px"; });
+
+        // La capitale est posée sur la minuscule et se découvre de gauche à
+        // droite, comme un redessin de la lettre : le glyphe se transforme au
+        // lieu de s'échanger d'un coup.
+        gsap.set(caps, { opacity: 1, clipPath: "inset(0 100% 0 0)" });
 
         tl = gsap.timeline();
+        tl.to(kept, {
+          width: function (j) { return upper[j] + "px"; },
+          duration: CLOSE,
+          ease: EASE
+        }, 0);
+        tl.to(caps, {
+          clipPath: "inset(0 0% 0 0)",
+          duration: CLOSE,
+          ease: EASE
+        }, 0);
+        // Une fois le redessin terminé, la minuscule ne doit plus affleurer
+        // dans les contre-formes de la capitale.
+        tl.set(lows, { opacity: 0 }, CLOSE);
+        // Les lettres écartées se ferment d'abord et s'effacent vite : le mot
+        // se resserre sur ses cinq lettres avant que la transformation des
+        // glyphes ne se termine, donc il ne reste jamais espacé.
+        tl.to(dropped, {
+          opacity: 0,
+          duration: CLOSE * 0.3,
+          ease: "power1.in",
+          stagger: STAGGER
+        }, 0);
         tl.to(dropped, {
           width: 0,
-          opacity: 0,
-          duration: CLOSE,
+          duration: CLOSE * 0.55,
           ease: EASE,
           stagger: STAGGER
         }, 0);
-        // Bascule invisible : les cinq lettres sont à opacité nulle quand le
-        // glyphe devient une capitale et prend sa largeur finale.
-        // On ne descend pas à zéro : un nom qui disparaît complètement
-        // clignoterait. À 20 % d'opacité, la bascule de glyphe ne se voit pas.
-        tl.to(kept, { opacity: 0.2, duration: FADE, ease: "power1.in" }, CLOSE + 0.02);
-        tl.call(function () {
-          kept.forEach(function (char, j) {
-            char.classList.add("is-mark");
-            char.style.width = upper[j] + "px";
-          });
-        }, null, SWAP_AT);
-        tl.to(kept, { opacity: 1, duration: OPEN, ease: "power1.out" }, SWAP_AT);
       }
 
       function unfold() {
@@ -714,29 +753,40 @@
           tl = null;
         }
         var natural = openWidths;
+        var lows = layers(".cs-fold-low");
+        var caps = layers(".cs-fold-cap");
 
-        // Exactement l'inverse du repli : on repasse d'abord les gardées en
-        // minuscules dans un fondu court, puis toutes les lettres reprennent
-        // leur place. Les deux états ne se mélangent donc jamais à l'écran.
         tl = gsap.timeline();
-        tl.to(kept, { opacity: 0.2, duration: FADE, ease: "power1.in" }, 0);
-        tl.call(function () {
-          kept.forEach(function (char) {
-            char.classList.remove("is-mark");
-            char.style.width = "";
-          });
-        }, null, FADE);
-        tl.to(kept, { opacity: 1, duration: OPEN, ease: "power1.out" }, FADE);
+        tl.to(kept, {
+          width: function (j) { return natural[Number(kept[j].dataset.index)] + "px"; },
+          duration: OPEN,
+          ease: EASE
+        }, 0);
+        tl.set(lows, { opacity: 1 }, 0);
+        tl.to(caps, {
+          clipPath: "inset(0 100% 0 0)",
+          duration: OPEN,
+          ease: EASE
+        }, 0);
         tl.to(dropped, {
           width: function (j) { return natural[Number(dropped[j].dataset.index)] + "px"; },
-          opacity: 1,
-          duration: CLOSE,
+          duration: OPEN * 0.6,
           ease: EASE,
-          stagger: STAGGER,
-          onComplete: function () {
-            dropped.forEach(function (char) { char.style.width = ""; });
-          }
-        }, FADE);
+          stagger: STAGGER
+        }, OPEN * 0.4);
+        tl.to(dropped, {
+          opacity: 1,
+          duration: OPEN * 0.45,
+          ease: "power1.out",
+          stagger: STAGGER
+        }, OPEN * 0.55);
+        tl.call(function () {
+          kept.forEach(function (char) {
+            gsap.set(char.querySelector(".cs-fold-cap"), { clearProps: "clipPath" });
+            unstack(char);
+          });
+          dropped.forEach(function (char) { char.style.width = ""; });
+        });
       }
 
       h1.addEventListener("pointerenter", function (e) {
