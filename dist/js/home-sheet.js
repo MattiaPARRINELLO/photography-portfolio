@@ -128,7 +128,7 @@
       document.documentElement.classList.remove("cs-boot-on");
       // Le repli du nom ne s'arme qu'une fois le carton retiré : pendant
       // l'intro le H1 est masqué, un survol y replierait le titre à l'aveugle.
-      initNameFold();
+      initNameMorph();
       // Nettoyage différé : retirer six nœuds pendant le basculement
       // provoquerait un à-coup sur les machines modestes.
       window.setTimeout(function () {
@@ -601,143 +601,127 @@
 
     initRowAccordion();
 
-    // --- Repli du nom en marque ------------------------------------------
-    // Au survol, « Mattia Parrinello » se replie sur les cinq lettres de
-    // MPRNL : les autres se ferment et s'effacent, les gardées passent en
-    // capitales et se resserrent. Le texte du document ne change pas (SEO,
-    // copie, dictée) : seules des largeurs de lettres sont animées.
-    function initNameFold() {
-      if (nameFoldReady || !gsap || reduceMotion) return;
+    // --- Morph du nom en marque (SVG) -------------------------------------
+    // Le H1 reste du texte (SEO, lecteurs d'écran, sélection) mais devient
+    // transparent : par-dessus, un SVG dessine les mêmes lettres à partir des
+    // tracés réels de la police. Au survol, les lettres en trop s'effacent et
+    // les cinq gardées se déplacent et morphent leur contour vers la capitale,
+    // dans une seule timeline.
+    var nameMorphReady = false;
+
+    function initNameMorph() {
+      if (nameMorphReady || !gsap || reduceMotion || !window.MorphSVGPlugin) return;
       var h1 = document.querySelector(".cs-title");
-      if (!h1) return;
-      var raw = h1.textContent;
-      // Uniquement le nom : si le H1 SEO change, l'effet se retire de lui-même.
-      if (raw.replace(/\s+/g, " ").trim().toUpperCase() !== "MATTIA PARRINELLO") return;
+      var data = window.CS_NAME_GLYPHS;
+      if (!h1 || !data || !data.glyphs) return;
+      if (h1.textContent.replace(/\s+/g, " ").trim() !== data.name) return;
       if (!window.matchMedia("(min-width: 901px)").matches) return;
       if (!window.matchMedia("(hover: hover)").matches) return;
-      nameFoldReady = true;
+      nameMorphReady = true;
+      gsap.registerPlugin(window.MorphSVGPlugin);
 
-      // Lettres conservées : M de « Mattia », puis P, R, N et L de « Parrinello ».
-      var KEEP = [0, 7, 9, 12, 14];
-      var chars = [];
-      var frag = document.createDocumentFragment();
-      var i;
-      for (i = 0; i < raw.length; i++) {
-        var span = document.createElement("span");
-        span.className = "cs-fold-char";
-        span.dataset.index = String(i);
-        // Espace insécable : une espace ordinaire se replie à zéro dans un
-        // inline-block, et la séparation des deux mots disparaîtrait.
-        span.textContent = raw.charAt(i) === " " ? "\u00a0" : raw.charAt(i);
-        span._glyph = span.textContent;
-        frag.appendChild(span);
-        chars.push(span);
-      }
-      h1.textContent = "";
-      h1.appendChild(frag);
-      h1.setAttribute("aria-label", raw.replace(/\s+/g, " ").trim());
+      var NS = "http://www.w3.org/2000/svg";
+      var upm = data.unitsPerEm;
+      var line = 0.95; // line-height du H1, en em
+      var baseline = (line * upm - (data.ascender - data.descender)) / 2 + data.ascender;
+      var keptAt = {};
+      data.kept.forEach(function (index, j) { keptAt[index] = j; });
 
-      var kept = [];
-      var dropped = [];
-      chars.forEach(function (char, index) {
-        (KEEP.indexOf(index) > -1 ? kept : dropped).push(char);
+      var svg = document.createElementNS(NS, "svg");
+      svg.setAttribute("class", "cs-name-svg");
+      svg.setAttribute("aria-hidden", "true");
+      svg.setAttribute("focusable", "false");
+      svg.setAttribute("viewBox", "0 0 " + data.open.width + " " + Math.round(line * upm));
+      svg.style.width = (data.open.width / upm) + "em";
+      svg.style.height = line + "em";
+
+      var nodes = [];
+      data.open.items.forEach(function (item, index) {
+        var g = document.createElementNS(NS, "g");
+        var path = document.createElementNS(NS, "path");
+        path.setAttribute("d", data.glyphs[item.c]);
+        g.appendChild(path);
+        gsap.set(g, { x: item.x, y: baseline });
+        svg.appendChild(g);
+        var j = keptAt[index];
+        nodes.push({
+          g: g,
+          path: path,
+          kept: j === undefined ? null : {
+            x: data.closed.items[j].x,
+            d: data.glyphs[data.closed.items[j].c]
+          }
+        });
       });
 
-      // Les lettres gardées ne bougent pas : elles s'effacent un court instant,
-      // changent de glyphe à ce moment-là, puis reviennent en capitale. Aucun
-      // mouvement vertical ni pincement, aucune superposition visible.
-      var CLOSE = 0.34;
-      var FADE = 0.09;
-      var BACK = 0.13;
-      var EASE = "power3.inOut";
-      var STAGGER = { each: 0.006, from: "center" };
-      var openWidths = [];
-      var folded = false;
-      var tl = null;
+      h1.appendChild(svg);
 
-      function widthsOf(nodes) {
-        return nodes.map(function (node) { return node.getBoundingClientRect().width; });
+      // Chaque lettre écartée glisse vers la position fermée de la gardée qui
+      // la suit : le mot se compacte au lieu de laisser des trous pendant que
+      // les lettres s'effacent.
+      var nextX = data.closed.width;
+      for (var n = nodes.length - 1; n >= 0; n--) {
+        if (nodes[n].kept) nextX = nodes[n].kept.x;
+        else nodes[n].collapseX = nextX;
       }
 
-      function reset() {
-        if (tl) {
-          tl.kill();
-          tl = null;
+      var tl = gsap.timeline({ paused: true });
+      nodes.forEach(function (node) {
+        if (node.kept) {
+          tl.to(node.path, {
+            morphSVG: { shape: node.kept.d },
+            duration: 0.55,
+            ease: "power3.inOut"
+          }, 0);
+          tl.to(node.g, {
+            x: node.kept.x,
+            duration: 0.5,
+            ease: "power2.out"
+          }, 0);
+        } else {
+          tl.to(node.g, {
+            x: node.collapseX,
+            opacity: 0,
+            scale: 0.96,
+            transformOrigin: "50% 80%",
+            duration: 0.3,
+            ease: "power2.out"
+          }, 0);
         }
-        chars.forEach(function (char) {
-          char.classList.remove("is-mark");
-          char.style.width = "";
-          char.style.opacity = "";
-          char.style.transform = "";
-        });
+      });
+
+      h1.classList.add("cs-name-svg-on");
+
+      var over = false;
+      function play() {
+        if (over) return;
+        over = true;
+        tl.play();
       }
-
-      function fold() {
-        if (folded) return;
-        folded = true;
-        reset();
-        openWidths = widthsOf(chars);
-
-        kept.forEach(function (char) { char.classList.add("is-mark"); });
-        var upper = widthsOf(kept);
-        kept.forEach(function (char) { char.classList.remove("is-mark"); });
-
-        var dip = 0.15;
-        tl = gsap.timeline();
-        tl.to(dropped, {
-          width: 0,
-          opacity: 0,
-          duration: CLOSE,
-          ease: EASE,
-          stagger: STAGGER
-        }, 0);
-        tl.to(kept, { opacity: 0, duration: FADE, ease: "power1.in" }, dip);
-        tl.call(function () {
-          kept.forEach(function (char, j) {
-            char.classList.add("is-mark");
-            char.style.width = upper[j] + "px";
-          });
-        }, null, dip + FADE);
-        tl.to(kept, { opacity: 1, duration: BACK, ease: "power1.out" }, dip + FADE);
+      function back() {
+        if (!over) return;
+        over = false;
+        tl.reverse();
       }
-
-      function unfold() {
-        if (!folded) return;
-        folded = false;
-        if (tl) {
-          tl.kill();
-          tl = null;
-        }
-        var natural = openWidths;
-
-        tl = gsap.timeline();
-        tl.to(kept, { opacity: 0, duration: FADE, ease: "power1.in" }, 0);
-        tl.call(function () {
-          kept.forEach(function (char) {
-            char.classList.remove("is-mark");
-            char.style.width = "";
-          });
-        }, null, FADE);
-        tl.to(kept, { opacity: 1, duration: BACK, ease: "power1.out" }, FADE);
-        tl.to(dropped, {
-          width: function (j) { return natural[Number(dropped[j].dataset.index)] + "px"; },
-          opacity: 1,
-          duration: CLOSE,
-          ease: EASE,
-          stagger: STAGGER,
-          onComplete: function () {
-            dropped.forEach(function (char) { char.style.width = ""; });
-          }
-        }, FADE * 0.7);
-      }
-
       h1.addEventListener("pointerenter", function (e) {
         if (e.pointerType && e.pointerType !== "mouse") return;
-        fold();
+        play();
       });
       h1.addEventListener("pointerleave", function (e) {
         if (e.pointerType && e.pointerType !== "mouse") return;
-        unfold();
+        back();
+      });
+
+      // Sous 901 px le texte peut passer à la ligne : le SVG ne suit pas, on
+      // rend la main au texte.
+      window.matchMedia("(min-width: 901px)").addEventListener("change", function (e) {
+        if (e.matches) {
+          h1.classList.add("cs-name-svg-on");
+          svg.style.display = "";
+        } else {
+          h1.classList.remove("cs-name-svg-on");
+          svg.style.display = "none";
+        }
       });
     }
 

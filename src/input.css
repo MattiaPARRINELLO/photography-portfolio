@@ -2584,11 +2584,33 @@ html.cs-boot-on .cs-boot {
 }
 
 .cs-title {
+  position: relative;
   font-size: var(--step-head);
   font-weight: 600;
   line-height: 0.95;
   letter-spacing: -0.045em;
   max-width: 16ch;
+}
+
+/* Repli du nom en marque : le texte du H1 reste en place (SEO, sélection) mais
+   devient invisible quand le SVG des tracés est posé dessus. */
+.cs-name-svg-on {
+  color: transparent;
+}
+
+.cs-name-svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+  /* Couleur propre : le H1 passe en transparent, le SVG ne doit pas suivre. */
+  color: var(--paper-ink);
+}
+
+.cs-name-svg path {
+  fill: currentColor;
 }
 
 /* Repli du nom en marque (dist/js/home-sheet.js) : chaque lettre devient un
@@ -2602,10 +2624,14 @@ html.cs-boot-on .cs-boot {
   overflow: hidden;
 }
 
-/* Le repli des lettres gardées se fait en 3D (transform), pas en largeur :
-   aucune superposition de glyphes n'est visible. */
-.cs-fold-char.is-mark {
-  text-transform: uppercase;
+/* Capitale de la lettre gardée : hors flux, elle se découvre pendant que la
+   case s'élargit, sans pousser la ligne ni déborder sur la voisine. */
+.cs-fold-cap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .cs-lede {
