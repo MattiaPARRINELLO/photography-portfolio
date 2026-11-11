@@ -18,41 +18,41 @@
   },
   "pages": {
     "home": {
-      "title": "Votre nom - Photographe de Concert à Paris | Portfolio",
+      "title": "Photographe de concert à Paris | Votre nom",
       "description": "Photographe de concert basé à Paris. Portfolio et contact.",
       "h1": "Votre nom - Photographe de Concert à Paris",
       "keywords": "photographe concert Paris"
     },
     "about": {
-      "title": "À propos - Votre nom, Photographe de Concert Paris",
+      "title": "À propos, photographe de concert à Paris | Votre nom",
       "description": "Parcours de votre nom, photographe de concert à Paris.",
       "h1": "Votre nom - Photographe de Concert",
       "keywords": "photographe concert Paris"
     },
     "contact": {
-      "title": "Contact - Votre nom, Photographe de Concert Paris",
+      "title": "Contact, photographe de concert à Paris | Votre nom",
       "description": "Contactez votre nom pour vos projets photo : concerts, festivals, showcases.",
       "h1": "Contactez-moi",
       "keywords": "contacter photographe concert"
     },
     "mentions": {
-      "title": "Mentions Légales - Votre nom Photographie",
+      "title": "Mentions légales | Votre nom",
       "description": "Mentions légales du site - votre nom, photographe de concert à Paris.",
       "keywords": ""
     },
     "links": {
-      "title": "Liens - Votre nom, Photographe de Concert Paris",
+      "title": "Liens | Votre nom",
       "description": "Tous les liens de votre nom : portfolio, réseaux sociaux, contact.",
       "keywords": ""
     },
     "galleries": {
-      "title": "Galeries de concerts - Votre nom, Photographe à Paris",
+      "title": "Galeries de concerts, photos live | Votre nom",
       "description": "Galeries photo par artiste et par concert.",
       "h1": "Galeries de concerts",
       "keywords": "galerie photo concert, photographe concert Paris"
     },
     "prestations": {
-      "title": "Photographe de concert à Paris et en France - Mattia Parrinello",
+      "title": "Prestation photo de concert à Paris | Mattia Parrinello",
       "description": "Photographe de concert à Paris et partout en France, à partir de 100 € la date. 40 photos retouchées livrées sous 24 h, usage presse et réseaux inclus.",
       "h1": "Photographe de concert",
       "og_title": "Photographe de concert à Paris | Mattia Parrinello",
