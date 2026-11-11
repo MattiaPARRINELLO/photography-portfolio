@@ -439,6 +439,242 @@ router.get('/prestations', (req, res) => {
 });
 router.get('/prestations/', (req, res) => res.redirect(301, '/prestations'));
 
+// =============================================
+// PAGE SERVICE : /photographe-de-concert-paris
+// Répond au mot-clé exact sur lequel se classe le concurrent (slug dédié,
+// title qui commence par la requête). Contenu réel : périmètre, salles et
+// artistes déjà couverts avec liens internes vers /salle/* et /artiste/*,
+// méthode, tarifs, FAQ reprise du JSON-LD FAQPage.
+// =============================================
+
+const CONCERT_PHOTO_PATH = '/photographe-de-concert-paris';
+
+function renderSeoFaq(lang) {
+    const items = textUtils.getFaqItems(lang);
+    const rows = items.map(x =>
+        `<details><summary>${escapeAttr(x.q)}</summary><p>${x.aHtml || escapeAttr(x.a)}</p></details>`
+    ).join('');
+    return `<div class="cs-seo-faq">${rows}</div>`;
+}
+
+function concertPhotoSections(lang) {
+    const isEn = lang === 'en';
+    const lists = renderAboutListsHtml();
+
+    if (isEn) {
+        return [
+            `<section class="cs-seo-section">
+        <h2 class="cs-seo-label">What a shoot covers</h2>
+        <div class="cs-seo-prose">
+          <p>A concert report is not just firing at the stage. It means reading the venue light, anticipating the peaks and keeping enough distance so the artist gets images they can actually use in press, on a poster and on their own channels.</p>
+          <ul>
+            <li><strong>Concert and tour</strong>: one date or several nights in a row. Pit, stage, sides and desk, with a light check before doors open.</li>
+            <li><strong>Festival</strong>: one or several days, several stages. Images sorted by day and by artist, so production finds its way in immediately.</li>
+            <li><strong>Showcase, release party, listening session</strong>: short formats, often in low light, where you have to work fast without flash.</li>
+            <li><strong>Backstage, portrait and making-of</strong>: rehearsal, preparation, interview, promo portrait. The natural companion to a live report.</li>
+          </ul>
+          <p>Every booking includes a scouting pass before the show, full coverage of the performance and a retouched selection. Nothing goes out raw: the images delivered are the ones I am willing to sign.</p>
+        </div>
+      </section>`,
+            `<section class="cs-seo-section">
+        <h2 class="cs-seo-label">Venues and artists covered</h2>
+        <div class="cs-seo-prose">
+          <p>Since 2024 I have covered 300-cap clubs and 40,000-seat arenas, in Paris and across France. Galleries are sorted by artist and by venue, with the date, the city and the credit.</p>
+          <p><strong>Venues and festivals</strong></p>
+          <ul>${lists.venues}</ul>
+          <p><strong>Artists</strong></p>
+          <ul>${lists.artists}</ul>
+          <p>The pit has its rules: barriers, accredited photographers, sometimes only the first three songs. I know them and stick to them, because a shot stolen from the crowd is worth less than no shot at all.</p>
+          <p>If your venue or artist is not listed yet, it is usually a matter of calendar, not scope: I travel anywhere in France.</p>
+        </div>
+      </section>`,
+            `<section class="cs-seo-section">
+        <h2 class="cs-seo-label">How it works</h2>
+        <div class="cs-seo-prose">
+          <ul>
+            <li><strong>Delivery</strong>: within 24 hours after the show, 40 retouched photos, sorted and graded for screen and press.</li>
+            <li><strong>Sorting and retouching</strong>: I select, crop, correct light and noise, and keep the room's atmosphere. No smoothed skin, no invented colours.</li>
+            <li><strong>Formats</strong>: high-definition JPEG (3000 px on the long side) for press and print, a lighter web version for socials, RAW on request.</li>
+            <li><strong>Handover</strong>: a protected online gallery, an HD download link valid for one hour, and a press kit with three free photos.</li>
+            <li><strong>Credit</strong>: mandatory credit, (c) Mattia Parrinello / photo.mprnl.fr. Press and social use is included; advertising and commercial print require a separate quote.</li>
+            <li><strong>Accreditation</strong>: I handle the request with the venue or the promoter, within their deadlines.</li>
+          </ul>
+          <p>Before the date I ask for the light plot and the stage time. After it, I deliver in show order and keep a copy of the files for a year: if the press asks again six months later, the image is still there.</p>
+        </div>
+      </section>`,
+            `<section class="cs-seo-section">
+        <h2 class="cs-seo-label">Rates and what they include</h2>
+        <div class="cs-seo-prose">
+          <p>A concert report starts at EUR 100 per date for an emerging artist, EUR 150 for a larger production. That includes 40 retouched photos delivered within 24 hours, press and social use with credit. The quote is free and goes out within 24 hours, with the scope written in plain terms.</p>
+          <ul>
+            <li>Concert coverage and light check</li>
+            <li>40 retouched photos delivered within 24 hours</li>
+            <li>Protected online gallery and HD download</li>
+            <li>Press and social use with mandatory credit</li>
+            <li>Travel inside Île-de-France included, rest of France on quote</li>
+          </ul>
+          <p>Travel inside Île-de-France is included; for a date outside it, travel is added to the fee and stated on the quote. A deposit may be requested for festivals, never for a single concert.</p>
+          <p>No hidden fees, no surprise surcharge on sorting: what the quote says is what gets invoiced.</p>
+        </div>
+      </section>`,
+            `<section class="cs-seo-section">
+        <h2 class="cs-seo-label">Frequently asked questions</h2>
+        ${renderSeoFaq('en')}
+      </section>`
+        ].join('');
+    }
+
+    return [
+        `<section class="cs-seo-section">
+        <h2 class="cs-seo-label">Ce que couvre une prestation</h2>
+        <div class="cs-seo-prose">
+          <p>Un reportage de concert ne se résume pas à mitrailler la scène. Il faut lire la lumière de la salle, anticiper les moments forts et garder assez de recul pour que l'artiste ait des images utilisables en presse, en affiche et sur ses propres réseaux.</p>
+          <ul>
+            <li><strong>Concert et tournée</strong> : une date, ou plusieurs soirs d'affilée. Fosse, scène, côtés et régie, avec un repérage des lumières avant l'ouverture des portes.</li>
+            <li><strong>Festival</strong> : une ou plusieurs journées, plusieurs scènes. Les images sont triées par jour et par artiste pour que la production s'y retrouve tout de suite.</li>
+            <li><strong>Showcase, release party, listening session</strong> : des formats courts, souvent en lumière basse, où il faut travailler vite et sans flash.</li>
+            <li><strong>Backstage, portrait et making-of</strong> : répétition, préparation, interview, portrait de promo. Le complément naturel d'un reportage live.</li>
+          </ul>
+          <p>Chaque prestation comprend un temps de repérage avant le show, la couverture complète de la performance et une sélection retouchée. Rien n'est livré brut : les images qui partent sont celles que j'accepte de signer.</p>
+        </div>
+      </section>`,
+        `<section class="cs-seo-section">
+        <h2 class="cs-seo-label">Salles et artistes déjà couverts</h2>
+        <div class="cs-seo-prose">
+          <p>Depuis 2024, j'ai couvert des clubs de 300 places et des arènes de 40 000, à Paris comme en province. Les galeries sont classées par artiste et par salle, avec la date, la ville et le crédit photo.</p>
+          <p><strong>Salles et festivals</strong></p>
+          <ul>${lists.venues}</ul>
+          <p><strong>Artistes</strong></p>
+          <ul>${lists.artists}</ul>
+          <p>La fosse impose ses contraintes : barrières, photographes accrédités, parfois trois titres seulement. Je connais ces règles et je m'y tiens, parce qu'une image volée au public ne vaut pas mieux qu'une image absente. Ce qui compte, c'est ce qui se passe devant l'objectif et la façon de le raconter.</p>
+          <p>Si votre salle ou votre artiste n'apparaît pas encore, c'est le plus souvent une question de calendrier, pas de périmètre : je me déplace partout en France.</p>
+        </div>
+      </section>`,
+        `<section class="cs-seo-section">
+        <h2 class="cs-seo-label">La méthode</h2>
+        <div class="cs-seo-prose">
+          <ul>
+            <li><strong>Délai</strong> : sous 24 heures après le concert, 40 photos retouchées, triées et calibrées pour l'écran et la presse.</li>
+            <li><strong>Tri et retouche</strong> : je trie, je recadre, je corrige la lumière et le bruit, et je garde l'ambiance de la salle. Pas de peau lissée, pas de couleurs inventées.</li>
+            <li><strong>Formats</strong> : JPEG haute définition (3000 px sur le grand côté) pour la presse et le print, version Web allégée pour les réseaux, RAW sur demande.</li>
+            <li><strong>Livraison</strong> : une galerie en ligne protégée, un lien de téléchargement HD valable une heure, et un kit presse avec trois photos libres.</li>
+            <li><strong>Crédit</strong> : crédit obligatoire, © Mattia Parrinello / photo.mprnl.fr. L'usage presse et réseaux est inclus ; la publicité et le print commercial passent par un devis.</li>
+            <li><strong>Accréditation</strong> : je m'occupe de la demande auprès de la salle ou du tourneur, dans les délais qu'ils imposent.</li>
+          </ul>
+          <p>Avant la date, je demande le plan de feu et l'heure de passage. Après, je livre dans l'ordre de la soirée et je garde une copie des fichiers pendant un an : si la presse redemande une image six mois plus tard, elle est encore là.</p>
+        </div>
+      </section>`,
+        `<section class="cs-seo-section">
+        <h2 class="cs-seo-label">Tarifs et ce qu'ils incluent</h2>
+        <div class="cs-seo-prose">
+          <p>Un reportage concert démarre à 100 € la date pour un artiste émergent, 150 € pour une production plus importante. Ce prix comprend 40 photos retouchées livrées sous 24 heures, l'usage presse et réseaux avec crédit. Le devis est gratuit et part sous 24 heures, avec le périmètre écrit noir sur blanc.</p>
+          <ul>
+            <li>Couverture du concert et repérage lumière</li>
+            <li>40 photos retouchées livrées sous 24 heures</li>
+            <li>Galerie en ligne protégée et téléchargement HD</li>
+            <li>Usage presse et réseaux sociaux avec crédit obligatoire</li>
+            <li>Déplacement en Île-de-France inclus, reste de la France sur devis</li>
+          </ul>
+          <p>Le déplacement en Île-de-France est compris dans le tarif ; pour une date en province, il s'ajoute au forfait et figure sur le devis. Un acompte peut être demandé pour les festivals, jamais pour un concert unique.</p>
+          <p>Pas de frais cachés, pas de supplément surprise sur le tri : ce qui est annoncé dans le devis est ce qui est facturé.</p>
+        </div>
+      </section>`,
+        `<section class="cs-seo-section">
+        <h2 class="cs-seo-label">Questions fréquentes</h2>
+        ${renderSeoFaq('fr')}
+      </section>`
+    ].join('');
+}
+
+function concertPhotoJsonLd(lang, canonical) {
+    const isEn = lang === 'en';
+    const items = textUtils.getFaqItems(lang);
+    return {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'ProfessionalService',
+                '@id': `${canonical}#service`,
+                'name': 'Mattia Parrinello - Photographe de concert à Paris',
+                'url': canonical,
+                'description': isEn
+                    ? 'Concert photographer in Paris: concerts, festivals, showcases and backstage. 40 retouched photos delivered within 24 hours, press use with credit included.'
+                    : 'Photographe de concert à Paris : concerts, festivals, showcases et backstage. 40 photos retouchées livrées sous 24 h, usage presse avec crédit inclus.',
+                'provider': { '@id': 'https://www.photo.mprnl.fr/#person' },
+                'image': 'https://www.photo.mprnl.fr/dist/assets/og-image.jpg',
+                'priceRange': '€€',
+                'areaServed': [
+                    { '@type': 'City', 'name': 'Paris' },
+                    { '@type': 'AdministrativeArea', 'name': 'Île-de-France' },
+                    { '@type': 'Country', 'name': 'France' }
+                ],
+                'serviceType': isEn ? 'Concert photography' : 'Photographie de concert',
+                'hasOfferCatalog': {
+                    '@type': 'OfferCatalog',
+                    'name': isEn ? 'Concert reports' : 'Reportages concerts',
+                    'itemListElement': [
+                        {
+                            '@type': 'Offer',
+                            'name': isEn ? 'Concert report, Paris' : 'Reportage concert, Paris',
+                            'price': '100',
+                            'priceCurrency': 'EUR'
+                        }
+                    ]
+                }
+            },
+            {
+                '@type': 'FAQPage',
+                'inLanguage': lang,
+                'mainEntity': items.map(x => ({
+                    '@type': 'Question',
+                    'name': x.q,
+                    'acceptedAnswer': { '@type': 'Answer', 'text': x.a }
+                }))
+            },
+            {
+                '@type': 'BreadcrumbList',
+                'itemListElement': [
+                    { '@type': 'ListItem', 'position': 1, 'name': isEn ? 'Home' : 'Accueil', 'item': 'https://www.photo.mprnl.fr/' },
+                    { '@type': 'ListItem', 'position': 2, 'name': isEn ? 'Concert photographer in Paris' : 'Photographe de concert à Paris', 'item': canonical }
+                ]
+            }
+        ]
+    };
+}
+
+router.get(CONCERT_PHOTO_PATH, (req, res) => {
+    const lang = req.lang === 'en' ? 'en' : 'fr';
+    const isEn = lang === 'en';
+    const canonical = `https://www.photo.mprnl.fr${CONCERT_PHOTO_PATH}`;
+    const stats = aboutFacts();
+
+    res.send(renderSeoLandingPage({
+        lang,
+        title: isEn ? 'Concert photographer in Paris | Mattia Parrinello' : 'Photographe de concert à Paris | Mattia Parrinello',
+        desc: isEn
+            ? 'Concert photographer in Paris: concerts, festivals, showcases and backstage. 40 retouched photos delivered within 24 hours, press use with credit included, quote within 24 hours.'
+            : 'Photographe de concert à Paris : concerts, festivals, showcases et backstage. 40 photos retouchées livrées sous 24 h, crédit presse inclus, devis sous 24 h.',
+        canonical,
+        jsonLd: concertPhotoJsonLd(lang, canonical),
+        ogType: 'website',
+        kicker: isEn ? 'Paris · Île-de-France' : 'Paris · Île-de-France',
+        heading: isEn ? 'Concert photographer in Paris' : 'Photographe de concert à Paris',
+        intro: isEn
+            ? `I photograph concerts from the pit, in Paris and across France. ${stats.gigs} shows, ${stats.venues} venues, ${stats.images} frames online: one evening, 40 retouched photos delivered within 24 hours, usable right away by the artist, the venue or the press.`
+            : `Je photographie des concerts depuis la fosse, à Paris et partout en France. ${stats.gigs} concerts, ${stats.venues} salles, ${stats.images} images en ligne : une soirée, 40 photos retouchées livrées sous 24 heures, utilisable tout de suite par l'artiste, la salle ou la presse.`,
+        galleryLabel: isEn ? 'Latest galleries' : 'Dernières galeries',
+        items: getPublicGalleries().slice(0, 6).map(g => ({
+            href: `/galeries/${encodeURIComponent(g.slug)}`,
+            title: escapeAttr(g.artist || g.title),
+            meta: [g.venue, formatGalleryDate(g.date, lang)].filter(Boolean).map(escapeAttr).join(' · ')
+        })),
+        sections: [concertPhotoSections(lang)],
+        hideServiceLink: true,
+        citeText: isEn
+            ? `Mattia Parrinello, concert photographer in Paris. Concerts, festivals, showcases and backstage. 40 retouched photos delivered within 24 hours, press use with mandatory credit. Source: ${canonical}`
+            : `Mattia Parrinello, photographe de concert à Paris. Concerts, festivals, showcases et backstage. 40 photos retouchées livrées sous 24 heures, usage presse avec crédit obligatoire. Source : ${canonical}`
+    }));
+});
 // Route pour la page À propos (H1 visible EN)
 router.get('/a-propos', (req, res) => {
     servePage(req, res, {
@@ -900,8 +1136,13 @@ function getSeoLandingCssHref() {
 
 // Gabarit unique des pages d'atterrissage SEO. Tout le style vient de
 // src/input.css (.cs-seo) : aucun CSS inline, aucun GSAP, aucune image.
-function renderSeoLandingPage({ lang, title, desc, canonical, jsonLd, ogType, kicker, heading, intro, items, citeText, galleryLabel }) {
+// `sections` : blocs de texte libres (HTML déjà échappé) insérés entre l'en-tête
+// et la liste des galeries, pour la page service /photographe-de-concert-paris.
+function renderSeoLandingPage({ lang, title, desc, canonical, jsonLd, ogType, kicker, heading, intro, items, citeText, galleryLabel, sections, hideServiceLink }) {
     const isEn = lang === 'en';
+    // Canonical d'après l'URL demandée : /?lang=en reste une page à part,
+    // / (sans paramètre) reste la version française.
+    const canonicalUrl = isEn ? `${canonical}?lang=en` : canonical;
     const langHref = isEn ? '?lang=fr' : '?lang=en';
     const langCode = isEn ? 'fr' : 'en';
     const langLabel = isEn ? 'FR' : 'EN';
@@ -913,6 +1154,11 @@ function renderSeoLandingPage({ lang, title, desc, canonical, jsonLd, ogType, ki
           <ul class="cs-seo-list">${galleriesHtml}</ul>
         </section>`
         : '';
+    const sectionsBlock = (sections || []).filter(Boolean).join('');
+    // Lien depuis les pages cluster (/artiste, /salle) vers la page service.
+    const serviceLink = hideServiceLink
+        ? ''
+        : `<p class="cs-seo-back"><a href="/photographe-de-concert-paris">${isEn ? 'Concert photographer in Paris' : 'Photographe de concert à Paris'}</a></p>`;
     return `<!doctype html>
 <html lang="${lang}">
   <head>
@@ -922,7 +1168,7 @@ function renderSeoLandingPage({ lang, title, desc, canonical, jsonLd, ogType, ki
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${escapeAttr(title)}</title>
     <meta name="description" content="${escapeAttr(desc)}" />
-    <link rel="canonical" href="${canonical}" />
+    <link rel="canonical" href="${canonicalUrl}" />
     <link rel="alternate" hreflang="fr" href="${canonical}" />
     <link rel="alternate" hreflang="en" href="${canonical}?lang=en" />
     <link rel="alternate" hreflang="x-default" href="${canonical}" />
@@ -959,8 +1205,10 @@ function renderSeoLandingPage({ lang, title, desc, canonical, jsonLd, ogType, ki
           <h1 class="cs-seo-title">${escapeAttr(heading)}</h1>
           <p class="cs-seo-lede">${escapeAttr(intro)}</p>
         </header>
+        ${sectionsBlock}
         ${galleriesBlock}
         <p class="cs-seo-back"><a href="/galeries">${isEn ? 'All galleries' : 'Toutes les galeries'}</a></p>
+        ${serviceLink}
         <aside class="cs-seo-cite" aria-label="${isEn ? 'Cite this page' : 'Citer cette page'}">
           <p class="cs-seo-cite-label">${isEn ? 'Cite this page' : 'Citer cette page'}</p>
           <p class="cs-seo-cite-text">${escapeAttr(citeText)}</p>
@@ -1441,6 +1689,12 @@ router.get('/sitemap.xml', async (req, res) => {
             {
                 loc: '/prestations',
                 lastmod: fileLastmod('pages/prestations.html'),
+                changefreq: 'monthly',
+                priority: '0.9'
+            },
+            {
+                loc: CONCERT_PHOTO_PATH,
+                lastmod: fileLastmod('server/routes/pages.js'),
                 changefreq: 'monthly',
                 priority: '0.9'
             },
