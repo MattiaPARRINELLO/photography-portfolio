@@ -74,6 +74,9 @@
     var bootPhoto = boot ? boot.querySelector(".cs-boot-photo") : null;
     var bootScrim = boot ? boot.querySelector(".cs-boot-scrim") : null;
     var bootVeil = boot ? boot.querySelector(".cs-boot-veil") : null;
+    var bootMark = boot ? boot.querySelector(".cs-boot-mark") : null;
+    // Garde du repli du nom : le H1 n'est découpé qu'une fois.
+    var nameFoldReady = false;
     var bootWords = boot ? Array.prototype.slice.call(boot.querySelectorAll(".cs-boot-word")) : [];
     var panel = document.querySelector(".cs-panel");
     var title = document.querySelector(".cs-title");
@@ -123,6 +126,9 @@
       if (boot) boot.style.display = "none";
       if (title) title.style.visibility = "";
       document.documentElement.classList.remove("cs-boot-on");
+      // Le repli du nom ne s'arme qu'une fois le carton retiré : pendant
+      // l'intro le H1 est masqué, un survol y replierait le titre à l'aveugle.
+      initNameMorph();
       // Nettoyage différé : retirer six nœuds pendant le basculement
       // provoquerait un à-coup sur les machines modestes.
       window.setTimeout(function () {
@@ -595,6 +601,135 @@
 
     initRowAccordion();
 
+    // --- Morph du nom en marque (SVG) -------------------------------------
+    // Le H1 reste du texte (SEO, lecteurs d'écran, sélection) mais devient
+    // transparent : par-dessus, un SVG dessine les mêmes lettres à partir des
+    // tracés réels de la police. Au survol, les lettres en trop s'effacent et
+    // les cinq gardées se déplacent et morphent leur contour vers la capitale,
+    // dans une seule timeline.
+    var nameMorphReady = false;
+
+    function initNameMorph() {
+      if (nameMorphReady || !gsap || reduceMotion || !window.MorphSVGPlugin) return;
+      var h1 = document.querySelector(".cs-title");
+      var data = window.CS_NAME_GLYPHS;
+      if (!h1 || !data || !data.glyphs) return;
+      if (h1.textContent.replace(/\s+/g, " ").trim() !== data.name) return;
+      if (!window.matchMedia("(min-width: 901px)").matches) return;
+      if (!window.matchMedia("(hover: hover)").matches) return;
+      nameMorphReady = true;
+      gsap.registerPlugin(window.MorphSVGPlugin);
+
+      var NS = "http://www.w3.org/2000/svg";
+      var upm = data.unitsPerEm;
+      var line = 0.95; // line-height du H1, en em
+      var baseline = (line * upm - (data.ascender - data.descender)) / 2 + data.ascender;
+      var keptAt = {};
+      data.kept.forEach(function (index, j) { keptAt[index] = j; });
+
+      var svg = document.createElementNS(NS, "svg");
+      svg.setAttribute("class", "cs-name-svg");
+      svg.setAttribute("aria-hidden", "true");
+      svg.setAttribute("focusable", "false");
+      svg.setAttribute("viewBox", "0 0 " + data.open.width + " " + Math.round(line * upm));
+      svg.style.width = (data.open.width / upm) + "em";
+      svg.style.height = line + "em";
+
+      var nodes = [];
+      data.open.items.forEach(function (item, index) {
+        var g = document.createElementNS(NS, "g");
+        var path = document.createElementNS(NS, "path");
+        path.setAttribute("d", data.glyphs[item.c]);
+        g.appendChild(path);
+        gsap.set(g, { x: item.x, y: baseline });
+        svg.appendChild(g);
+        var j = keptAt[index];
+        nodes.push({
+          g: g,
+          path: path,
+          kept: j === undefined ? null : {
+            x: data.closed.items[j].x,
+            d: data.glyphs[data.closed.items[j].c]
+          }
+        });
+      });
+
+      h1.appendChild(svg);
+
+      // Chaque lettre écartée glisse vers la position fermée de la gardée qui
+      // la suit : le mot se compacte au lieu de laisser des trous pendant que
+      // les lettres s'effacent.
+      var nextX = data.closed.width;
+      for (var n = nodes.length - 1; n >= 0; n--) {
+        if (nodes[n].kept) nextX = nodes[n].kept.x;
+        else nodes[n].collapseX = nextX;
+      }
+
+      var tl = gsap.timeline({ paused: true });
+      nodes.forEach(function (node) {
+        if (node.kept) {
+          tl.to(node.path, {
+            morphSVG: { shape: node.kept.d },
+            duration: 0.6,
+            ease: "power2.inOut"
+          }, 0);
+          tl.to(node.g, {
+            x: node.kept.x,
+            duration: 0.55,
+            ease: "power2.out"
+          }, 0);
+        } else {
+          tl.to(node.g, {
+            x: node.collapseX,
+            opacity: 0,
+            scale: 0.96,
+            transformOrigin: "50% 80%",
+            duration: 0.32,
+            ease: "power2.out"
+          }, 0);
+        }
+      });
+      // Préchauffe la conversion des contours (MorphSVG la calcule au premier
+      // rendu) : sans ça, la première frame du premier survol saute.
+      tl.progress(1, true).progress(0, true);
+
+      h1.classList.add("cs-name-svg-on");
+
+      var over = false;
+      function play() {
+        if (over) return;
+        over = true;
+        tl.timeScale(1).play();
+      }
+      function back() {
+        if (!over) return;
+        over = false;
+        // Sortie légèrement plus vive que l'entrée : le retour au nom ne
+        // traîne pas quand le curseur quitte la zone.
+        tl.timeScale(1.25).reverse();
+      }
+      h1.addEventListener("pointerenter", function (e) {
+        if (e.pointerType && e.pointerType !== "mouse") return;
+        play();
+      });
+      h1.addEventListener("pointerleave", function (e) {
+        if (e.pointerType && e.pointerType !== "mouse") return;
+        back();
+      });
+
+      // Sous 901 px le texte peut passer à la ligne : le SVG ne suit pas, on
+      // rend la main au texte.
+      window.matchMedia("(min-width: 901px)").addEventListener("change", function (e) {
+        if (e.matches) {
+          h1.classList.add("cs-name-svg-on");
+          svg.style.display = "";
+        } else {
+          h1.classList.remove("cs-name-svg-on");
+          svg.style.display = "none";
+        }
+      });
+    }
+
     if (!hasMotion) return;
 
     var mm = gsap.matchMedia();
@@ -749,6 +884,12 @@
           // Les mots vont être transformés : on les promeut une fois pour
           // éviter de rastériser le texte à chaque image.
           gsap.set(bootWords, { willChange: "transform" });
+
+          // La marque s'efface au début du repli : elle signe l'ouverture,
+          // elle n'accompagne pas le nom vers le H1.
+          if (bootMark) {
+            tl.to(bootMark, { autoAlpha: 0, duration: 0.35, ease: "power2.in" }, S);
+          }
 
           // Repli de la feuille sur le panneau : la photo garde son cadrage
           // (aucune déformation), c'est la feuille entière qui rétrécit.

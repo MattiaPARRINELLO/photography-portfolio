@@ -1773,6 +1773,32 @@ html.cs-boot-on .cs-boot {
   transform-origin: 50% 50%;
 }
 
+/* Marque MPRNL : signature discrète en bas du carton-titre, effacée pendant
+   le repli. Le nom reste le sujet ; la marque ne fait que le signer. */
+.cs-boot-mark {
+  position: absolute;
+  left: var(--pad);
+  bottom: var(--pad);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.38em;
+}
+
+.cs-boot-mark::before {
+  content: "";
+  width: 32px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+
 /* Accordéon : la largeur des cadres est pilotée par GSAP. L'image survolée
    garde son format : sa hauteur suit sa largeur et elle dépasse la bande vers
    le haut, dans l'interstice, sans jamais couvrir la légende.
@@ -2557,11 +2583,54 @@ html.cs-boot-on .cs-boot {
 }
 
 .cs-title {
+  position: relative;
   font-size: var(--step-head);
   font-weight: 600;
   line-height: 0.95;
   letter-spacing: -0.045em;
   max-width: 16ch;
+}
+
+/* Repli du nom en marque : le texte du H1 reste en place (SEO, sélection) mais
+   devient invisible quand le SVG des tracés est posé dessus. */
+.cs-name-svg-on {
+  color: transparent;
+}
+
+.cs-name-svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+  /* Couleur propre : le H1 passe en transparent, le SVG ne doit pas suivre. */
+  color: var(--paper-ink);
+}
+
+.cs-name-svg path {
+  fill: currentColor;
+}
+
+/* Repli du nom en marque (dist/js/home-sheet.js) : chaque lettre devient un
+   bloc dont la largeur peut s'animer, et les lettres gardées passent en
+   capitales le temps du survol. */
+.cs-fold-char {
+  display: inline-block;
+  position: relative;
+  /* Une lettre rétrécie est rognée sur sa droite au lieu de déborder sur sa
+     voisine : c'est ce qui fait lire un repli plutôt qu'un chevauchement. */
+  overflow: hidden;
+}
+
+/* Capitale de la lettre gardée : hors flux, elle se découvre pendant que la
+   case s'élargit, sans pousser la ligne ni déborder sur la voisine. */
+.cs-fold-cap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .cs-lede {
@@ -4105,6 +4174,12 @@ html.cs-boot-on .cs-boot {
   .cs-boot-name {
     max-width: 94vw;
     font-size: 22.9vw;
+  }
+
+  .cs-boot-mark {
+    bottom: calc(var(--pad) + env(safe-area-inset-bottom, 0px));
+    font-size: 10px;
+    letter-spacing: 0.32em;
   }
 
   .cs-sheet {
