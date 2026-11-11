@@ -614,7 +614,9 @@
       var h1 = document.querySelector(".cs-title");
       var data = window.CS_NAME_GLYPHS;
       if (!h1 || !data || !data.glyphs) return;
-      if (h1.textContent.replace(/\s+/g, " ").trim() !== data.name) return;
+      // Le H1 porte aussi le rôle (mots-clés) : le morph ne compare que le nom.
+      var nameNode = h1.querySelector(".cs-title-name") || h1;
+      if (nameNode.textContent.replace(/\s+/g, " ").trim() !== data.name) return;
       if (!window.matchMedia("(min-width: 901px)").matches) return;
       if (!window.matchMedia("(hover: hover)").matches) return;
       nameMorphReady = true;

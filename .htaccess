@@ -68,6 +68,15 @@ RedirectMatch 404 ^/photos/(?!resize(?:\?|$)|thumbnails/).*\.(?:jpe?g|png|webp|g
     ForceType "text/markdown; charset=utf-8"
 </Files>
 
+# 6) Un seul hostname indexable : www. Sans cette règle, Apache sert la page
+#    en 200 sur les deux hosts et le canonical doit rattraper tout seul, ce qui
+#    duplique le signal. Même garde-fou dans server.js pour les routes Node.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} ^photo\.mprnl\.fr$ [NC]
+    RewriteRule ^ https://www.photo.mprnl.fr%{REQUEST_URI} [R=301,L]
+</IfModule>
+
 # php -- BEGIN cPanel-generated handler, do not edit
 # Définissez le package « ea-php84 » comme langage de programmation « PHP » par défaut.
 <IfModule mime_module>

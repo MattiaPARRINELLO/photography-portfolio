@@ -121,8 +121,12 @@ class TextUtils {
         const baseUrl = siteSeo.url || `${protocol}://${host}`;
 
         // SEO: Balise canonical + hreflang (anglais partiel via ?lang=en)
+        // Le canonical est une fonction de l'URL demandée, jamais de req.lang :
+        // une requête sur / avec un cookie lang=en reste canonisée vers /, sinon
+        // deux URLs prétendent être la même page selon le visiteur.
         const pathOnly = (req.path || '/').replace(/\/$/, '') || '/';
-        const canonicalPath = isEn ? `${pathOnly}?lang=en` : pathOnly;
+        const explicitEn = !!(req.query && req.query.lang === 'en');
+        const canonicalPath = explicitEn ? `${pathOnly}?lang=en` : pathOnly;
         const canonicalUrl = `${baseUrl}${canonicalPath}`;
         additionalMetas += `    <link rel="canonical" href="${canonicalUrl}">\n`;
         const frUrl = `${baseUrl}${pathOnly}`;
@@ -251,7 +255,7 @@ class TextUtils {
                 'telephone': siteSeo.phone || '',
                 'sameAs': social,
                 'brand': { '@type': 'Brand', 'name': 'MPRNL' },
-                'hasOfferCatalog': { '@type': 'OfferCatalog', 'name': 'Reportages concerts', 'itemListElement': [{ '@type': 'Offer', 'name': 'Reportage concert Paris', 'price': '300', 'priceCurrency': 'EUR' }] },
+                'hasOfferCatalog': { '@type': 'OfferCatalog', 'name': 'Reportages concerts', 'itemListElement': [{ '@type': 'Offer', 'name': 'Reportage concert Paris', 'price': '100', 'priceCurrency': 'EUR' }] },
                 'knowsAbout': [
                     'Photographie de concert',
                     'Photographie de festival',
@@ -402,15 +406,15 @@ class TextUtils {
         const isEn = lang === 'en';
         if (isEn) {
             return [
-                { q: 'How much does a concert report in Paris cost?', a: 'From 300€ for a concert report, free quote within 24h. The price depends on show duration, number of delivered photos and intended usage. Press and social media with mandatory credit included, commercial use on quote. Night shows and multi-day festivals are welcome. Details at ' + contactUrl, aHtml: 'From 300€ for a concert report, free quote within 24h. The price depends on show duration, number of delivered photos and intended usage. Press and social media with mandatory credit included, commercial use on quote. <a href="/contact?lang=en">Request a quote</a>.' },
-                { q: 'What is the delivery time?', a: '48 to 72 hours after the show, depending on the number of photos. You receive a protected online gallery and an HD download link. All photos are sorted and retouched before delivery. I am available immediately, on weekdays and weekends, anywhere in France.', aHtml: null },
+                { q: 'How much does a concert report in Paris cost?', a: 'From 100€ for the date for an emerging artist, 150€ for a larger production, free quote within 24h. 40 retouched photos delivered within 24 hours, press and social use with mandatory credit included, commercial use on quote. Details at ' + contactUrl, aHtml: 'From 100€ for the date for an emerging artist, 150€ for a larger production, free quote within 24h. 40 retouched photos delivered within 24 hours, press and social use with mandatory credit included, commercial use on quote. <a href="/contact?lang=en">Request a quote</a>.' },
+                { q: 'What is the delivery time?', a: 'Within 24 hours after the show: a selection of 40 retouched photos, sorted and graded for screen and press. You receive a protected online gallery and an HD download link. I am available immediately, on weekdays and weekends, anywhere in France.', aHtml: null },
                 { q: 'What usage rights are included?', a: 'Press and social media use with mandatory credit (© Mattia Parrinello / photo.mprnl.fr) is included. Commercial, advertising or print use requires a separate quote. All photos remain protected by copyright; HD files are delivered via a signed URL valid for 1 hour.', aHtml: null },
                 { q: 'Where do you work?', a: 'Based in Paris, I travel across Île-de-France and all over France: concerts, festivals, showcases, backstage, promo and making-of. I have already covered venues from La Cigale to Paris La Défense Arena, and festivals from Beauvais to Bordeaux, day and night shows.', aHtml: null }
             ];
         }
         return [
-            { q: 'Quel est le tarif d\'un reportage concert à Paris ?', a: 'À partir de 300€ pour un reportage concert, devis gratuit sous 24h. Le prix dépend de la durée du show, du nombre de photos livrées et de l\'usage prévu. Presse et réseaux sociaux avec crédit obligatoire inclus, usage commercial sur devis. Détails sur ' + contactUrl, aHtml: 'À partir de 300€ pour un reportage concert, devis gratuit sous 24h. Le prix dépend de la durée du show, du nombre de photos livrées et de l\'usage prévu. Presse et réseaux sociaux avec crédit obligatoire inclus, usage commercial sur devis. <a href="/contact">Demandez un devis</a>.' },
-            { q: 'Quel est le délai de livraison ?', a: '48 à 72 heures après le concert, selon le volume de photos. Tu reçois une galerie en ligne protégée et un lien de téléchargement HD. Les photos sont triées et retouchées avant la livraison. Je suis disponible immédiatement, en semaine comme le week-end, partout en France.', aHtml: null },
+            { q: 'Quel est le tarif d\'un reportage concert à Paris ?', a: '100 € la date pour un artiste émergent, 150 € pour une production plus importante, devis gratuit sous 24h. 40 photos retouchées livrées sous 24 h, usage presse et réseaux avec crédit obligatoire inclus, usage commercial sur devis. Détails sur ' + contactUrl, aHtml: '100 € la date pour un artiste émergent, 150 € pour une production plus importante, devis gratuit sous 24h. 40 photos retouchées livrées sous 24 h, usage presse et réseaux avec crédit obligatoire inclus, usage commercial sur devis. <a href="/contact">Demandez un devis</a>.' },
+            { q: 'Quel est le délai de livraison ?', a: 'Sous 24 heures après le concert : une sélection de 40 photos retouchées, triées et calibrées pour l\'écran et la presse. Tu reçois une galerie en ligne protégée et un lien de téléchargement HD. Je suis disponible immédiatement, en semaine comme le week-end, partout en France.', aHtml: null },
             { q: 'Quels droits d\'usage sont inclus ?', a: 'Usage presse et réseaux sociaux avec crédit obligatoire (© Mattia Parrinello / photo.mprnl.fr) inclus. Usage commercial, publicitaire ou print sur devis séparé. Toutes les photos restent protégées par le droit d\'auteur ; la HD est livrée via une URL signée valable 1 heure.', aHtml: null },
             { q: 'Dans quelles villes tu te déplaces ?', a: 'Basé à Paris, je me déplace en Île-de-France et partout en France : concerts, festivals, showcases, backstage, promo et making-of. J\'ai déjà couvert des salles de La Cigale à Paris La Défense Arena, et des festivals de Beauvais à Bordeaux.', aHtml: null }
         ];

@@ -91,7 +91,11 @@ jest.mock('../../server/utils/textUtils', function () {
     loadTexts: jest.fn().mockReturnValue({ meta: { title: 'T', description: 'D', keywords: 'K', author: 'A' } }),
     loadSeoData: jest.fn().mockReturnValue({ artists: [], venues: [], intro_text: '', pages: { home: {} } }),
     injectMetaTags: jest.fn(function (html) { return html; }),
-    generateSchemaJsonLd: jest.fn().mockReturnValue('')
+    generateSchemaJsonLd: jest.fn().mockReturnValue(''),
+    getFaqItems: jest.fn().mockReturnValue([
+      { q: 'Quel est le tarif ?', a: '100 euros la date.', aHtml: null },
+      { q: 'Quel est le delai ?', a: 'Sous 24 heures.', aHtml: null }
+    ])
   };
 });
 
@@ -685,7 +689,7 @@ describe('Routes pages — branches non couvertes (SSR galeries)', function () {
         .end(function (err, res) {
           if (err) return done(err);
           expect(res.text).toContain('<urlset');
-          expect(res.text).not.toContain('concert-paris');
+          expect(res.text).not.toContain('/galeries/');
           done();
         });
     });
@@ -747,5 +751,59 @@ describe('Routes pages — branches non couvertes (SSR galeries)', function () {
           done();
         });
     });
+  });
+});
+
+// ============================================================================
+// GET /photographe-de-concert-paris — page service mot-clé exact
+// ============================================================================
+describe('GET /photographe-de-concert-paris', function () {
+  var supertest = require('supertest');
+  var galleryService = require('../../server/utils/galleryService');
+
+  // Un test precedent laisse listGalleries en erreur : on repart d'une liste saine.
+  beforeEach(function () {
+    galleryService.listGalleries.mockReturnValue([
+      { id: 'g1', slug: 'concert-paris', title: 'Concert Paris', artist: 'Artiste1', venue: 'La Cigale', date: '2025-01-01', photos: ['p1.jpg'], cover: 'p1.jpg', published: true }
+    ]);
+  });
+
+  it('repond 200 avec le mot-cle en tete de title et un canonical sans parametre', function (done) {
+    supertest(makeApp())
+      .get('/photographe-de-concert-paris')
+      .expect(200)
+      .expect('Content-Type', /html/)
+      .end(function (err, res) {
+        if (err) return done(err);
+        expect(res.text).toMatch(/<title>Photographe de concert à Paris \| Mattia Parrinello<\/title>/);
+        expect(res.text).toContain('<h1 class="cs-seo-title">Photographe de concert à Paris</h1>');
+        expect(res.text).toContain('<link rel="canonical" href="https://www.photo.mprnl.fr/photographe-de-concert-paris" />');
+        expect(res.text).toContain('hreflang="en" href="https://www.photo.mprnl.fr/photographe-de-concert-paris?lang=en"');
+        done();
+      });
+  });
+
+  it('declare un ProfessionalService avec areaServed Paris et une FAQPage', function (done) {
+    supertest(makeApp())
+      .get('/photographe-de-concert-paris')
+      .expect(200)
+      .end(function (err, res) {
+        if (err) return done(err);
+        expect(res.text).toContain('"@type":"ProfessionalService"');
+        expect(res.text).toContain('"name":"Paris"');
+        expect(res.text).toContain('"@type":"FAQPage"');
+        done();
+      });
+  });
+
+  it('sert la variante avec slash avec le meme canonical, sans slash', function (done) {
+    supertest(makeApp())
+      .get('/photographe-de-concert-paris/')
+      .expect(200)
+      .end(function (err, res) {
+        if (err) return done(err);
+        expect(res.text).toContain('<link rel="canonical" href="https://www.photo.mprnl.fr/photographe-de-concert-paris" />');
+        done();
+      });
   });
 });

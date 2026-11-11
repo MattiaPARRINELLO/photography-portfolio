@@ -2103,6 +2103,103 @@ html.cs-boot-on .cs-boot {
   color: var(--accent);
 }
 
+/* Sections de texte des pages d'atterrissage (ex. /photographe-de-concert-paris).
+   Même rythme que les listes : libellé en petites capitales, prose à 68ch. */
+.cs-seo-section + .cs-seo-section {
+  margin-top: clamp(32px, 4vw, 56px);
+}
+
+.cs-seo-prose {
+  max-width: 68ch;
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+.cs-seo-prose p + p {
+  margin-top: 1em;
+}
+
+.cs-seo-prose strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.cs-seo-prose ul {
+  margin: 1em 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cs-seo-prose li {
+  position: relative;
+  padding-left: 1.15em;
+}
+
+.cs-seo-prose li + li {
+  margin-top: 0.45em;
+}
+
+.cs-seo-prose li::before {
+  content: "·";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+.cs-seo-prose a {
+  padding-bottom: 1px;
+  border-bottom: 1px solid var(--accent);
+}
+
+/* FAQ de la page service : mêmes <details> que /contact, sans couleur claire. */
+.cs-seo-faq {
+  max-width: 68ch;
+  margin-top: 12px;
+}
+
+.cs-seo-faq details {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.cs-seo-faq details:last-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.cs-seo-faq summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  font-weight: 500;
+  cursor: pointer;
+  list-style: none;
+}
+
+.cs-seo-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.cs-seo-faq summary::after {
+  content: "+";
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.cs-seo-faq details[open] summary::after {
+  content: "–";
+}
+
+.cs-seo-faq p {
+  padding: 0 0 18px;
+  color: var(--muted);
+  font-size: var(--step-body);
+}
+
+.cs-seo-faq a {
+  border-bottom: 1px solid var(--accent);
+}
+
 @media (max-width: 640px) {
   .cs-seo-link {
     grid-template-columns: 1fr;
@@ -2296,6 +2393,11 @@ html.cs-boot-on .cs-boot {
   margin-top: 14px;
   font-size: var(--step-small);
   color: var(--muted);
+}
+
+.cs-prest-note-link {
+  color: var(--ink);
+  border-bottom: 1px solid var(--accent);
 }
 
 .cs-prest-steps {
@@ -2589,6 +2691,12 @@ html.cs-boot-on .cs-boot {
   font-weight: 600;
   line-height: 0.95;
   letter-spacing: -0.045em;
+  max-width: 100%;
+}
+
+/* Le nom garde la largeur de repli ; le rôle occupe la largeur du panneau. */
+.cs-title-name {
+  display: block;
   max-width: 16ch;
 }
 
@@ -2596,6 +2704,22 @@ html.cs-boot-on .cs-boot {
    devient invisible quand le SVG des tracés est posé dessus. */
 .cs-name-svg-on {
   color: transparent;
+}
+
+/* Le rôle du H1 (mots-clés) reste lisible quand le morph rend le nom
+   transparent : couleur propre, donc plus spécifique que .cs-name-svg-on. */
+.cs-title-role {
+  display: block;
+  margin-top: 0.35em;
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.35rem);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--paper-muted);
+}
+
+.cs-name-svg-on .cs-title-role {
+  color: var(--paper-muted);
 }
 
 .cs-name-svg {
@@ -4206,8 +4330,12 @@ html.cs-boot-on .cs-boot {
     border: 0;
   }
 
-  .cs-title {
+  .cs-title-name {
     max-width: 12ch;
+  }
+
+  .cs-title-role {
+    font-size: 1rem;
   }
 
   .cs-lede {
