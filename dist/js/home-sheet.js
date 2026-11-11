@@ -691,8 +691,8 @@
           stagger: STAGGER
         }, 0);
         tl.to(kept, {
-          scaleY: 0.06,
-          transformOrigin: "50% 100%",
+          scaleX: 0.06,
+          transformOrigin: "50% 50%",
           duration: FOLD,
           ease: "power2.in"
         }, 0);
@@ -703,7 +703,7 @@
           });
         }, null, FOLD);
         tl.to(kept, {
-          scaleY: 1,
+          scaleX: 1,
           duration: UNFOLD,
           ease: "power2.out"
         }, FOLD);
@@ -720,8 +720,8 @@
 
         tl = gsap.timeline();
         tl.to(kept, {
-          scaleY: 0.06,
-          transformOrigin: "50% 100%",
+          scaleX: 0.06,
+          transformOrigin: "50% 50%",
           duration: FOLD,
           ease: "power2.in"
         }, 0);
@@ -732,7 +732,7 @@
           });
         }, null, FOLD);
         tl.to(kept, {
-          scaleY: 1,
+          scaleX: 1,
           duration: UNFOLD,
           ease: "power2.out"
         }, FOLD);
