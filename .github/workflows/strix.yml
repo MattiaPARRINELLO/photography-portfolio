@@ -1,0 +1,125 @@
+name: Strix
+
+# Strix est un agent : un run prend une dizaine de minutes. Il ne tourne donc
+# pas sur chaque PR, mais une fois toutes les deux semaines sur la branche par
+# défaut, et à la demande.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Profondeur du scan
+        type: choice
+        options: [quick, standard, deep]
+        default: standard
+      max_budget:
+        description: Budget maximum en USD
+        type: string
+        default: "8"
+      instruction:
+        description: Instruction ciblée, par exemple "Focus on IDOR et XSS" (optionnel)
+        type: string
+        default: ""
+  schedule:
+    # tous les dimanches 19:00 UTC (20:00 ou 21:00 heure de Paris) ;
+    # le job ne tourne qu'une semaine sur deux, voir l'étape "Biweekly gate"
+    - cron: "0 19 * * 0"
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: strix-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  strix:
+    name: Strix security scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Biweekly gate
+        id: gate
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # numéro de semaine ISO : on ne scanne que les semaines paires
+          week=$(date -u +%V)
+          if [ $((10#$week % 2)) -eq 0 ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Semaine $week : scan bihebdomadaire."
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Semaine $week impaire : pas de scan cette semaine."
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Strix
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          curl -sSL https://strix.ai/install | bash
+          echo "$HOME/.strix/bin" >> "$GITHUB_PATH"
+
+      - name: Scan
+        if: steps.gate.outputs.run == 'true'
+        env:
+          STRIX_LLM: openai/deepseek-v4.1-flash
+          STRIX_API_TYPE: chat_completions
+          STRIX_CACHE_BLOCK_TOKENS: "64"
+          OPENAI_BASE_URL: https://opencode.ai/inference/go/openai/v1
+          OPENAI_API_KEY: ${{ secrets.STRIX_API_KEY }}
+          LLM_EXTRA_HEADERS: '{"User-Agent":"opencode/1.18.31","x-opencode-client":"cli","x-opencode-session":"00000000-0000-4000-8000-000000000000"}'
+          MODE: ${{ github.event.inputs.mode || 'standard' }}
+          MAX_BUDGET: ${{ github.event.inputs.max_budget || '8' }}
+          INSTRUCTION: ${{ github.event.inputs.instruction }}
+        run: |
+          set -o pipefail
+          extra=()
+          if [ -n "$INSTRUCTION" ]; then
+            extra+=(--instruction "$INSTRUCTION")
+          fi
+          strix -n -t ./ \
+            --scan-mode "$MODE" \
+            --scope-mode full \
+            --fail-on high \
+            --max-budget "$MAX_BUDGET" \
+            --max-turns 120 \
+            "${extra[@]}"
+
+      # Un run coupé au budget sort en 0 mais laisse run.json à "stopped".
+      - name: Fail unless the scan completed
+        if: always() && steps.gate.outputs.run == 'true'
+        run: |
+          run_json=$(ls -t strix_runs/*/run.json 2>/dev/null | head -1)
+          if [ -z "$run_json" ]; then
+            echo "::error title=Strix::Aucun run.json produit, le scan n'a pas tourné"
+            exit 1
+          fi
+          status=$(jq -r .status "$run_json")
+          if [ "$status" != "completed" ]; then
+            echo "::error title=Strix::Statut '$status', le scan n'est pas allé au bout (augmente le budget)"
+            exit 1
+          fi
+
+      - name: Upload findings
+        if: always() && steps.gate.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: strix-findings
+          path: strix_runs
+          if-no-files-found: warn
+
+      - name: Upload SARIF
+        if: always() && steps.gate.outputs.run == 'true'
+        continue-on-error: true # code scanning peut être indisponible sur un repo privé
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: strix_runs
+          category: strix
