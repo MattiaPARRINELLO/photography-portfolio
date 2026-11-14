@@ -1,10 +1,11 @@
 var { AI_BOTS, AI_BOT_LABELS, detectAiBot } = require('../../server/utils/aiBots');
-var { createAiCrawlerMiddleware, isContentRequest, cleanPath } = require('../../server/middleware/aiCrawler');
+var { createAiCrawlerMiddleware, createCrawlQuota, isContentRequest, cleanPath } = require('../../server/middleware/aiCrawler');
 
-function req(method, path, ua) {
+function req(method, path, ua, ip) {
     return {
         method: method,
         path: path,
+        ip: ip,
         get: function (name) {
             return name.toLowerCase() === 'user-agent' ? ua : undefined;
         }
@@ -136,6 +137,73 @@ describe('Détection des robots IA', function () {
                 store: { append: function () { throw new Error('disque plein'); } }
             });
             expect(run(middleware, req('GET', '/', 'GPTBot/1.2'))).toBe(true);
+        });
+    });
+
+    // ================================================================
+    // GARDE-FOU ANTI-ABUS (CWE-770)
+    // ================================================================
+    describe('budget d\'écriture', function () {
+        it('plafonne les écritures d\'un même appelant', function () {
+            var quota = createCrawlQuota({ maxPerCaller: 3, maxTotal: 100 });
+
+            expect(quota.allow('1.1.1.1')).toBe(true);
+            expect(quota.allow('1.1.1.1')).toBe(true);
+            expect(quota.allow('1.1.1.1')).toBe(true);
+            expect(quota.allow('1.1.1.1')).toBe(false);
+            // Un autre appelant n'est pas pénalisé
+            expect(quota.allow('2.2.2.2')).toBe(true);
+        });
+
+        it('plafonne le total, tous appelants confondus', function () {
+            var quota = createCrawlQuota({ maxPerCaller: 100, maxTotal: 2 });
+
+            expect(quota.allow('1.1.1.1')).toBe(true);
+            expect(quota.allow('2.2.2.2')).toBe(true);
+            expect(quota.allow('3.3.3.3')).toBe(false);
+        });
+
+        it('réouvre le budget à la fenêtre suivante', function () {
+            var now = 1000000;
+            var spy = jest.spyOn(Date, 'now').mockImplementation(function () { return now; });
+            var quota = createCrawlQuota({ windowMs: 60000, maxPerCaller: 1, maxTotal: 100 });
+
+            expect(quota.allow('1.1.1.1')).toBe(true);
+            expect(quota.allow('1.1.1.1')).toBe(false);
+
+            now += 60001;
+            expect(quota.allow('1.1.1.1')).toBe(true);
+
+            spy.mockRestore();
+        });
+
+        it('borne la mémoire du compteur en purgeant les appelants expirés', function () {
+            var now = 1000000;
+            var spy = jest.spyOn(Date, 'now').mockImplementation(function () { return now; });
+            var quota = createCrawlQuota({ windowMs: 1000, maxCallers: 5, maxTotal: 100000 });
+
+            for (var i = 0; i < 20; i++) {
+                quota.allow('10.0.0.' + i);
+                now += 10;
+            }
+
+            expect(quota.callerCount()).toBeLessThanOrEqual(6);
+
+            spy.mockRestore();
+        });
+
+        it('laisse passer la requête mais n\'écrit pas au-delà du budget', function () {
+            var store = fakeStore();
+            var middleware = createAiCrawlerMiddleware({
+                store: store,
+                quotaOptions: { maxPerCaller: 2, maxTotal: 100 }
+            });
+
+            for (var i = 0; i < 10; i++) {
+                expect(run(middleware, req('GET', '/galerie/gojira', 'GPTBot/1.2', '9.9.9.9'))).toBe(true);
+            }
+
+            expect(store.lines).toHaveLength(2);
         });
     });
 });

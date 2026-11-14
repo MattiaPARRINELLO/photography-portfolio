@@ -68,4 +68,17 @@ describe('Lectures par les robots IA — serveur réel', function () {
         expect(dash.aiCrawls.bots.map(function (b) { return b.bot; }).sort()).toEqual(['claudebot', 'perplexitybot']);
         expect(dash.kpis.sessions).toBe(0);
     });
+
+    it('plafonne un flot de requêtes qui se déclarent crawler IA', async function () {
+        // 40 requêtes avec un faux UA de robot : au-delà de 30/min pour une
+        // même IP, la requête passe mais plus aucune ligne n'est écrite.
+        for (var i = 0; i < 40; i++) {
+            await request(app)
+                .get('/galerie/gojira')
+                .set('User-Agent', 'GPTBot/1.2')
+                .expect(200);
+        }
+
+        expect(store.read()).toHaveLength(30);
+    });
 });

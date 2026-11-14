@@ -20,7 +20,7 @@ Tout ce qui suit est vérifié dans le dépôt sauf mention explicite « À conf
 - `server.js` — point d'entrée : helmet 8 + CSP, compression, express-session (`trust proxy: 1`), middleware de pré-compression `.br`/`.gz`, statics ciblés `/dist` et `/photos`, route dédiée `/robots.txt`, API bandeau événement, montage des routers, 404 → `pages/404.html`, gestionnaire d'erreur global.
 - `server/config.js` — singleton. Précédence : `CONFIG_FILE` (env) → `config/config.json` → `config/config.local.json` → `config/config.json.example`. Fusion superficielle des overrides locaux.
 - `server/middleware/auth.js` — auth admin : cookie HMAC `adminAuth` (+ session), header `x-admin-password`, `requireAdminSession` / `requireAdminPage`. `ADMIN_REMEMBER_SALT` obligatoire (throw au chargement).
-- `server/middleware/` — `language.js` (détection de langue), `photosStatic.js` (statique des miniatures), `aiCrawler.js` (compte les lectures de contenu par les robots d'IA : GPTBot, ClaudeBot, PerplexityBot… n'écrit que `{event:'ai_crawl', bot, path}`, jamais l'UA ni l'IP ; monté dans `server.js` après le blocage des fichiers internes). Le tracking par cookies (`userTrackingMiddleware`/`campaignMiddleware`) a été supprimé : la collecte est désormais assurée par `dist/js/analytics-tracker.js` (sendBeacon, zéro cookie).
+- `server/middleware/` — `language.js` (détection de langue), `photosStatic.js` (statique des miniatures), `aiCrawler.js` (compte les lectures de contenu par les robots d'IA : GPTBot, ClaudeBot, PerplexityBot… n'écrit que `{event:'ai_crawl', bot, path}`, jamais l'UA ni l'IP ; budget d'écriture 30 lignes/min par appelant et 60/min au total, car l'UA se falsifie ; monté dans `server.js` après le blocage des fichiers internes). Le tracking par cookies (`userTrackingMiddleware`/`campaignMiddleware`) a été supprimé : la collecte est désormais assurée par `dist/js/analytics-tracker.js` (sendBeacon, zéro cookie).
 - `server/routes/` — `pages.js` (pages publiques + galeries + sitemap + page service `/photographe-de-concert-paris`), `admin.js` (login, config, liens, uploads…), `photos.js` (`/photos-list`, `/admin/upload`, `/admin/photos`), `image-resize.js` (`/photos/resize?file=X&w=N`), `content.js` (textes + campagnes admin), `contact.js` (`/send-mail`), `analytics.js` (`POST /api/track` public + `GET /admin/api/analytics` KPI), `signed-images.js` (`/api/request-hd-access`, `/api/hd-image`, HMAC `IMAGE_SECRET_KEY`, validité 1 h), `event-banner.js` (handler partagé de l'API bandeau événement, monté par `server.js` et `admin.js`).
 - `server/utils/` — `galleryService.js` (CRUD galeries, slugify), `linksService.js` (liens + bandeau événement + JSON-LD de /links), `photoService.js` (liste photos triée par date), `analyticsStore.js` (JSONL append-only, rétention 90 j), `analyticsService.js` (calcul des KPI, dont `aiSessions` et l'agrégat `aiCrawls`), `aiBots.js` (liste des robots IA + `detectAiBot(ua)` + libellés), `campaignService.js` (parsing `?c`/`?ref`/`?utm_*`, sans état ni cookie), `textUtils.js` (textes + injection meta/JSON-LD `@graph` à `@id` stables), `imageMeta.js` (dimensions des photos via sharp, cache mémoire → `width`/`height` anti-CLS), `dataSanity.js` (garde-fou prod : exclut des pages publiques les galeries aux données manifestement fictives, l'admin reste non filtré).
 - `scripts/` — `CampaignManager.js` (instancié dans `server.js`, CRUD des campagnes déclarées), `build-css.js`, `build-assets.js`, `generate-og-image.js` (og:image 1200×1200), `generate-name-glyphs.js` (tracés SVG du nom du H1, nécessite le `.ttf` Switzer 600 en argument), `convert-thumbnails-to-webp.js`, `generate-placeholders.js`, `migrate-gallery-only-photos.js`, `test-email.js`, `untrack-config.sh`.
@@ -31,7 +31,7 @@ Tout ce qui suit est vérifié dans le dépôt sauf mention explicite « À conf
 - `dist/js/analytics-tracker.js` — tracker maison : temps engagé (`visibilitychange`), scroll, photos vues (IntersectionObserver), ouvertures Fancybox, conversions (`mailto`/`tel`/CTA/liens externes), capture de campagne depuis l'URL, origine IA (`classifyReferrer` reconnaît `chatgpt.com`, `perplexity.ai`, `claude.ai`, `gemini.google.com`… → source `ai:<assistant>` ; `classifySourceParam` sert de repli quand le referrer est absent, via `?utm_source=chatgpt.com`). Mesure indicative : beaucoup d'assistants masquent le referrer, ces visites restent `direct`. Envoie un `session_flush` cumulé toutes les 10 s et à la sortie de page via `navigator.sendBeacon` (repli `fetch keepalive`). Continuité de session via `sessionStorage` (éphémère, jamais un cookie). Zéro donnée personnelle : hash SHA-256 quotidien (`sel + UA court + écran + timezone + jour`).
 - `dist/` — sorties de build **partiellement trackées par git** (voir « Fichiers générés »).
 - `photos-originals/` — originaux (hors statique, `PHOTOS_ORIGINALS_DIR`) ; `photos/thumbnails/` (générés à l'upload, seul `.gitkeep` + README trackés) ; `photos/resized/` (cache de redimensionnement, gitignoré).
-- `tests/` — 47 suites / 768 tests (voir Commandes). `tests/setup.js` injecte les variables d'env factices (chargé via `jest.config.js` → `setupFiles`).
+- `tests/` — 47 suites / 774 tests (voir Commandes). `tests/setup.js` injecte les variables d'env factices (chargé via `jest.config.js` → `setupFiles`).
 - `graphify-out/` — graphe de connaissance du code (voir « Outillage local »).
 - `AUDIT.md` — registre d'audit (sécurité/perf/SEO/a11y/qualité) avec identifiants d'items (ex. `Q-C2`, `V11`, `E5-REDIR`). Convention : les commits de correction marquent les items `CORRIGÉ` dans ce fichier.
 
@@ -56,7 +56,7 @@ Tout ce qui suit est vérifié dans le dépôt sauf mention explicite « À conf
 | Migration des originaux hors du statique | `npm run migrate:originals` (dry-run), puis `-- --apply` |
 | Recette de sécurité HTTP (instance locale isolée) | `npm run test:security` |
 
-**État vérifié** : `npx jest --ci --silent` → 47 suites passantes, 768 tests passants, 0 skip. `TESTS_REPORT.md` est daté (445 tests, 14 skips) et ne reflète plus l'état actuel.
+**État vérifié** : `npx jest --ci --silent` → 47 suites passantes, 774 tests passants, 0 skip. `TESTS_REPORT.md` est daté (445 tests, 14 skips) et ne reflète plus l'état actuel.
 
 ## Build, lint, tests et vérifications de types
 
@@ -125,7 +125,7 @@ Les tests injectent leurs propres valeurs via `tests/setup.js` — ne pas y mett
 
 ## Checklist de validation avant livraison
 
-- [ ] `npx jest --ci --silent` → tout vert (47 suites / 768 tests).
+- [ ] `npx jest --ci --silent` → tout vert (47 suites / 774 tests).
 - [ ] Le CSS modifié passe par le build : `npm run build:css && npm run build:assets`, puis `git status` cohérent (HTML + manifest + fingerprint).
 - [ ] Aucune valeur d'env réelle ajoutée/commitée.
 - [ ] Toujours relancer le serveur après un build CSS (`npm run dev`) et tester dans un vrai navigateur — les tests Jest ne couvrent pas le rendu client ni la CSP en conditions réelles.
