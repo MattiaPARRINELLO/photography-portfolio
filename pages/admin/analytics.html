@@ -354,6 +354,38 @@
         </div>
       </div>
 
+      <!-- Assistants IA : visites attribuées + lectures par les robots -->
+      <div class="card">
+        <div class="card-title">Assistants et robots IA</div>
+        <div class="card-sub" id="ai-summary">Visites attribuées à un assistant et lectures de contenu par les robots d'IA (User-Agent seul, jamais stocké).</div>
+        <div class="grid-2" style="margin-top:1rem">
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Robot</th>
+                  <th class="num">Requêtes</th>
+                  <th class="num">Pages</th>
+                  <th class="num">Dernière</th>
+                </tr>
+              </thead>
+              <tbody id="ai-bots-body"></tbody>
+            </table>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pages lues</th>
+                  <th class="num">Requêtes</th>
+                </tr>
+              </thead>
+              <tbody id="ai-paths-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- Top artistes / salles -->
       <div class="grid-2">
         <div class="card">
@@ -419,6 +451,33 @@
           return String(value === null || value === undefined ? '' : value)
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        // ---- Libellés des assistants IA -------------------------------
+
+        var AI_LABELS = {
+          chatgpt: 'ChatGPT', perplexity: 'Perplexity', claude: 'Claude',
+          gemini: 'Gemini', copilot: 'Copilot', mistral: 'Le Chat',
+          deepseek: 'DeepSeek', grok: 'Grok', you: 'You.com', poe: 'Poe',
+          phind: 'Phind', meta: 'Meta AI', kimi: 'Kimi', qwen: 'Qwen',
+          huggingface: 'HuggingChat', pi: 'Pi', duckai: 'Duck.ai'
+        };
+
+        /** « ai:chatgpt » -> « IA · ChatGPT », le reste inchangé */
+        function sourceLabel(source) {
+          var raw = String(source || '');
+          if (raw.indexOf('ai:') === 0) {
+            var key = raw.slice(3);
+            return 'IA · ' + (AI_LABELS[key] || key);
+          }
+          return raw;
+        }
+
+        function formatDate(ts) {
+          if (!ts) return '—';
+          try {
+            return new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+          } catch (e) { return '—'; }
         }
 
         // ---- Rendu des KPI --------------------------------------------
@@ -560,20 +619,47 @@
           '</tr>';
         }
 
-        function fillTable(id, rows, emptyMessage) {
+        function fillTable(id, rows, emptyMessage, colspan) {
           var body = document.getElementById(id);
           if (!rows.length) {
-            body.innerHTML = '<tr><td colspan="4" class="empty-state">' + emptyMessage + '</td></tr>';
+            body.innerHTML = '<tr><td colspan="' + (colspan || 4) + '" class="empty-state">' + emptyMessage + '</td></tr>';
             return;
           }
           body.innerHTML = rows.join('');
+        }
+
+        function renderAi(data) {
+          var ai = data.aiCrawls || { totalHits: 0, bots: [], topPaths: [] };
+          var sessions = data.kpis.aiSessions || 0;
+
+          document.getElementById('ai-summary').textContent =
+            formatNumber(sessions) + ' sessions attribuées à un assistant IA · ' +
+            formatNumber(ai.totalHits) + ' lectures par les robots · ' +
+            'User-Agent lu puis jeté, jamais stocké';
+
+          fillTable('ai-bots-body', ai.bots.map(function (b) {
+            return '<tr>' +
+              '<td><div class="title-cell">' + escapeHtml(b.label) + '</div>' +
+                '<div class="sub-cell">' + escapeHtml(b.bot) + '</div></td>' +
+              '<td class="num">' + formatNumber(b.hits) + '</td>' +
+              '<td class="num">' + formatNumber(b.uniquePaths) + '</td>' +
+              '<td class="num">' + formatDate(b.lastSeen) + '</td>' +
+            '</tr>';
+          }), 'Aucune lecture de robot IA sur la période.');
+
+          fillTable('ai-paths-body', ai.topPaths.map(function (p) {
+            return '<tr>' +
+              '<td><div class="title-cell">' + escapeHtml(p.path) + '</div></td>' +
+              '<td class="num">' + formatNumber(p.hits) + '</td>' +
+            '</tr>';
+          }), 'Aucun chemin lu sur la période.', 2);
         }
 
         function renderTables(data) {
           fillTable('galleries-body', data.galleries.slice(0, 12).map(rowGallery), 'Aucune galerie visitée sur la période.');
           fillTable('sources-body', data.sources.map(function (s) {
             return '<tr>' +
-              '<td><span class="pill' + (s.source === 'direct' || s.source === 'referral' ? ' muted' : '') + '">' + escapeHtml(s.source) + '</span></td>' +
+              '<td><span class="pill' + (s.source === 'direct' || s.source === 'referral' ? ' muted' : '') + '">' + escapeHtml(sourceLabel(s.source)) + '</span></td>' +
               '<td class="num">' + formatNumber(s.sessions) + '</td>' +
               '<td class="num">' + s.engagementRate + '%</td>' +
               '<td class="num">' + s.conversions + '</td>' +
@@ -581,6 +667,7 @@
           }), 'Aucune source enregistrée.');
           fillTable('artists-body', data.artists.artists.map(function (a) { return rowSimple(a, 'photos'); }), 'Aucun artiste suivi sur la période.');
           fillTable('venues-body', data.artists.venues.map(function (v) { return rowSimple(v, 'interest'); }), 'Aucune salle suivie sur la période.');
+          renderAi(data);
         }
 
         // ---- Chargement -----------------------------------------------
@@ -589,7 +676,7 @@
           currentDays = days;
           var host = document.getElementById('chart-daily');
           host.innerHTML = '<div class="loading">Chargement des indicateurs…</div>';
-          ['galleries-body', 'sources-body', 'artists-body', 'venues-body'].forEach(function (id) {
+          ['galleries-body', 'sources-body', 'artists-body', 'venues-body', 'ai-bots-body', 'ai-paths-body'].forEach(function (id) {
             document.getElementById(id).innerHTML = '<tr><td colspan="4" class="loading">…</td></tr>';
           });
 

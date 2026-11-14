@@ -451,4 +451,74 @@ describe('AnalyticsService', function () {
             expect(analytics.getDashboard(30).kpis.sessions).toBe(0);
         });
     });
+
+    // ================================================================
+    // TRAFIC ET LECTURES IA
+    // ================================================================
+    describe('trafic IA', function () {
+        function crawl(bot, path) {
+            return { v: 1, event: 'ai_crawl', ts: Date.now(), bot: bot, path: path };
+        }
+
+        it('compte les sessions venues d\'un assistant IA', function () {
+            store.append(signal('s1', [page('/', { engagedMs: 20000 })], { src: 'ai:chatgpt' }));
+            store.append(signal('s2', [page('/', { engagedMs: 20000 })], { src: 'ai:perplexity' }));
+            store.append(signal('s3', [page('/', { engagedMs: 20000 })], { src: 'search' }));
+
+            var dash = analytics.getDashboard(30);
+            expect(dash.kpis.aiSessions).toBe(2);
+            expect(dash.kpis.sessions).toBe(3);
+        });
+
+        it('liste les assistants dans les sources, libellés par source', function () {
+            store.append(signal('s1', [page('/', {})], { src: 'ai:chatgpt' }));
+            store.append(signal('s2', [page('/', {})], { src: 'ai:chatgpt' }));
+
+            var ai = analytics.getDashboard(30).sources.find(function (s) { return s.source === 'ai:chatgpt'; });
+            expect(ai).toBeTruthy();
+            expect(ai.sessions).toBe(2);
+        });
+
+        it('agrège les lectures des robots sans les compter comme sessions', function () {
+            store.append(signal('s1', [page('/', { engagedMs: 20000 })]));
+            store.append(crawl('gptbot', '/galerie/gojira'));
+            store.append(crawl('gptbot', '/galerie/gojira'));
+            store.append(crawl('gptbot', '/llms.txt'));
+            store.append(crawl('claudebot', '/galerie/tagada'));
+
+            var dash = analytics.getDashboard(30);
+
+            expect(dash.kpis.sessions).toBe(1);
+            expect(dash.aiCrawls.totalHits).toBe(4);
+
+            var gpt = dash.aiCrawls.bots[0];
+            expect(gpt.bot).toBe('gptbot');
+            expect(gpt.hits).toBe(3);
+            expect(gpt.uniquePaths).toBe(2);
+            expect(gpt.label).toMatch(/GPTBot/);
+
+            var top = dash.aiCrawls.topPaths[0];
+            expect(top.path).toBe('/galerie/gojira');
+            expect(top.hits).toBe(2);
+        });
+
+        it('accepte un robot inconnu et un chemin manquant', function () {
+            store.append(crawl('robot-x', ''));
+
+            var dash = analytics.getDashboard(30);
+            expect(dash.aiCrawls.bots[0].bot).toBe('robot-x');
+            expect(dash.aiCrawls.bots[0].label).toBe('robot-x');
+            expect(dash.aiCrawls.topPaths[0].path).toBe('/');
+        });
+
+        it('renvoie une structure vide sans aucune lecture IA', function () {
+            store.append(signal('s1', [page('/', {})]));
+
+            var dash = analytics.getDashboard(30);
+            expect(dash.aiCrawls.totalHits).toBe(0);
+            expect(dash.aiCrawls.bots).toEqual([]);
+            expect(dash.aiCrawls.topPaths).toEqual([]);
+            expect(dash.kpis.aiSessions).toBe(0);
+        });
+    });
 });

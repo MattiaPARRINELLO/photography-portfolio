@@ -17,6 +17,7 @@ const llmsService = require('./server/utils/llmsService');
 // Middleware
 const languageMiddleware = require('./server/middleware/language');
 const { createPhotosStaticMiddleware } = require('./server/middleware/photosStatic');
+const { createAiCrawlerMiddleware } = require('./server/middleware/aiCrawler');
 
 // Routes
 const pagesRouter = require('./server/routes/pages');
@@ -119,6 +120,13 @@ app.use((req, res, next) => {
     }
     next();
 });
+
+// Compte les lectures de contenu par les robots des assistants IA (GPTBot,
+// ClaudeBot, PerplexityBot…). N'enregistre que la catégorie de robot et le
+// chemin : ni IP, ni User-Agent. Monté après le blocage des fichiers internes
+// pour ne pas journaliser les tentatives sur .env / config, et avant les
+// routes pour voir aussi /llms.txt et /sitemap.xml.
+app.use(createAiCrawlerMiddleware({ store: analyticsRouter.store }));
 
 // Sert les fichiers statiques, mais exclut le dossier /admin pour éviter les conflits
 // Middleware: servir les versions pré-compressées si elles existent (.br/.gz)

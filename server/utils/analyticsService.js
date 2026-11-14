@@ -1,5 +1,6 @@
 const galleryService = require('./galleryService');
 const AnalyticsStore = require('./analyticsStore');
+const { AI_BOT_LABELS } = require('./aiBots');
 
 // ============================================
 // AGRÉGATION DES ANALYTICS — CALCUL DES KPI
@@ -134,7 +135,8 @@ class AnalyticsService {
      */
     getDashboard(days = 30) {
         const effectiveDays = (typeof days === 'number' && days > 0) ? days : null;
-        const sessions = this._collectSessions(this.store.read(effectiveDays));
+        const records = this.store.read(effectiveDays);
+        const sessions = this._collectSessions(records);
 
         const prepared = sessions.map(record => this._prepareSession(record));
 
@@ -149,7 +151,8 @@ class AnalyticsService {
             galleries: this._computeGalleries(prepared),
             sources: this._computeSources(prepared),
             campaigns: this._computeCampaigns(prepared),
-            artists: this._computeArtists(prepared)
+            artists: this._computeArtists(prepared),
+            aiCrawls: this._computeAiCrawls(records)
         };
     }
 
@@ -232,7 +235,8 @@ class AnalyticsService {
                 smartBounceRate: 0, avgEngagedMs: 0, medianEngagedMs: 0,
                 avgScrollDepth: 0, contactConversionRate: 0,
                 totalFullscreen: 0, totalPhotoViews: 0, totalConversions: 0,
-                contactPageViews: 0, totalContactSubmits: 0
+                contactPageViews: 0, totalContactSubmits: 0,
+                aiSessions: 0
             };
         }
 
@@ -249,7 +253,9 @@ class AnalyticsService {
             totalPhotoViews: sessions.reduce((sum, s) => sum + s.totals.photosViewed, 0),
             totalConversions: conversions.length,
             contactPageViews: sessions.reduce((sum, s) => sum + s.totals.contactViews, 0),
-            totalContactSubmits: sessions.reduce((sum, s) => sum + s.totals.contactSubmits, 0)
+            totalContactSubmits: sessions.reduce((sum, s) => sum + s.totals.contactSubmits, 0),
+            // Sessions arrivées depuis un assistant IA (source « ai:… »)
+            aiSessions: sessions.filter(s => s.source.indexOf('ai:') === 0).length
         };
     }
 
@@ -443,6 +449,54 @@ class AnalyticsService {
         return {
             artists: Array.from(byArtist.values()).map(rank).sort((a, b) => b.sessions - a.sessions),
             venues: Array.from(byVenue.values()).map(rank).sort((a, b) => b.sessions - a.sessions)
+        };
+    }
+
+    // ================================================================
+    // LECTURES PAR LES ROBOTS IA
+    // ================================================================
+    //
+    // Les lignes `{ event: 'ai_crawl' }` ne sont pas des sessions : elles ne
+    // participent à aucun autre KPI et restent exclues de _collectSessions.
+
+    _computeAiCrawls(records) {
+        const byBot = new Map();
+        const byPath = new Map();
+
+        for (const record of records) {
+            if (!record || record.event !== 'ai_crawl') continue;
+            const id = typeof record.bot === 'string' && record.bot ? record.bot : 'inconnu';
+            const path = typeof record.path === 'string' && record.path ? record.path : '/';
+
+            if (!byBot.has(id)) {
+                byBot.set(id, { bot: id, hits: 0, paths: new Map(), lastSeen: 0 });
+            }
+            const entry = byBot.get(id);
+            entry.hits++;
+            entry.paths.set(path, (entry.paths.get(path) || 0) + 1);
+            if (num(record.ts) > entry.lastSeen) entry.lastSeen = num(record.ts);
+
+            if (!byPath.has(path)) byPath.set(path, 0);
+            byPath.set(path, byPath.get(path) + 1);
+        }
+
+        const bots = Array.from(byBot.values())
+            .map(b => ({
+                bot: b.bot,
+                label: AI_BOT_LABELS[b.bot] || b.bot,
+                hits: b.hits,
+                uniquePaths: b.paths.size,
+                lastSeen: b.lastSeen || null
+            }))
+            .sort((a, b) => b.hits - a.hits);
+
+        return {
+            totalHits: bots.reduce((sum, b) => sum + b.hits, 0),
+            bots,
+            topPaths: Array.from(byPath.entries())
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8)
+                .map(([path, hits]) => ({ path, hits }))
         };
     }
 
