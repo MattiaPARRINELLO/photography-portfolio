@@ -12,6 +12,9 @@
    • Conversions : mailto/tel, CTA contact, liens réseaux/presse/labels.
    • Campagnes : paramètres d'URL (?c, ?ref, ?utm_*) mémorisés pour
      toute la session.
+   • Origine IA : un referrer chatgpt.com / perplexity.ai / claude.ai… ou un
+     ?utm_source= explicite classe la visite en « ai:<assistant> ». Mesure
+     indicative (plancher) : beaucoup d'assistants masquent le referrer.
    • Transport : navigator.sendBeacon (ne bloque jamais la navigation),
      repli sur fetch keepalive.
 
@@ -119,6 +122,37 @@
     'consequence.net': 'press', 'sourdoreille.net': 'press', 'leride.com': 'press'
   };
 
+  // Assistants IA et moteurs de réponse qui citent le site. Certains
+  // n'envoient aucun referrer (lien ouvert avec rel="noreferrer", app
+  // mobile) : le paramètre utm_source sert alors de repli, voir plus bas.
+  var AI_ASSISTANTS = {
+    'chatgpt.com': 'ai:chatgpt', 'chat.openai.com': 'ai:chatgpt', 'openai.com': 'ai:chatgpt',
+    'gemini.google.com': 'ai:gemini', 'bard.google.com': 'ai:gemini',
+    'perplexity.ai': 'ai:perplexity',
+    'claude.ai': 'ai:claude', 'anthropic.com': 'ai:claude',
+    'copilot.microsoft.com': 'ai:copilot',
+    'chat.mistral.ai': 'ai:mistral', 'mistral.ai': 'ai:mistral',
+    'chat.deepseek.com': 'ai:deepseek', 'deepseek.com': 'ai:deepseek',
+    'grok.com': 'ai:grok', 'x.ai': 'ai:grok',
+    'you.com': 'ai:you', 'poe.com': 'ai:poe', 'phind.com': 'ai:phind',
+    'meta.ai': 'ai:meta', 'kimi.com': 'ai:kimi', 'chat.qwen.ai': 'ai:qwen',
+    'huggingface.co': 'ai:huggingface', 'pi.ai': 'ai:pi', 'duck.ai': 'ai:duckai'
+  };
+
+  // Valeurs de ?utm_source= posées par les assistants qui en ajoutent.
+  var AI_SOURCE_PARAMS = {
+    'chatgpt.com': 'ai:chatgpt', 'chatgpt': 'ai:chatgpt',
+    'openai': 'ai:chatgpt', 'chat.openai.com': 'ai:chatgpt',
+    'perplexity': 'ai:perplexity', 'perplexity.ai': 'ai:perplexity',
+    'claude': 'ai:claude', 'claude.ai': 'ai:claude', 'anthropic': 'ai:claude',
+    'gemini': 'ai:gemini', 'google-gemini': 'ai:gemini',
+    'copilot': 'ai:copilot', 'bing-chat': 'ai:copilot',
+    'mistral': 'ai:mistral', 'lechat': 'ai:mistral',
+    'deepseek': 'ai:deepseek', 'grok': 'ai:grok',
+    'you.com': 'ai:you', 'poe.com': 'ai:poe', 'phind': 'ai:phind',
+    'meta.ai': 'ai:meta'
+  };
+
   /** Teste si un hôte correspond exactement ou en sous-domaine à une clé */
   function hostMatches(host, key) {
     if (key.slice(-1) === '.') return host.slice(0, key.length) === key;
@@ -143,11 +177,30 @@
     }
     if (!host) return 'direct';
 
-    return matchDomain(host, SEARCH_DOMAINS)
+    return matchDomain(host, AI_ASSISTANTS)
+      || matchDomain(host, SEARCH_DOMAINS)
       || matchDomain(host, NAMED_SOCIAL)
       || matchDomain(host, LABEL_DOMAINS)
       || matchDomain(host, PRESS_DOMAINS)
       || 'referral';
+  }
+
+  /**
+   * Source déduite de l'URL quand le referrer est absent (cas fréquent pour
+   * les assistants IA) : ?utm_source=chatgpt.com, ?utm_source=perplexity…
+   * Ne reconnaît que les assistants connus, jamais un paramètre libre.
+   */
+  function classifySourceParam() {
+    var params;
+    try {
+      params = new URLSearchParams(window.location.search || '');
+    } catch (e) {
+      return null;
+    }
+    var raw = params.get('utm_source') || params.get('source');
+    if (!raw) return null;
+    var key = String(raw).trim().toLowerCase().replace(/^www\./, '');
+    return AI_SOURCE_PARAMS[key] || null;
   }
 
   // ----- Extraction des campagnes -------------------------------------
@@ -324,7 +377,7 @@
     if (storedSource) {
       self.source = storedSource;
     } else {
-      self.source = classifyReferrer(document.referrer);
+      self.source = classifySourceParam() || classifyReferrer(document.referrer);
       writeStore('source', self.source);
     }
 
@@ -615,18 +668,21 @@
     };
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', startTracker);
-  } else {
-    startTracker();
-  }
-
-  // Export pour les tests
+  // Export pour les tests : sous Node (aucun document), le tracker ne
+  // démarre pas, seules les fonctions pures sont exposées.
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       AnalyticsTracker: AnalyticsTracker,
       classifyReferrer: classifyReferrer,
+      classifySourceParam: classifySourceParam,
       extractCampaign: extractCampaign
     };
+    return;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startTracker);
+  } else {
+    startTracker();
   }
 })();
