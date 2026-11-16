@@ -74,10 +74,9 @@ class TextUtils {
      * @param {Object} texts - Objet textes
      * @param {Object} req - Objet request Express
      * @param {string} pageType - Type de page
-     * @param {Object} campaignInfo - Informations de campagne
      * @returns {string} HTML avec meta tags injectés
      */
-    injectMetaTags(htmlContent, texts, req, pageType = '', campaignInfo = null) {
+    injectMetaTags(htmlContent, texts, req, pageType = '') {
         // SEO: Charger les données SEO pour des meta uniques par page
         const seo = this.loadSeoData();
         const pageKey = this._resolvePageKey(pageType);
@@ -114,11 +113,12 @@ class TextUtils {
         const author = siteSeo.author || (texts.meta && texts.meta.author) || 'Mattia Parrinello';
         additionalMetas += `    <meta name="author" content="${author}">\n`;
 
-        // Récupérer les informations de protocole et host
-        const protocol = req.protocol || 'https';
-        const host = req.get('host') || 'www.photo.mprnl.fr';
-        const fullUrl = `${protocol}://${host}${req.originalUrl}`;
-        const baseUrl = siteSeo.url || `${protocol}://${host}`;
+        // Le domaine de base ne doit jamais venir d'un en-tête client non validé :
+        // un `Host` ou un `X-Forwarded-Proto` forgé ferait entrer une URL
+        // arbitraire dans canonical, hreflang et og:url, puis dans le cache de
+        // page partagé. On utilise la configuration, avec le domaine fixe comme
+        // repli (même logique que generateSchemaJsonLd).
+        const baseUrl = siteSeo.url || 'https://www.photo.mprnl.fr';
 
         // SEO: Balise canonical + hreflang (anglais partiel via ?lang=en)
         // Le canonical est une fonction de l'URL demandée, jamais de req.lang :
@@ -173,18 +173,11 @@ class TextUtils {
         additionalMetas += `    <meta name="geo.region" content="FR-IDF">\n`;
         additionalMetas += `    <meta name="geo.placename" content="Paris">\n`;
 
-        // Vérifier s'il y a des informations de campagne à injecter.
-        // La campagne est désormais captée côté client (URL ?c / ?ref / ?utm_*)
-        // et transmise dans les signaux de session : plus aucun cookie à lire.
-        let campaignScript = '';
-        const activeCampaignInfo = campaignInfo || null;
-
-        if (activeCampaignInfo) {
-            campaignScript = `\n    <script>\n        // Informations de campagne injectées\n        window.campaignInfo = ${JSON.stringify(activeCampaignInfo)};\n    </script>`;
-        }
-
-        // Injecter les meta tags et le script de campagne
-        injectedHtml = injectedHtml.replace(metaPlaceholderEnd, `${additionalMetas}${campaignScript}\n${metaPlaceholderEnd}`);
+        // La campagne est captée côté client (URL ?c / ?ref / ?utm_*) puis
+        // transmise dans les signaux de session : aucun paramètre de requête
+        // n'est injecté dans le HTML servi. C'est aussi ce qui évite une XSS
+        // réfléchie par rebond du cache de rendu.
+        injectedHtml = injectedHtml.replace(metaPlaceholderEnd, `${additionalMetas}\n${metaPlaceholderEnd}`);
 
         // Lang switcher flottant (anglais partiel) - persiste via cookie
         const toggleHref = isEn ? `${pathOnly}?lang=fr` : `${pathOnly}?lang=en`;

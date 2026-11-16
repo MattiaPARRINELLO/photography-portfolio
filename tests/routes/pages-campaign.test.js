@@ -22,15 +22,18 @@ describe('pages publiques avec le campaignService réel', function () {
         app.use('/', pagesRouter);
     });
 
-    // L'ordre compte : le cache de page d'accueil (60 s) est partagé, la première
-    // requête détermine le HTML mis en cache. On teste donc la campagne d'abord.
-    it('injecte le script de nettoyage d\'URL quand une campagne est présente', function () {
+    // La campagne est lue côté client : aucun paramètre de requête ne doit se
+    // retrouver dans le HTML servi (XSS réfléchie par rebond du cache de rendu).
+    it('ne recopie aucun paramètre de campagne dans le HTML', function () {
         return request(app)
             .get('/?ref=insta-bio')
             .expect(200)
             .expect(function (res) {
-                if (!/history\.replaceState/.test(res.text)) {
-                    throw new Error('script de nettoyage d\'URL absent de la page d\'accueil');
+                if (/insta-bio/.test(res.text)) {
+                    throw new Error('paramètre de campagne recopié dans la page');
+                }
+                if (/window\.campaignInfo/.test(res.text)) {
+                    throw new Error('campaignInfo injecté côté serveur');
                 }
             });
     });
@@ -45,7 +48,7 @@ describe('pages publiques avec le campaignService réel', function () {
         return request(app).get('/').expect(200);
     });
 
-    it('n\'injecte pas de script de nettoyage sans campagne', function () {
+    it('n\'injecte aucun script lié à la campagne', function () {
         return request(app)
             .get('/a-propos')
             .expect(200)

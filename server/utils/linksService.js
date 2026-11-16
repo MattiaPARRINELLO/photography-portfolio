@@ -9,7 +9,11 @@ const path = require('path');
 const LINKS_CONFIG_PATH = path.join(__dirname, '../../config/links.json');
 const SEO_CONFIG_PATH = path.join(__dirname, '../../config/seo.json');
 
-// URL canonique du site (cohérent avec les autres pages : seo.json › site.url)
+// URL canonique du site (cohérent avec les autres pages : seo.json › site.url).
+// Repli fixe obligatoire : un Host ou X-Forwarded-Proto forgé ne doit jamais
+// entrer dans le canonical, les hreflang ou le JSON-LD de /links.
+const DEFAULT_SITE_URL = 'https://www.photo.mprnl.fr';
+
 function getCanonicalBaseUrl() {
     try {
         if (fs.existsSync(SEO_CONFIG_PATH)) {
@@ -17,7 +21,7 @@ function getCanonicalBaseUrl() {
             if (seo.site && seo.site.url) return seo.site.url;
         }
     } catch (e) { /* fallback ci-dessous */ }
-    return null;
+    return DEFAULT_SITE_URL;
 }
 
 // Icons SVG pour les différents types de liens
@@ -313,11 +317,10 @@ function injectLinksData(html, config, req) {
     const { profile, links, appearance, seo, event } = config;
     const activeLinks = links.filter(l => l.enabled).sort((a, b) => a.order - b.order);
 
-    // Générer l'URL canonique : base fixe (seo.json) pour éviter le contenu dupliqué entre domaines
+    // Générer l'URL canonique : base fixe (seo.json ou domaine par défaut) pour
+    // éviter le contenu dupliqué entre domaines et tout reflet d'un Host forgé.
     const baseUrl = getCanonicalBaseUrl();
-    const canonicalUrl = baseUrl
-        ? `${baseUrl}/links`
-        : `${req.protocol}://${req.get('host')}/links`;
+    const canonicalUrl = `${baseUrl}/links`;
 
     // SEO
     html = html.replace(/\{\{SEO_TITLE\}\}/g, seo.title || profile.name);
@@ -329,7 +332,7 @@ function injectLinksData(html, config, req) {
     const hreflangs = `\n    <link rel="alternate" hreflang="fr" href="${frUrl}" />\n    <link rel="alternate" hreflang="en" href="${enUrl}" />\n    <link rel="alternate" hreflang="x-default" href="${frUrl}" />`;
     html = html.replace('</head>', `${hreflangs}\n  </head>`);
     // og:image doit être une URL absolue (les URLs relatives sont invalides pour Open Graph)
-    const stableBaseForImage = getCanonicalBaseUrl() || canonicalUrl.replace(/\/links$/, '');
+    const stableBaseForImage = getCanonicalBaseUrl();
     const profileAvatar = (profile.avatar && profile.avatar.url) || '/dist/assets/Avatar.png';
     html = html.replace(/\{\{PROFILE_AVATAR\}\}/g, /^https?:\/\//.test(profileAvatar) ? profileAvatar : `${stableBaseForImage}${profileAvatar}`);
 
@@ -355,7 +358,7 @@ function injectLinksData(html, config, req) {
     html = html.replace('<!-- WATERMARK_PLACEHOLDER -->', watermarkHtml);
 
     // SEO: JSON-LD avec @id stables cohérents avec le graphe du reste du site
-    const stableBase = getCanonicalBaseUrl() || canonicalUrl.replace(/\/links$/, '');
+    const stableBase = getCanonicalBaseUrl();
     const linksJsonLd = {
         '@context': 'https://schema.org',
         '@graph': [

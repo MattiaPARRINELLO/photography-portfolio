@@ -1,7 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const { rateLimit, MemoryStore } = require('express-rate-limit');
+const { rateLimit, MemoryStore, ipKeyGenerator } = require('express-rate-limit');
 const serverConfig = require('../config');
 const {
     requireAdminSession,
@@ -202,14 +202,35 @@ router.get('/session-status', (req, res) => {
     res.json({ isLoggedIn });
 });
 
-// Rate limiting pour le login admin (5 tentatives par 15 minutes)
+// Rate limiting pour le login admin (5 tentatives par 15 minutes et par client)
 const loginStore = new MemoryStore();
+
+// Identité du client. On ne se fie à X-Forwarded-For que si la connexion
+// provient d'un proxy local (Apache/Passenger) : sinon il suffirait de changer
+// d'en-tête à chaque requête pour contourner la limite. Le dernier saut est
+// celui ajouté par le proxy, c'est donc lui qui fait foi.
+function clientIdentity(req) {
+    const peer = (req.socket && req.socket.remoteAddress) || '';
+    if (/^(127\.|::1$|::ffff:127\.)/i.test(peer)) {
+        const hops = String(req.headers['x-forwarded-for'] || '')
+            .split(',')
+            .map((hop) => hop.trim())
+            .filter(Boolean);
+        if (hops.length) return ipKeyGenerator(hops[hops.length - 1]);
+    }
+    return ipKeyGenerator(peer || req.ip || 'unknown');
+}
+
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
     standardHeaders: true,
     legacyHeaders: false,
     store: loginStore,
+    keyGenerator: clientIdentity,
+    // Une connexion réussie ne consomme pas de budget : le refus ne pénalise
+    // que celui qui enchaîne les échecs, jamais l'opérateur légitime.
+    skipSuccessfulRequests: true,
     message: { error: 'Trop de tentatives. Réessayez dans 15 minutes.' },
     skip: () => process.env.NODE_ENV === 'test'
 });
@@ -502,3 +523,4 @@ router.delete('/api/galleries/:id', requireAdminSession, (req, res) => {
 module.exports = router;
 router.loginStore = loginStore;
 router.loginLimiter = loginLimiter;
+router.clientIdentity = clientIdentity;
