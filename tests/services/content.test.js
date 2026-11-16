@@ -149,9 +149,33 @@ describe('TextUtils', function () {
       var texts = { meta: {} };
       req.query = { c: "x</script><svg onload=alert(1)>", utm_source: 'evil' };
 
-      var result = textUtils.injectMetaTags(html, texts, req, 'Portfolio');
+      // Le 5e argument est l'ancien emplacement de campaignInfo : il doit rester
+      // ignoré, sinon ce test ne détecterait pas une réintroduction du sink.
+      var result = textUtils.injectMetaTags(html, texts, req, 'Portfolio', {
+        id: "x</script><svg onload=alert(1)>",
+        source: 'evil'
+      });
       expect(result).not.toContain('window.campaignInfo');
       expect(result).not.toContain('onload=alert');
+    });
+
+    it('ne reflète jamais un Host forgé dans le canonical ou l og:url', function () {
+      // seo.json absent : le repli doit être le domaine fixe, jamais l en-tête.
+      fs.existsSync.mockImplementationOnce(function () { return false; });
+      var html = '<html><head>    <!-- META_PLACEHOLDER_END --></head><body></body></html>';
+      var evilReq = {
+        protocol: 'https',
+        get: function () { return 'evil.example'; },
+        originalUrl: '/',
+        path: '/',
+        query: {},
+        cookies: {}
+      };
+
+      var result = textUtils.injectMetaTags(html, { meta: {} }, evilReq, 'Portfolio');
+
+      expect(result).not.toContain('evil.example');
+      expect(result).toContain('https://www.photo.mprnl.fr');
     });
 
     it('utilise les donnees SEO si disponibles', function () {

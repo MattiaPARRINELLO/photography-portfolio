@@ -117,11 +117,16 @@ POST /admin/login  -> 429
   compte que si la connexion vient d'un proxy local, et seul le dernier saut fait
   foi. Chaque client a son propre compteur, et `skipSuccessfulRequests` évite
   qu'une connexion réussie consomme du budget.
+- **Host / X-Forwarded-Proto reflétés dans le head mis en cache** : corrigé.
+  `injectMetaTags` ne construit plus le canonical, les hreflang ni `og:url` depuis
+  les en-têtes de la requête. La base vient de `seo.site.url`, avec
+  `https://www.photo.mprnl.fr` en repli fixe, comme `generateSchemaJsonLd`.
 
 Vérifications faites en local : page d'accueil avec un payload `</script>` servie
 sans aucune recopie du paramètre, y compris depuis le cache ; deux clients
 distincts obtiennent chacun 5 tentatives avant 429 ; un mot de passe correct ne
-consomme pas de budget. 731 tests passent.
+consomme pas de budget ; un `Host: evil.example` ne modifie ni le canonical ni
+`og:url`. 735 tests passent.
 
 Corrections non déployées à ce jour.
 

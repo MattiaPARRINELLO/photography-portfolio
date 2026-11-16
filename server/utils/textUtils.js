@@ -113,11 +113,12 @@ class TextUtils {
         const author = siteSeo.author || (texts.meta && texts.meta.author) || 'Mattia Parrinello';
         additionalMetas += `    <meta name="author" content="${author}">\n`;
 
-        // Récupérer les informations de protocole et host
-        const protocol = req.protocol || 'https';
-        const host = req.get('host') || 'www.photo.mprnl.fr';
-        const fullUrl = `${protocol}://${host}${req.originalUrl}`;
-        const baseUrl = siteSeo.url || `${protocol}://${host}`;
+        // Le domaine de base ne doit jamais venir d'un en-tête client non validé :
+        // un `Host` ou un `X-Forwarded-Proto` forgé ferait entrer une URL
+        // arbitraire dans canonical, hreflang et og:url, puis dans le cache de
+        // page partagé. On utilise la configuration, avec le domaine fixe comme
+        // repli (même logique que generateSchemaJsonLd).
+        const baseUrl = siteSeo.url || 'https://www.photo.mprnl.fr';
 
         // SEO: Balise canonical + hreflang (anglais partiel via ?lang=en)
         const pathOnly = (req.path || '/').replace(/\/$/, '') || '/';
