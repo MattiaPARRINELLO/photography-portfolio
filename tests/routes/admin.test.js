@@ -207,6 +207,32 @@ describe('Routes admin', function () {
           done();
         });
     });
+
+    // Régression : `skipSuccessfulRequests` doit être exercé sur le vrai
+    // limiteur de production, pas seulement sur clientIdentity. Le `skip` de
+    // test est désactivé le temps de la requête (NODE_ENV hors test).
+    it('les connexions réussies ne consomment pas le budget d échecs', async function () {
+      var previousEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+      adminRouter.loginStore.resetAll();
+      try {
+        var app = makeApp();
+        var agent = supertest.agent(app);
+
+        for (var i = 0; i < 5; i++) {
+          await agent.post('/admin/login').send({ password: 'admin-test-password' }).expect(200);
+        }
+        for (var j = 0; j < 5; j++) {
+          await agent.post('/admin/login').send({ password: 'mauvais' }).expect(401);
+        }
+
+        // Le 6e échec tombe sur la limite de 5, les succès précédents n'ont rien coûté.
+        await agent.post('/admin/login').send({ password: 'mauvais' }).expect(429);
+      } finally {
+        process.env.NODE_ENV = previousEnv;
+        adminRouter.loginStore.resetAll();
+      }
+    });
   });
 
   describe('Identite client du limiteur de login', function () {
