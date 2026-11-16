@@ -375,5 +375,18 @@ describe('linksService', function () {
       var result = linksService.injectLinksData(html, cfg, req);
       expect(result).not.toContain('EVENT_BANNER_PLACEHOLDER');
     });
+
+    // Régression Strix : le canonical et le JSON-LD de /links ne doivent jamais
+    // refléter un Host forgé quand seo.json n'a pas de site.url.
+    it('ignore un Host forgé pour le canonical et le JSON-LD', function () {
+      var html = '<html><head><link rel="canonical" href="{{CANONICAL_URL}}"></head><body></body></html>';
+      var cfg = linksService.loadLinksConfig();
+      var evilReq = { protocol: 'https', get: function () { return 'evil.example'; } };
+
+      var result = linksService.injectLinksData(html, cfg, evilReq);
+
+      expect(result).not.toContain('evil.example');
+      expect(result).toContain('https://www.photo.mprnl.fr/links');
+    });
   });
 });

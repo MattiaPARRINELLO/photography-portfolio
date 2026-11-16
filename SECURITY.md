@@ -121,12 +121,14 @@ POST /admin/login  -> 429
   `injectMetaTags` ne construit plus le canonical, les hreflang ni `og:url` depuis
   les en-têtes de la requête. La base vient de `seo.site.url`, avec
   `https://www.photo.mprnl.fr` en repli fixe, comme `generateSchemaJsonLd`.
+  Même règle pour `/links` : `linksService.getCanonicalBaseUrl()` retourne le
+  domaine fixe quand `seo.json` n'a pas de `site.url`, et le JSON-LD en dérive.
 
 Vérifications faites en local : page d'accueil avec un payload `</script>` servie
 sans aucune recopie du paramètre, y compris depuis le cache ; deux clients
 distincts obtiennent chacun 5 tentatives avant 429 ; un mot de passe correct ne
 consomme pas de budget ; un `Host: evil.example` ne modifie ni le canonical ni
-`og:url`. 735 tests passent.
+`og:url`, y compris sur `/links`. 736 tests passent.
 
 Corrections non déployées à ce jour.
 
